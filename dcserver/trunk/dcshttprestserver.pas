@@ -48,6 +48,7 @@ uses
   HTTPDefs,
   httpprotocol,
   fphttpserver,
+  fphttpstatus,
   lazCollections,
   dcsHandler,
   dcsThreadCommandFactory,
@@ -166,7 +167,7 @@ var
   ChunkLength: Integer;
 begin
   if not FUseChunkedTransfer and HeadersSent then
-    Raise HTTPError.Create(SErrHeadersAlreadySent);
+    Raise Exception.Create(SErrHeadersAlreadySent);
   FUseChunkedTransfer := True;
   SetHeader(hhTransferEncoding, 'chunked');
   ChunkLength := ContentLength;
@@ -417,9 +418,18 @@ begin
   except
     on E: Exception do
       begin
-      AResponse.Code := 400;
-      AResponse.CodeText := 'Ok';
-      AResponse.Content := E.Message;
+      if E is EHTTP then
+        begin
+        AResponse.Code := EHTTP(E).StatusCode;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        AResponse.Content := E.Message;
+        end
+      else
+        begin
+        AResponse.Code := 500;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        AResponse.Content := E.Message;
+        end;
       end;
   end;
 end;
@@ -454,7 +464,7 @@ begin
     if SameText(DCSLogLevelNames[Result], AString) then
       Exit;
     end;
-  raise Exception.CreateFmt('[%s] is not a valid loglevel.', [AString]);
+  raise EHTTP.CreateFmtHelp('[%s] is not a valid loglevel.', [AString], 400);
 end;
 
 procedure TDCSHTTPRestServer.Execute;
