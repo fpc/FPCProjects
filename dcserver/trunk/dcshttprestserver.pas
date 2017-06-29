@@ -44,7 +44,6 @@ uses
   SysUtils,
   dateutils,
   typinfo,
-  fgl,
   syncobjs,
   HTTPDefs,
   httpprotocol,
@@ -57,7 +56,6 @@ uses
 
 type
   TDCSRestCallThreadList = class(TThreadList);
-  TDCSThreadedQueueString = specialize TLazThreadedQueue<string>;
 
   IDCSHTTPJSonResultEvent = interface ['{467B1B2A-4F31-467B-9D20-3BC4223B70D4}']
     function GetAsJSonString: string;
@@ -74,6 +72,8 @@ type
     Procedure DoOnAllowConnect(Sender: TObject; ASocket: Longint; Var Allow: Boolean);
     Procedure DoOnRequest(Sender: TObject; Var ARequest: TFPHTTPConnectionRequest; Var AResponse: TFPHTTPConnectionResponse);
     Procedure DoOnRequestError(Sender: TObject; E: Exception);
+    function StringToEventTypes(AString: string): TEventTypes;
+    function StringToEventType(AString: string): TEventType;
   protected
     procedure Execute; override;
   public
@@ -348,72 +348,113 @@ var
   NotificationEvent: TDCSNotificationEvent;
   InOutputProcessor: TDCSHTTPInOutputProcessor;
 begin
-  EventQueue := TDCSEventQueue.create(100, INFINITE, 200);
   try
-    Listener := TDCSHTTPRestListener.Create('HTTP Request from ' + ARequest.RemoteAddr, EventQueue);
+    EventQueue := TDCSEventQueue.create(100, INFINITE, 200);
     try
-      FDistributor.AddListener(Listener);
-      FDistributor.SetEventsForListener(Listener, reOwnOnly);
-      FDistributor.SetLogEventsForListener(Listener, reOwnOnly, [etCustom, etDebug, etError, etInfo, etWarning]);
-      FDistributor.SetNotificationEventsForListener(Listener, reOwnOnly, cAllNotificationTypes);
+      Listener := TDCSHTTPRestListener.Create('HTTP Request from ' + ARequest.RemoteAddr, EventQueue);
       try
-        InOutputProcessor := TDCSHTTPInOutputProcessor.create(Listener.ListenerId, FDistributor);
+        FDistributor.AddListener(Listener);
+        try
+          FDistributor.SetEventsForListener(Listener, reOwnOnly);
+          if ARequest.QueryFields.IndexOfName('loglevel') > -1 then
+            FDistributor.SetLogEventsForListener(Listener, reOwnOnly, StringToEventTypes(ARequest.QueryFields.Values['loglevel']))
+          else
+            FDistributor.SetLogEventsForListener(Listener, reOwnOnly, [etCustom, etError, etInfo, etWarning]);
+          FDistributor.SetNotificationEventsForListener(Listener, reOwnOnly, cAllNotificationTypes);
 
-        ACommand := InOutputProcessor.TextToCommandUID(ARequest.URI, null);
-        if not assigned(ACommand) then
-          begin
-          AResponse.Code := 404;
-          AResponse.CodeText := 'Not Found';
-          AResponse.Content := 'Page not found.';
-          end
-        else
-          begin
-          FDistributor.QueueCommand(ACommand);
+          InOutputProcessor := TDCSHTTPInOutputProcessor.create(Listener.ListenerId, FDistributor);
 
-          AResponse.Code := 200;
-          AResponse.CodeText := 'Ok';
-
-          while not terminated do
+          ACommand := InOutputProcessor.TextToCommandUID(ARequest.URI, null);
+          if not assigned(ACommand) then
             begin
-            if (EventQueue.PopItem(Event) = wrSignaled) then
+            AResponse.Code := 404;
+            AResponse.CodeText := 'Not Found';
+            AResponse.Content := 'Page not found.';
+            end
+          else
+            begin
+            FDistributor.QueueCommand(ACommand);
+
+            AResponse.Code := 200;
+            AResponse.CodeText := 'Ok';
+
+            while not terminated do
               begin
-              try
-                if Event.EventType = dcsetLog then
-                  begin
-                  AResponse.Content := InOutputProcessor.EventToText(Event);
-                  (AResponse as TDCSContinousHTTPConnectionResponse).SendIntermediateContent;
-                  end
-                else if Event.EventType = dcsetNotification then
-                  begin
-                  NotificationEvent := Event as TDCSNotificationEvent;
-
-                  if (NotificationEvent.NotificationType in [ntExecutedCommand, ntFailedCommand]) then
+              if (EventQueue.PopItem(Event) = wrSignaled) then
+                begin
+                try
+                  if Event.EventType = dcsetLog then
                     begin
-                    AResponse.Content := InOutputProcessor.EventToText(Event);;
-                    Break;
-                    end;
-                  end;
+                    AResponse.Content := InOutputProcessor.EventToText(Event);
+                    (AResponse as TDCSContinousHTTPConnectionResponse).SendIntermediateContent;
+                    end
+                  else if Event.EventType = dcsetNotification then
+                    begin
+                    NotificationEvent := Event as TDCSNotificationEvent;
 
-              finally
-                Event.Release;
+                    if (NotificationEvent.NotificationType in [ntExecutedCommand, ntFailedCommand]) then
+                      begin
+                      AResponse.Content := InOutputProcessor.EventToText(Event);;
+                      Break;
+                      end;
+                    end;
+
+                finally
+                  Event.Release;
+                end;
+                end
               end;
-              end
             end;
-          end;
+        finally
+          FDistributor.RemoveListener(Listener);
+        end;
       finally
-        FDistributor.RemoveListener(Listener);
+        Listener.Free;
       end;
     finally
-      Listener.Free;
+      EventQueue.Free;
     end;
-  finally
-    EventQueue.Free;
+  except
+    on E: Exception do
+      begin
+      AResponse.Code := 400;
+      AResponse.CodeText := 'Ok';
+      AResponse.Content := E.Message;
+      end;
   end;
 end;
 
 Procedure TDCSHTTPRestServer.DoOnRequestError(Sender: TObject; E: Exception);
 begin
   FDistributor.Log(Format('On-request exception: %s', [E.Message]), etError, null);
+end;
+
+function TDCSHTTPRestServer.StringToEventTypes(AString: string): TEventTypes;
+var
+  SL: TStringList;
+  i: Integer;
+begin
+  Result := [];
+  SL := TStringList.Create;
+  try
+    SL.CommaText := AString;
+    for i := 0 to SL.Count -1 do
+      begin
+      Include(Result, StringToEventType(SL[i]));
+      end;
+  finally
+    SL.Free;
+  end;
+end;
+
+function TDCSHTTPRestServer.StringToEventType(AString: string): TEventType;
+begin
+  for Result := Low(TEventType) to high(TEventType) do
+    begin
+    if SameText(DCSLogLevelNames[Result], AString) then
+      Exit;
+    end;
+  raise Exception.CreateFmt('[%s] is not a valid loglevel.', [AString]);
 end;
 
 procedure TDCSHTTPRestServer.Execute;
