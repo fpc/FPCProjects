@@ -1,0 +1,5 @@
+[TestEnv-x86_64-linux-3.1.1]
+FPCSourcePath=/path/of/the/fpc/sources
+PristineEnvironmentPath=/path/where/to/install/fpc/into
+BuildPath=/path/where/to/sync/fpc/into/and/build/packages
+StartCompiler=/start/compiler/executable
