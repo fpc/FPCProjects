@@ -18,3 +18,6 @@
   </li>
 </ul>
 
+<a class="navigationLinkButton" *ngIf="!isAuthorized" (click)="login()">Login</a>
+
+<router-outlet></router-outlet>
