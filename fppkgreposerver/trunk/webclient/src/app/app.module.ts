@@ -6,6 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpModule } from '@angular/http';
 import { FileUploadModule } from 'ng2-file-upload';
+import { AlertModule } from 'ngx-bootstrap';
 
 import { AuthModule } from './auth/modules/auth.module';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
@@ -22,6 +23,7 @@ import { PackageuploadComponent } from './packageupload/packageupload.component'
     HttpModule,
     AppRoutingModule,
     FileUploadModule,
+    AlertModule.forRoot(),
     AuthModule.forRoot()
   ],
   providers: [OidcSecurityService],
