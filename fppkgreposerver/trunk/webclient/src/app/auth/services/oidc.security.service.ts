@@ -75,16 +75,6 @@ export class OidcSecurityService {
         if (isPlatformBrowser(this.platformId)) {
             // Client only code.
             this.authWellKnownEndpoints.setupModule();
-
-            if (this.authConfiguration.silent_renew) {
-                this.oidcSecuritySilentRenew.initRenew();
-            }
-
-            if (this.authConfiguration.start_checksession) {
-                this.oidcSecurityCheckSession.init().subscribe(() => {
-                    this.oidcSecurityCheckSession.pollServerSession(this.authConfiguration.client_id);
-                });
-            }
         }
 
         this.onModuleSetup.emit();
@@ -407,6 +397,19 @@ export class OidcSecurityService {
 
     private onWellKnownEndpointsLoaded() {
         this.oidcSecurityCommon.logDebug('onWellKnownEndpointsLoaded');
+
+        if (!this.authWellKnownEndpointsLoaded) {
+            if (this.authConfiguration.silent_renew) {
+                this.oidcSecuritySilentRenew.initRenew();
+            }
+
+            if (this.authConfiguration.start_checksession) {
+                this.oidcSecurityCheckSession.init().subscribe(() => {
+                    this.oidcSecurityCheckSession.pollServerSession(this.authConfiguration.client_id);
+                });
+            }
+        }
+
         this.authWellKnownEndpointsLoaded = true;
     }
 
