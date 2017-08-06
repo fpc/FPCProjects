@@ -5,19 +5,23 @@ import { provideRoutes } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpModule } from '@angular/http';
+import { FileUploadModule } from 'ng2-file-upload';
 
 import { AuthModule } from './auth/modules/auth.module';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { OpenIDImplicitFlowConfiguration } from './auth/modules/auth.configuration';
+import { PackageuploadComponent } from './packageupload/packageupload.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    PackageuploadComponent
   ],
   imports: [
     BrowserModule,
     HttpModule,
     AppRoutingModule,
+    FileUploadModule,
     AuthModule.forRoot()
   ],
   providers: [OidcSecurityService],

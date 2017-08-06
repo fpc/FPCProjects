@@ -10,7 +10,7 @@ import { OidcSecurityService } from './auth/services/oidc.security.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'app';
+  title = 'The FPPKG Repository';
 
   isAuthorizedSubscription: Subscription;
   isAuthorized: boolean;
@@ -46,5 +46,9 @@ export class AppComponent implements OnInit, OnDestroy {
   logout() {
       console.log('start logoff');
       this.oidcSecurityService.logoff();
+  }
+
+  buildfpcenvironment() {
+
   }
 }
