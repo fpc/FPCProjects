@@ -48,17 +48,18 @@ var
   CommandLine: string;
   ExitStatus: Integer;
 begin
+  CommandLine := Exename;
+  for i := 0 to length(Commands) -1 do
+    CommandLine := CommandLine + ' ' + Commands[i];
+  FDistributor.Log(Format('Run external command.' +sLineBreak+ 'Directory: "%s".' +sLineBreak+ 'Commandstring: "%s".', [Curdir, CommandLine]), etDebug, Null, FSendByLisId);
   if RunCommandInDir(Curdir, Exename, Commands, CommandOutput, ExitStatus, [poStderrToOutPut]) <> 0 then
     raise Exception.CreateFmt('Failed to run ''%s''', [exename]);
   if ExitStatus<>ExpectedExitStatus then
     begin
-    for i := 0 to length(Commands) -1 do
-      begin
-      CommandLine := CommandLine + ' ' + Commands[i];
-      end;
-    raise Exception.CreateFmt('Failed to %s.' +sLineBreak+ 'Current directory: ' +Curdir+ sLineBreak + 'command line: ' + Exename + CommandLine + sLineBreak + ' Output: ' + sLineBreak + CommandOutput, [TaskDescription]);
+    raise Exception.CreateFmt('Failed to %s.' +sLineBreak+ 'Current directory: ' +Curdir+ sLineBreak + 'command line: ' + CommandLine + sLineBreak + ' Output: ' + sLineBreak + CommandOutput, [TaskDescription]);
     end;
   result := CommandOutput;
+  FDistributor.Log(Format('External command output.' +sLineBreak+ '%s', [Result]), etDebug, Null, FSendByLisId);
 end;
 
 
