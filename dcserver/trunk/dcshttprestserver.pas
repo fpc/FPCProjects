@@ -44,7 +44,9 @@ uses
   SysUtils,
   dateutils,
   typinfo,
+  fgl,
   syncobjs,
+  fpjson,
   HTTPDefs,
   httpprotocol,
   fphttpserver,
@@ -62,10 +64,42 @@ type
     function GetAsJSonString: string;
   end;
 
+  IDCSHTTPCommand = interface ['{13EE3526-2327-4828-BC6D-5E0F4E0BED50}']
+    procedure FillCommandBasedOnRequest(ARequest: TRequest);
+  end;
+
+  TDCSHTTPRestServerFlag = (
+    dcsRestServerFlagAllowDifferentOutputFormat
+  );
+  TDCSHTTPRestServerFlags = set of TDCSHTTPRestServerFlag;
+
+  { TDCSHTTPCorsEntry }
+
+  TDCSHTTPCorsEntry = class
+  private
+    FCredentials: Boolean;
+    FHeaders: string;
+    FMethods: string;
+    FOrigin: string;
+  public
+    // If the origin does not match, by default the server will respond with 403
+    property Origin: string read FOrigin write FOrigin;
+    // If the method does not match, by default the server will respond with 405
+    property Methods: string read FMethods write FMethods;
+    // The headers are returned in the response when requested, but are not checked
+    // by the server. If Headers is empty, the requested headers are echo'ed
+    property Headers: string read FHeaders write FHeaders;
+    property Credentials: Boolean read FCredentials write FCredentials;
+  end;
+  TDCSHTTPCorsEntryList = specialize TFPGObjectList<TDCSHTTPCorsEntry>;
+
   { TDCSHTTPRestServer }
 
   TDCSHTTPRestServer = class(TThread)
   private
+    FCorsOriginList: TDCSHTTPCorsEntryList;
+    FDefaultInOutputProcessorName: string;
+    FFlags: TDCSHTTPRestServerFlags;
     FPort: integer;
     FDistributor: TDCSDistributor;
     FServ: TFPHttpServer;
@@ -76,10 +110,45 @@ type
     function StringToEventTypes(AString: string): TEventTypes;
     function StringToEventType(AString: string): TEventType;
   protected
+    procedure HandleCors(ARequest: TFPHTTPConnectionRequest; AResponse: TFPHTTPConnectionResponse; out StopProcessing: Boolean); virtual;
     procedure Execute; override;
   public
     constructor create(ADistributor: TDCSDistributor; APort: integer);
+    destructor Destroy; override;
     procedure ForceTerminate;
+    procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
+    property DefaultInOutputProcessorName: string read FDefaultInOutputProcessorName write FDefaultInOutputProcessorName;
+    property Flags: TDCSHTTPRestServerFlags read FFlags write FFlags;
+    property CorsOriginList: TDCSHTTPCorsEntryList read FCorsOriginList;
+  end;
+
+  { TDCSHTTPInOutputProcessor }
+
+  TDCSHTTPJsonInOutputProcessor = class(TDCSJSonInOutputProcessor)
+  public
+    function TextToCommand(const ACommandText: string): TDCSThreadCommand; override;
+    function EventToText(AnEvent: TDCSEvent): string; override;
+  end;
+
+  { TDCSHTTPCustomInOutputProcessor }
+
+  TDCSHTTPCustomInOutputProcessor = class(TDCSHTTPJsonInOutputProcessor)
+  protected
+    procedure GetBasicMsgTypeAndMessage(AnEvent: TDCSEvent; out MsgType, Msg: string);
+  end;
+
+  { TDCSHTTPBasicJSonInOutputProcessor }
+
+  TDCSHTTPBasicJSonInOutputProcessor = class(TDCSHTTPCustomInOutputProcessor)
+  protected
+    function EventToJSOn(AnEvent: TDCSEvent): TJSONObject; override;
+  end;
+
+  { TDCSHTTPTextInOutputProcessor }
+
+  TDCSHTTPTextInOutputProcessor = class(TDCSHTTPCustomInOutputProcessor)
+  public
+    function EventToText(AnEvent: TDCSEvent): string; override;
   end;
 
 implementation
@@ -103,15 +172,6 @@ type
     property ListenerId: Integer read GetListenerId;
   end;
 
-  { TDCSHTTPInOutputProcessor }
-
-  TDCSHTTPInOutputProcessor = class(TDCSJSonInOutputProcessor)
-  public
-    function TextToCommand(const ACommandText: string): TDCSThreadCommand; override;
-    function EventToText(AnEvent: TDCSEvent): string; override;
-    function TextToCommandUID(const ACommandText: string; UID: variant): TDCSThreadCommand;
-  end;
-
   { TDCSContinousHTTPConnectionResponse }
 
   TDCSContinousHTTPConnectionResponse = class(TFPHTTPConnectionResponse)
@@ -132,6 +192,69 @@ type
 
 resourcestring
   SErrHeadersAlreadySent = 'Can not send chunked (intermediate) response when the headers are already sent.';
+
+{ TDCSHTTPCustomInOutputProcessor }
+
+procedure TDCSHTTPCustomInOutputProcessor.GetBasicMsgTypeAndMessage(AnEvent: TDCSEvent; out MsgType, Msg: string);
+begin
+  case AnEvent.EventType of
+    dcsetEvent:
+      begin
+      MsgType := 'Event';
+      Msg := '';
+      end;
+    dcsetLog:
+      begin
+      MsgType := DCSLogLevelNames[TDCSLogEvent(AnEvent).LogLevel];
+      Msg := TDCSLogEvent(AnEvent).Message;
+      end;
+    dcsetNotification:
+      begin
+      case TDCSNotificationEvent(AnEvent).NotificationType of
+        ntNewConnection     : MsgType := 'New conn';
+        ntLostConnection    : MsgType := 'Lost conn';
+        ntInvalidCommand    : MsgType := 'Invalid';
+        ntConnectionProblem : MsgType := 'Conn failure';
+        ntListenerMessage   : MsgType := 'Listener';
+        ntReceivedCommand   : MsgType := 'Start';
+        ntExecutedCommand   : MsgType := 'Done';
+        ntFailedCommand     : MsgType := 'Failed';
+      end;
+      Msg := TDCSNotificationEvent(AnEvent).Message;
+      end;
+  end;
+end;
+
+{ TDCSHTTPTextInOutputProcessor }
+
+function TDCSHTTPTextInOutputProcessor.EventToText(AnEvent: TDCSEvent): string;
+var
+  MsgType,Msg: string;
+begin
+  GetBasicMsgTypeAndMessage(AnEvent, MsgType, Msg);
+  Result := Format('%s [%13s] %s', [FormatDateTime('yyyy-mm-dd hh:nn:ss', Now), MsgType, Msg]);
+end;
+
+{ TDCSHTTPBasicJSonInOutputProcessor }
+
+function TDCSHTTPBasicJSonInOutputProcessor.EventToJSOn(AnEvent: TDCSEvent): TJSONObject;
+var
+  MsgType,Msg: string;
+begin
+  Result := TJSONObject.Create;
+  try
+    GetBasicMsgTypeAndMessage(AnEvent, MsgType, Msg);
+    Result.Add('timestamp', FormatDateTime('yyyy-mm-dd''T''hh:nn:ss', Now));
+    Result.Add('type', MsgType);
+    Result.Add('message', Msg);
+  except
+    on E: Exception do
+      begin
+      Result.Free;
+      Raise E;
+      end;
+  end;
+end;
 
 { TDCSContinousHTTPConnectionResponse }
 
@@ -215,9 +338,9 @@ begin
   Result := FOrigin;
 end;
 
-{ TDCSHTTPInOutputProcessor }
+{ TDCSHTTPJsonInOutputProcessor }
 
-function TDCSHTTPInOutputProcessor.TextToCommandUID(const ACommandText: string; UID: variant): TDCSThreadCommand;
+function TDCSHTTPJsonInOutputProcessor.TextToCommand(const ACommandText: string): TDCSThreadCommand;
 var
   ACommandClass: TDCSThreadCommandClass;
   i,j: integer;
@@ -256,7 +379,7 @@ begin
     exit;
     end;
 
-  result := ACommandClass.Create(FLisId, UID, FDistributor);
+  result := ACommandClass.Create(FLisId, Null, FDistributor);
 
   Params := TStringList.Create;
   try
@@ -318,12 +441,7 @@ begin
   end;
 end;
 
-function TDCSHTTPInOutputProcessor.TextToCommand(const ACommandText: string): TDCSThreadCommand;
-begin
-  result := TextToCommandUID(ACommandText, null);
-end;
-
-function TDCSHTTPInOutputProcessor.EventToText(AnEvent: TDCSEvent): string;
+function TDCSHTTPJsonInOutputProcessor.EventToText(AnEvent: TDCSEvent): string;
 var
   HTTPJsonResult: IDCSHTTPJSonResultEvent;
 begin
@@ -347,9 +465,16 @@ var
   Listener: TDCSHTTPRestListener;
   Event: TDCSEvent;
   NotificationEvent: TDCSNotificationEvent;
-  InOutputProcessor: TDCSHTTPInOutputProcessor;
+  InOutputProcessorClass: TDCSInOutputProcessorClass;
+  InOutputProcessor: TDCSCustomInOutputProcessor;
+  InOutputProcessorName: string;
+  HTTPCommand: IDCSHTTPCommand;
+  StopProcessing: Boolean;
 begin
   try
+    HandleCors(ARequest, AResponse, StopProcessing);
+    if StopProcessing then
+      Exit;
     EventQueue := TDCSEventQueue.create(100, INFINITE, 200);
     try
       Listener := TDCSHTTPRestListener.Create('HTTP Request from ' + ARequest.RemoteAddr, EventQueue);
@@ -363,9 +488,17 @@ begin
             FDistributor.SetLogEventsForListener(Listener, reOwnOnly, [etCustom, etError, etInfo, etWarning]);
           FDistributor.SetNotificationEventsForListener(Listener, reOwnOnly, cAllNotificationTypes);
 
-          InOutputProcessor := TDCSHTTPInOutputProcessor.create(Listener.ListenerId, FDistributor);
+          if (dcsRestServerFlagAllowDifferentOutputFormat in Flags) and (ARequest.QueryFields.IndexOfName('outputformat') > -1) then
+            InOutputProcessorName := ARequest.QueryFields.Values['outputformat']
+          else
+            InOutputProcessorName := DefaultInOutputProcessorName;
 
-          ACommand := InOutputProcessor.TextToCommandUID(ARequest.URI, null);
+          InOutputProcessorClass := TDCSInOutputProcessorFactory.GetInOutputProcessorByName(InOutputProcessorName);
+          if not Assigned(InOutputProcessorClass) then
+            raise EHTTP.CreateFmtHelp('In-output processor class [%s] is not known.', [InOutputProcessorName], 400);
+          InOutputProcessor := InOutputProcessorClass.create(Listener.ListenerId, FDistributor);
+
+          ACommand := InOutputProcessor.TextToCommand(ARequest.URI);
           if not assigned(ACommand) then
             begin
             AResponse.Code := 404;
@@ -374,6 +507,9 @@ begin
             end
           else
             begin
+            if supports(ACommand, IDCSHTTPCommand, HTTPCommand) then
+              HTTPCommand.FillCommandBasedOnRequest(ARequest);
+
             FDistributor.QueueCommand(ACommand);
 
             AResponse.Code := 200;
@@ -467,6 +603,84 @@ begin
   raise EHTTP.CreateFmtHelp('[%s] is not a valid loglevel.', [AString], 400);
 end;
 
+procedure TDCSHTTPRestServer.HandleCors(ARequest: TFPHTTPConnectionRequest; AResponse: TFPHTTPConnectionResponse; out StopProcessing: Boolean);
+var
+  i, j: Integer;
+  CorsEntry: TDCSHTTPCorsEntry;
+  Origin: string;
+  RefuseMethod: Boolean;
+  s: string;
+begin
+  StopProcessing := False;
+  i := ARequest.CustomHeaders.IndexOfName('Origin');
+  if i > -1 then
+    begin
+    CorsEntry := nil;
+    RefuseMethod := False;
+    Origin := ARequest.CustomHeaders.ValueFromIndex[i];
+    for j := 0 to FCorsOriginList.Count-1 do
+      begin
+      if (FCorsOriginList.Items[j].Origin = '*') or (FCorsOriginList.Items[j].Origin = Origin) then
+        begin
+        CorsEntry := FCorsOriginList.Items[j];
+        RefuseMethod := False;
+        if ARequest.Method='OPTIONS' then
+          begin
+          s := ARequest.CustomHeaders.Values['Access-Control-Request-Method'];
+          if s <> '' then
+            begin
+            if Pos(s, CorsEntry.Methods) = 0 then
+              RefuseMethod := True
+            else
+              Break;
+            end
+          else
+            Break;
+          end
+        else
+          begin
+          if Pos(ARequest.Method, CorsEntry.Methods) = 0 then
+            RefuseMethod := True
+          else
+            Break;
+          end;
+        end;
+      end;
+
+    if RefuseMethod then
+      begin
+      AResponse.Code := 405;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      StopProcessing := True;
+      end
+    else if Assigned(CorsEntry) then
+      begin
+      AResponse.CustomHeaders.Values['Access-Control-Allow-Origin'] := CorsEntry.Origin;
+      if CorsEntry.Credentials then
+        AResponse.CustomHeaders.Values['Access-Control-Allow-Credentials'] := 'true';
+      if ARequest.Method='OPTIONS' then
+        begin
+        AResponse.CustomHeaders.Values['Access-Control-Allow-Methods'] := CorsEntry.Methods;
+        if ARequest.CustomHeaders.IndexOfName('Access-Control-Request-Headers') > -1 then
+          begin
+          if CorsEntry.Headers <> '' then
+            AResponse.CustomHeaders.Values['Access-Control-Allow-Headers'] := CorsEntry.Headers
+          else
+            AResponse.CustomHeaders.Values['Access-Control-Allow-Headers'] := ARequest.CustomHeaders.Values['Access-Control-Request-Headers'];
+          end;
+        StopProcessing := true;
+        end;
+      end
+    else
+      begin
+      AResponse.Code := 403;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      StopProcessing := true;
+      end;
+
+    end;
+end;
+
 procedure TDCSHTTPRestServer.Execute;
 begin
   try
@@ -494,7 +708,15 @@ constructor TDCSHTTPRestServer.create(ADistributor: TDCSDistributor; APort: inte
 begin
   FPort:=APort;
   FDistributor:=ADistributor;
+  FDefaultInOutputProcessorName := 'http-json-basic';
+  FCorsOriginList := TDCSHTTPCorsEntryList.Create;
   inherited Create(false);
+end;
+
+destructor TDCSHTTPRestServer.Destroy;
+begin
+  FCorsOriginList.Free;
+  inherited Destroy;
 end;
 
 procedure TDCSHTTPRestServer.ForceTerminate;
@@ -504,5 +726,25 @@ begin
     FServ.Active := False;
 end;
 
+procedure TDCSHTTPRestServer.AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
+var
+  CorsEntry: TDCSHTTPCorsEntry;
+begin
+  try
+    CorsEntry := TDCSHTTPCorsEntry.Create;
+    CorsEntry.Origin := Origin;
+    CorsEntry.Methods := Methods;
+    CorsEntry.Headers := Headers;
+    CorsEntry.Credentials := Credentials;
+    FCorsOriginList.Add(CorsEntry);
+  except
+    CorsEntry.Free;
+  end;
+end;
+
+initialization
+  TDCSInOutputProcessorFactory.RegisterCommandClass('http-json', TDCSHTTPJsonInOutputProcessor);
+  TDCSInOutputProcessorFactory.RegisterCommandClass('http-json-basic', TDCSHTTPBasicJSonInOutputProcessor);
+  TDCSInOutputProcessorFactory.RegisterCommandClass('http-text', TDCSHTTPTextInOutputProcessor);
 end.
 

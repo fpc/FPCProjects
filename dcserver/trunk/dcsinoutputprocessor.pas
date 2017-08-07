@@ -36,6 +36,7 @@ type
   TDCSJSonInOutputProcessor = class(TDCSCustomInOutputProcessor)
   protected
     function JSONArrayToSetOrdinal(AnArray: TJSONArray; PropInfo: PPropInfo): Int64;
+    function EventToJSOn(AnEvent: TDCSEvent): TJSONObject; virtual;
   public
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; override;
     function EventToText(AnEvent: TDCSEvent): string; override;
@@ -193,6 +194,8 @@ begin
                 SetSetProp(result, APropList^[i], AJSonProp.AsString)
               else
                 SetOrdProp(result, APropList^[i], JSONArrayToSetOrdinal(AJSonProp as TJSONArray, APropList^[i]));
+            tkEnumeration:
+              SetOrdProp(result, APropList^[i], StringToEnum(APropList^[i]^.PropType, AJSonProp.AsString));
           end;
           end;
         end;
@@ -205,6 +208,18 @@ begin
 end;
 
 function TDCSJSonInOutputProcessor.EventToText(AnEvent: TDCSEvent): string;
+var
+  JSonEvent: TJSONObject;
+begin
+  JSonEvent := EventToJSOn(AnEvent);
+  try
+    Result := JSonEvent.AsJSON;
+  finally
+    JSonEvent.Free;
+  end;
+end;
+
+function TDCSJSonInOutputProcessor.EventToJSOn(AnEvent: TDCSEvent): TJSONObject;
 var
   JSonEvent: TJSONObject;
   s: String;
@@ -238,13 +253,14 @@ begin
           JSonEvent.Add('lisId', TDCSNotificationEvent(AnEvent).LisId);
           end;
         end;
-      result := JSonEvent.AsJSON;
-    finally
+    except
       JSonEvent.Free;
+      raise;
     end;
   finally
     JSStreamer.Free;
   end;
+  Result := JSonEvent;
 end;
 
 end.

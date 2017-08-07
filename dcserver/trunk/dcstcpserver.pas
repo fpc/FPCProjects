@@ -260,6 +260,7 @@ begin
   if assigned(FInOutputProcessor) then
     begin
     s := FInOutputProcessor.EventToText(AnEvent);
+    UniqueString(s);
     FResponseQueue.PushItem(s);
     end;
 end;

@@ -73,12 +73,13 @@ type
   TDCSLogEvent = Class(TDCSEvent)
   private
     FLogLevel: TEventType;
-    FMessage: shortstring;
+    FMessage: string;
   protected
     function GetEventType: TDCSEventType; override;
+    function GetIsThreadSafe: Boolean; override;
   public
     property LogLevel: TEventType read FLogLevel write FLogLevel;
-    property Message: shortstring read FMessage write FMessage;
+    property Message: string read FMessage write FMessage;
   end;
 
   { TDCSNotificationEvent }
@@ -250,6 +251,8 @@ const
     'ExecutedCommand',
     'FailedCommand'
   );
+
+  cAllNotificationTypes: TDCSNotificationTypes = [ntNewConnection, ntLostConnection, ntInvalidCommand, ntConnectionProblem, ntListenerMessage, ntReceivedCommand, ntExecutedCommand, ntFailedCommand];
 
 implementation
 
@@ -540,6 +543,11 @@ end;
 function TDCSLogEvent.GetEventType: TDCSEventType;
 begin
   result := dcsetLog;
+end;
+
+function TDCSLogEvent.GetIsThreadSafe: Boolean;
+begin
+  Result := False;
 end;
 
 { TDCSThreadCommand }
@@ -929,7 +937,7 @@ begin
               on E: Exception do
                 begin
                 FDistributor.Log('Exception during execution of '+ACommand.TextName+' command: '+e.Message, etError, ACommand.UID, ACommand.SendByLisId);
-                FDistributor.SendNotification(ACommand.SendByLisId, ntFailedCommand, null, 'Exception during execution of %s-command.', ACommand.TextName, [ACommand.TextName]);
+                FDistributor.SendNotification(ACommand.SendByLisId, ntFailedCommand, ACommand.UID, 'Exception during execution of %s-command.', ACommand.TextName, [ACommand.TextName]);
                 end;
             end;
             ACommand.Free;
