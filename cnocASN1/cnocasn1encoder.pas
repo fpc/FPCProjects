@@ -52,7 +52,7 @@ type
     procedure WriteHighTagNumber(AStream: TStream; TagNr: Int64);
     procedure WriteLongFormLength(AStream: TStream; ALength: QWord);
   public
-    //function LoadElementFromStream(AStream: TStream; AFormat: TcnocASN1Format): TObject;
+    procedure SaveObjectToStream(AStream: TStream; AFormat: TcnocASN1Format; AnObject: TObject);
     procedure SaveToStream(AStream: TStream; AFormat: TcnocASN1Format; ALength: Integer; AnObjectList: TObjectList);
     //function Read128BaseInteger(AStream: TStream; out ASize: Integer): Int64;
   end;
@@ -98,63 +98,71 @@ begin
     end;
 end;
 
-procedure TcnocASN1BEREncoder.SaveToStream(AStream: TStream; AFormat: TcnocASN1Format;
-  ALength: Integer; AnObjectList: TObjectList);
+procedure TcnocASN1BEREncoder.SaveObjectToStream(AStream: TStream; AFormat: TcnocASN1Format; AnObject: TObject);
 var
-  i, TagNr: Integer;
+  TagNr: Integer;
   Length: QWord;
-  AnObject: TObject;
   EncodableClass: IcnocASN1EncodableClass;
   AClass: TcnocASN1Class;
   Encoding: TcnocASN1Encoding;
   FirstIdentifierOctet: Byte;
 begin
+  if supports(AnObject, IcnocASN1EncodableClass, EncodableClass) then
+    begin
+    if EncodableClass.GetASN1HeaderInfo(AClass, TagNr, Encoding, Length, Self, AFormat) then
+      begin
+      case AClass of
+        cacUniversal      : FirstIdentifierOctet := %00000000;
+        cacApplication    : FirstIdentifierOctet := %01000000;
+        cacContextSpecific: FirstIdentifierOctet := %10000000;
+        cacPrivate        : FirstIdentifierOctet := %11000000;
+      else
+        raise Exception.Create('Unknown ASN.1-class, unable to encode object.');
+      end;
+
+      if Encoding = caeConstructed then
+        FirstIdentifierOctet := FirstIdentifierOctet or %00100000;
+
+      if TagNr < 31 then
+        begin
+        FirstIdentifierOctet := FirstIdentifierOctet or TagNr;
+        AStream.WriteByte(FirstIdentifierOctet);
+        end
+      else
+        begin
+        FirstIdentifierOctet := FirstIdentifierOctet or %00011111;
+        AStream.WriteByte(FirstIdentifierOctet);
+        WriteHighTagNumber(AStream, TagNr);
+        end;
+
+      if (length=-1) then
+        begin
+        Assert(Encoding = caeConstructed);
+        AStream.WriteByte(%10000000);
+        end
+      else if Length<128 then
+        AStream.WriteByte(Length)
+      else
+        WriteLongFormLength(AStream, Length);
+
+      EncodableClass.StreamASN1Content(AStream, Self, AFormat);
+      end;
+    end
+  else
+    raise Exception.CreateFmt('The %s class can not be used to encode as ASN-content. It should implement the IcnocASN1EncodableClass interface', [AnObject.ClassName]);
+
+end;
+
+procedure TcnocASN1BEREncoder.SaveToStream(AStream: TStream; AFormat: TcnocASN1Format;
+  ALength: Integer; AnObjectList: TObjectList);
+var
+  i: Integer;
+  AnObject: TObject;
+begin
   for i := 0 to AnObjectList.Count -1 do
     begin
     AnObject := AnObjectList.Items[i];
-    if supports(AnObject, IcnocASN1EncodableClass, EncodableClass) then
-      begin
-      if EncodableClass.GetASN1HeaderInfo(AClass, TagNr, Encoding, Length, Self, AFormat) then
-        begin
-        case AClass of
-          cacUniversal      : FirstIdentifierOctet := %00000000;
-          cacApplication    : FirstIdentifierOctet := %01000000;
-          cacContextSpecific: FirstIdentifierOctet := %10000000;
-          cacPrivate        : FirstIdentifierOctet := %11000000;
-        else
-          raise Exception.Create('Unknown ASN.1-class, unable to encode object.');
-        end;
-
-        if Encoding = caeConstructed then
-          FirstIdentifierOctet := FirstIdentifierOctet or %00100000;
-
-        if TagNr < 31 then
-          begin
-          FirstIdentifierOctet := FirstIdentifierOctet or TagNr;
-          AStream.WriteByte(FirstIdentifierOctet);
-          end
-        else
-          begin
-          FirstIdentifierOctet := FirstIdentifierOctet or %00011111;
-          AStream.WriteByte(FirstIdentifierOctet);
-          WriteHighTagNumber(AStream, TagNr);
-          end;
-
-        if (length=-1) then
-          begin
-          Assert(Encoding = caeConstructed);
-          AStream.WriteByte(%10000000);
-          end
-        else if Length<128 then
-          AStream.WriteByte(Length)
-        else
-          WriteLongFormLength(AStream, Length);
-
-        EncodableClass.StreamASN1Content(AStream, Self, AFormat);
-        end;
-      end
-    else
-      raise Exception.CreateFmt('The %s class can not be used to encode as ASN-content. It should implement the IcnocASN1EncodableClass interface', [AnObject.ClassName]);
+    SaveObjectToStream(AStream, AFormat, AnObject);
     end;
   if ALength = -1 then
     begin

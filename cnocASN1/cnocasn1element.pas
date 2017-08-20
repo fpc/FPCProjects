@@ -39,6 +39,7 @@ uses
   SysUtils,
   contnrs,
   strutils,
+  math,
   cnocASN1,
   cnocASN1TagFactory,
   cnocASN1Decoder,
@@ -112,6 +113,9 @@ type
   public
     class function GetClass: TcnocASN1Class; override;
     class procedure RegisterUniversalASNElements(AFactory: TcnocASN1TagFactory);
+    function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+      AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format): Boolean; override;
   end;
 
   { TcnocASN1IntegerElement }
@@ -119,11 +123,16 @@ type
   TcnocASN1IntegerElement = class(TcnocASN1UniversalElement)
   private
     FValue: Int64;
+    function CalculateAmountOfOctets: Integer;
   public
     class function GetTagNr: Int64; override;
     class function GetClassName: string; override;
     procedure ParseASN1Content(AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding;
       ALength: Integer; ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+    function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+      AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format): Boolean; override;
+    procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); override;
     property AsInt64: Int64 read FValue write FValue;
   end;
 
@@ -141,6 +150,11 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+    function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+      AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format): Boolean; override;
+    procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format); override;
     property Items: TcnocASN1ElementList read GetItems write SetItems;
   end;
 
@@ -485,6 +499,21 @@ begin
   ADecoder.LoadFromStream(AContentStream, AFormat, ALength, Items);
 end;
 
+function TcnocASN1SetElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+  AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+  AFormat: TcnocASN1Format): Boolean;
+begin
+  Result := inherited GetASN1HeaderInfo(AClass, ATag, AnEncoding, ALength, AnEncoder, AFormat);
+  AnEncoding := caeConstructed;
+  ALength := -1;
+end;
+
+procedure TcnocASN1SetElement.StreamASN1Content(AContentStream: TStream;
+  AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
+begin
+  AnEncoder.SaveToStream(AContentStream, AFormat, -1, FItems);
+end;
+
 { TcnocASN1UniversalElement }
 
 class function TcnocASN1UniversalElement.GetClass: TcnocASN1Class;
@@ -509,6 +538,15 @@ begin
   RegisterElement(TcnocASN1UTF8StringElement);
   RegisterElement(TcnocASN1UTCTimeElement);
   RegisterElement(TcnocASN1BITStringElement);
+end;
+
+function TcnocASN1UniversalElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer;
+  out AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+  AFormat: TcnocASN1Format): Boolean;
+begin
+  Result := True;
+  AClass := GetClass;
+  ATag := GetTagNr;
 end;
 
 { TcnocASN1CustomElement }
@@ -621,6 +659,24 @@ end;
 
 { TcnocASN1IntegerElement }
 
+function TcnocASN1IntegerElement.CalculateAmountOfOctets: Integer;
+var
+  v: Int64;
+begin
+  if FValue < 0 then
+    v := not(FValue)
+  else
+    v := FValue;
+
+  if v=0 then
+    v := 1
+  else
+    begin
+    v := Floor(Log2(v)) +2;
+    Result := ((v -1) div 8) +1;
+    end;
+end;
+
 class function TcnocASN1IntegerElement.GetTagNr: Int64;
 begin
   Result := 2;
@@ -648,6 +704,34 @@ begin
     begin
     B := AContentStream.ReadByte;
     FValue := FValue shl 8 + B;
+    end;
+end;
+
+function TcnocASN1IntegerElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+  AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+  AFormat: TcnocASN1Format): Boolean;
+begin
+  Result := inherited GetASN1HeaderInfo(AClass, ATag, AnEncoding, ALength, AnEncoder, AFormat);
+  AnEncoding := caePrimitive;
+  ALength := CalculateAmountOfOctets;
+end;
+
+procedure TcnocASN1IntegerElement.StreamASN1Content(AContentStream: TStream;
+  AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
+var
+  ValueLE: QWord;
+  l: Integer;
+  i: Integer;
+  B: PByte;
+begin
+  l := CalculateAmountOfOctets;
+  ValueLE := NtoBE(FValue);
+  B := @ValueLE;
+  Inc(B, SizeOf(ValueLE) -l);
+  for i := 0 to l -1 do
+    begin
+    AContentStream.WriteByte(B^);
+    inc(B);
     end;
 end;
 
