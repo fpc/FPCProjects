@@ -16,6 +16,7 @@ uses
   SysUtils,
   CustApp,
   strutils,
+  fmtBCD,
   cnocASN1,
   cnocASN1Decoder,
   cnocASN1encoder,
@@ -148,7 +149,7 @@ var
   StrVal: string;
 begin
   if AnElement is TcnocASN1IntegerElement then
-    StrVal := IntToStr(TcnocASN1IntegerElement(AnElement).AsInt64)
+    StrVal := BCDToStr(TcnocASN1IntegerElement(AnElement).AsBCD)
   else if AnElement is TcnocASN1ObjectIdentifierElement then
     begin
     for i := 0 to length(TcnocASN1ObjectIdentifierElement(AnElement).Values)  -1 do

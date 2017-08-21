@@ -40,6 +40,7 @@ uses
   contnrs,
   strutils,
   math,
+  FmtBCD,
   cnocASN1,
   cnocASN1TagFactory,
   cnocASN1Decoder,
@@ -123,7 +124,16 @@ type
   TcnocASN1IntegerElement = class(TcnocASN1UniversalElement)
   private
     FValue: Int64;
+    FBCDValue: tBCD;
+    FUseBCD: Boolean;
     function CalculateAmountOfOctets: Integer;
+    function BCDToBytes(AValue: tBCD): TBytes;
+
+    function GetBCDValue: tBCD;
+    procedure SetBCDValue(AValue: tBCD);
+
+    function GetValue: Int64;
+    procedure SetValue(AValue: Int64);
   public
     class function GetTagNr: Int64; override;
     class function GetClassName: string; override;
@@ -133,7 +143,8 @@ type
       AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format): Boolean; override;
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); override;
-    property AsInt64: Int64 read FValue write FValue;
+    property AsInt64: Int64 read GetValue write SetValue;
+    property AsBCD: tBCD read GetBCDValue write SetBCDValue;
   end;
 
   { TcnocASN1SetElement }
@@ -662,19 +673,90 @@ end;
 function TcnocASN1IntegerElement.CalculateAmountOfOctets: Integer;
 var
   v: Int64;
+  b: TBytes;
 begin
-  if FValue < 0 then
-    v := not(FValue)
-  else
-    v := FValue;
+  if not FUseBCD then
+    begin
+    if FValue < 0 then
+      v := not(FValue)
+    else
+      v := FValue;
 
-  if v=0 then
-    v := 1
+    if v=0 then
+      v := 1
+    else
+      begin
+      v := Floor(Log2(v)) +2;
+      Result := ((v -1) div 8) +1;
+      end;
+    end
   else
     begin
-    v := Floor(Log2(v)) +2;
-    Result := ((v -1) div 8) +1;
+    Result := Length(BCDToBytes(FBCDValue));
     end;
+end;
+
+function TcnocASN1IntegerElement.BCDToBytes(AValue: tBCD): TBytes;
+var
+  DivVal: tBCD;
+  ModVal: Byte;
+  i: Integer;
+  Buf: TBytes;
+  IsNegative: Boolean;
+begin
+  IsNegative := IsBCDNegative(AValue);
+  if IsNegative then
+    begin
+    BCDNegate(AValue);
+    AValue := AValue -1;
+    end;
+  SetLength(Buf, BCDPrecision(AValue));
+
+  i := 0;
+  repeat
+  DivVal := AValue / 256;
+  NormalizeBCD(DivVal, DivVal, BCDPrecision(DivVal), 0);
+  ModVal := AValue - (DivVal * 256);
+
+  AValue := DivVal;
+
+  if IsNegative then
+    ModVal := not(ModVal);
+
+  Buf[High(Buf)-i] := ModVal;
+  inc(i);
+  until DivVal = 0;
+
+  SetLength(Result, i);
+  move(Buf[Length(Buf)-i], Result[0], i);
+end;
+
+function TcnocASN1IntegerElement.GetBCDValue: tBCD;
+begin
+  if FUseBCD then
+    Result := FBCDValue
+  else
+    Result := IntegerToBCD(FValue);
+end;
+
+function TcnocASN1IntegerElement.GetValue: Int64;
+begin
+  if FUseBCD then
+    Result := BCDToInteger(FBCDValue)
+  else
+    Result := FValue;
+end;
+
+procedure TcnocASN1IntegerElement.SetBCDValue(AValue: tBCD);
+begin
+  FBCDValue := AValue;
+  FUseBCD := True;
+end;
+
+procedure TcnocASN1IntegerElement.SetValue(AValue: Int64);
+begin
+  FValue := AValue;
+  FUseBCD := False;
 end;
 
 class function TcnocASN1IntegerElement.GetTagNr: Int64;
@@ -693,17 +775,44 @@ procedure TcnocASN1IntegerElement.ParseASN1Content(AClass: TcnocASN1Class; ATag:
 var
   i: Integer;
   B: Byte;
+  IsNegative: Boolean;
 begin
   inherited;
   if AnEncoding<>caePrimitive then
     raise Exception.Create('Only primitive integer-types are supported');
   Assert(ALength>0);
 
-  FValue := 0;
-  for i := 0 to ALength -1 do
+  if ALength <= SizeOf(FValue) then
     begin
-    B := AContentStream.ReadByte;
-    FValue := FValue shl 8 + B;
+    FValue := 0;
+    for i := 0 to ALength -1 do
+      begin
+      B := AContentStream.ReadByte;
+      if i = 0 then
+        IsNegative := (B and %10000000) = %10000000;
+      if IsNegative then
+        b := not(B);
+      FValue := FValue shl 8 + B;
+      end;
+    if IsNegative then
+      FValue := -FValue -1;
+    FUseBCD := False;
+    end
+  else
+    begin
+    FBCDValue := 0;
+    for i := 0 to ALength -1 do
+      begin
+      B := AContentStream.ReadByte;
+      if i = 0 then
+        IsNegative := (B and %10000000) = %10000000;
+      if IsNegative then
+        b := not(B);
+      FBCDValue := (FBCDValue * 256) + B;
+      end;
+    if IsNegative then
+      FBCDValue := -FBCDValue -1;
+    FUseBCD := True;
     end;
 end;
 
@@ -723,15 +832,24 @@ var
   l: Integer;
   i: Integer;
   B: PByte;
+  Buf: TBytes;
 begin
-  l := CalculateAmountOfOctets;
-  ValueLE := NtoBE(FValue);
-  B := @ValueLE;
-  Inc(B, SizeOf(ValueLE) -l);
-  for i := 0 to l -1 do
+  if not FUseBCD then
     begin
-    AContentStream.WriteByte(B^);
-    inc(B);
+    l := CalculateAmountOfOctets;
+    ValueLE := NtoBE(FValue);
+    B := @ValueLE;
+    Inc(B, SizeOf(ValueLE) -l);
+    for i := 0 to l -1 do
+      begin
+      AContentStream.WriteByte(B^);
+      inc(B);
+      end;
+    end
+  else
+    begin
+    Buf := BCDToBytes(FBCDValue);
+    AContentStream.WriteBuffer(Buf[0], Length(Buf));
     end;
 end;
 
