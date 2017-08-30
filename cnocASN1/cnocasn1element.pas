@@ -106,6 +106,9 @@ type
       AFormat: TcnocASN1Format); override;
     property Content: TBytes read FContent write FContent;
     property Items: TcnocASN1ElementList read GetItems write SetItems;
+    property TagNr: Integer read FTagNr write FTagNr;
+    property ASN1Class: TcnocASN1Class read FClass write FClass;
+    property Encoding: TcnocASN1Encoding read FEncoding write FEncoding;
   end;
 
   { TcnocASN1UniversalElement }
@@ -121,13 +124,24 @@ type
 
   { TcnocASN1IntegerElement }
 
+
   TcnocASN1IntegerElement = class(TcnocASN1UniversalElement)
   private
+    type TcnocASN1IntegerElementStoreFormat = (sfBCD, sfInt, sfBytes);
+  var
     FValue: Int64;
     FBCDValue: tBCD;
-    FUseBCD: Boolean;
+    // Keeps the value as signed hexadecimal representation (two complements)
+    FBinaryValue: TBytes;
+    FUsedFormat: TcnocASN1IntegerElementStoreFormat;
     function CalculateAmountOfOctets: Integer;
     function BCDToBytes(AValue: tBCD): TBytes;
+
+    function GetAsBinarySigned: TBytes;
+    procedure SetAsBinarySigned(AValue: TBytes);
+
+    function GetAsBinaryUnsigned: TBytes;
+    procedure SetAsBinaryUnsigned(AValue: TBytes);
 
     function GetBCDValue: tBCD;
     procedure SetBCDValue(AValue: tBCD);
@@ -145,15 +159,19 @@ type
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); override;
     property AsInt64: Int64 read GetValue write SetValue;
     property AsBCD: tBCD read GetBCDValue write SetBCDValue;
+    property AsBinarySigned: TBytes read GetAsBinarySigned write SetAsBinarySigned;
+    property AsBinaryUnsigned: TBytes read GetAsBinaryUnsigned write SetAsBinaryUnsigned;
   end;
 
   { TcnocASN1SetElement }
 
   TcnocASN1SetElement = class(TcnocASN1UniversalElement)
   private
+    FFixedLength: Boolean;
     FItems: TcnocASN1ElementList;
     function GetItems: TcnocASN1ElementList;
     procedure SetItems(AValue: TcnocASN1ElementList);
+    function CalculateLength(AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format): Int64;
   public
     destructor Destroy; override;
     class function GetClassName: string; override;
@@ -167,6 +185,7 @@ type
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format); override;
     property Items: TcnocASN1ElementList read GetItems write SetItems;
+    property FixedLength: Boolean read FFixedLength write FFixedLength;
   end;
 
    { TcnocASN1SequenceElement }
@@ -189,6 +208,11 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+    function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+      AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format): Boolean; override;
+    procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format); override;
     property Values: TBoundArray read FValues write FValues;
   end;
 
@@ -198,6 +222,12 @@ type
   public
     class function GetTagNr: Int64; override;
     class function GetClassName: string; override;
+
+    function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+      AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format): Boolean; override;
+    procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
+      AFormat: TcnocASN1Format); override;
   end;
 
   { TcnocASN1UniversalStringElement }
@@ -423,6 +453,20 @@ begin
   Result := 'NULL';
 end;
 
+function TcnocASN1NullElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
+  AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
+  AFormat: TcnocASN1Format): Boolean;
+begin
+  Result := inherited GetASN1HeaderInfo(AClass, ATag, AnEncoding, ALength, AnEncoder, AFormat);
+  AnEncoding := caePrimitive;
+  ALength := 0;
+end;
+
+procedure TcnocASN1NullElement.StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
+begin
+  // Null means nothing....
+end;
+
 { TcnocASN1SequenceElement }
 
 class function TcnocASN1SequenceElement.GetClassName: string;
@@ -469,11 +513,60 @@ begin
     end;
 end;
 
+function TcnocASN1ObjectIdentifierElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out
+  ATag: Integer; out AnEncoding: TcnocASN1Encoding; out ALength: QWord;
+  AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format): Boolean;
+var
+  i: Integer;
+begin
+  Result := inherited GetASN1HeaderInfo(AClass, ATag, AnEncoding, ALength, AnEncoder, AFormat);
+  AnEncoding := caePrimitive;
+  ALength := 1;
+  for i := 2 to High(FValues) do
+    ALength := ALength + AnEncoder.GetOctetLengthFor128BaseInteger(FValues[i]);
+end;
+
+procedure TcnocASN1ObjectIdentifierElement.StreamASN1Content(AContentStream: TStream;
+  AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
+var
+  i: Integer;
+begin
+  if length(FValues) < 2 then
+    raise Exception.Create('An object identifier must have at least two elements.');
+  AContentStream.WriteByte((40 * FValues[0]) + FValues[1]);
+  for i := 2 to High(FValues) do
+    AnEncoder.Write128BaseInteger(AContentStream, FValues[i]);
+end;
+
 { TcnocASN1SetElement }
 
 procedure TcnocASN1SetElement.SetItems(AValue: TcnocASN1ElementList);
 begin
   Items.Assign(AValue);
+end;
+
+function TcnocASN1SetElement.CalculateLength(AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format): Int64;
+var
+  TmpLength: QWord;
+  i: Integer;
+begin
+  if FFixedLength then
+    begin
+    Result := 0;
+    for i := 0 to FItems.Count -1 do
+      begin
+      TmpLength := AnEncoder.GetElementLength(FItems[i] as IcnocASN1EncodableClass, AFormat, True);
+      if TmpLength = High(TmpLength) then
+        begin
+        Result := -1;
+        Break;
+        end
+      else
+        Result := Result + TmpLength;
+      end;
+    end
+  else
+    Result := -1;
 end;
 
 function TcnocASN1SetElement.GetItems: TcnocASN1ElementList;
@@ -506,7 +599,8 @@ var
   Element: TObject;
 begin
   inherited;
-  assert(ALength = -1, 'Definite length sequences are not supported.');
+  if ALength > -1 then
+    FFixedLength := True;
   ADecoder.LoadFromStream(AContentStream, AFormat, ALength, Items);
 end;
 
@@ -516,13 +610,13 @@ function TcnocASN1SetElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out A
 begin
   Result := inherited GetASN1HeaderInfo(AClass, ATag, AnEncoding, ALength, AnEncoder, AFormat);
   AnEncoding := caeConstructed;
-  ALength := -1;
+  ALength := CalculateLength(AnEncoder, AFormat);
 end;
 
 procedure TcnocASN1SetElement.StreamASN1Content(AContentStream: TStream;
   AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
 begin
-  AnEncoder.SaveToStream(AContentStream, AFormat, -1, FItems);
+  AnEncoder.SaveToStream(AContentStream, AFormat, CalculateLength(AnEncoder, AFormat), FItems);
 end;
 
 { TcnocASN1UniversalElement }
@@ -673,27 +767,28 @@ end;
 function TcnocASN1IntegerElement.CalculateAmountOfOctets: Integer;
 var
   v: Int64;
-  b: TBytes;
 begin
-  if not FUseBCD then
-    begin
-    if FValue < 0 then
-      v := not(FValue)
-    else
-      v := FValue;
-
-    if v=0 then
-      v := 1
-    else
+  case FUsedFormat of
+    sfInt:
       begin
-      v := Floor(Log2(v)) +2;
-      Result := ((v -1) div 8) +1;
+      if FValue < 0 then
+        v := not(FValue)
+      else
+        v := FValue;
+
+      if v=0 then
+        v := 1
+      else
+        begin
+        v := Floor(Log2(v)) +2;
+        Result := ((v -1) div 8) +1;
+        end;
       end;
-    end
-  else
-    begin
-    Result := Length(BCDToBytes(FBCDValue));
-    end;
+    sfBCD:
+      Result := Length(BCDToBytes(FBCDValue));
+    sfBytes:
+      Result := Length(FBinaryValue);
+  end;
 end;
 
 function TcnocASN1IntegerElement.BCDToBytes(AValue: tBCD): TBytes;
@@ -731,32 +826,88 @@ begin
   move(Buf[Length(Buf)-i], Result[0], i);
 end;
 
+function TcnocASN1IntegerElement.GetAsBinarySigned: TBytes;
+var
+  l: Integer;
+  ValueLE: Int64;
+begin
+  case FUsedFormat of
+    sfBCD: Result := BCDToBytes(FBCDValue);
+    sfInt:
+      begin
+      l := CalculateAmountOfOctets;
+      ValueLE := NtoBE(FValue);
+      SetLength(Result, l);
+      move(ValueLE, Result[0], l);
+      end;
+    sfBytes: Result := FBinaryValue;
+  end;
+end;
+
 function TcnocASN1IntegerElement.GetBCDValue: tBCD;
 begin
-  if FUseBCD then
-    Result := FBCDValue
-  else
-    Result := IntegerToBCD(FValue);
+  case FUsedFormat of
+    sfBCD: Result := FBCDValue;
+    sfInt: Result := IntegerToBCD(FValue);
+    sfBytes: raise Exception.Create('Value nog accessible as BCD');
+  end;
+end;
+
+procedure TcnocASN1IntegerElement.SetAsBinarySigned(AValue: TBytes);
+begin
+  FBinaryValue := AValue;
+  FUsedFormat := sfBytes;
+end;
+
+function TcnocASN1IntegerElement.GetAsBinaryUnsigned: TBytes;
+begin
+  Result := GetAsBinarySigned;
+  if Length(Result) > 0 then
+    begin
+    if (Result[0] and %10000000) = %10000000 then
+      raise Exception.Create('Overflow, can not represent negative value as unsigned.');
+    end;
+end;
+
+procedure TcnocASN1IntegerElement.SetAsBinaryUnsigned(AValue: TBytes);
+var
+  l: Integer;
+begin
+  FBinaryValue := AValue;
+  FUsedFormat := sfBytes;
+
+  if Length(FBinaryValue) > 0 then
+    begin
+    if (FBinaryValue[0] and %10000000) = %10000000 then
+      begin
+      // Add leading zero, or else the number will be regarded as negative.
+      l := length(FBinaryValue);
+      SetLength(FBinaryValue, l+1);
+      Move(FBinaryValue[0], FBinaryValue[1], l);
+      FBinaryValue[0] := 0;
+      end
+    end
 end;
 
 function TcnocASN1IntegerElement.GetValue: Int64;
 begin
-  if FUseBCD then
-    Result := BCDToInteger(FBCDValue)
-  else
-    Result := FValue;
+  case FUsedFormat of
+    sfBCD: Result := BCDToInteger(FBCDValue);
+    sfInt: Result := FValue;
+    sfBytes: raise Exception.Create('Value nog accessible as int64');
+  end;
 end;
 
 procedure TcnocASN1IntegerElement.SetBCDValue(AValue: tBCD);
 begin
   FBCDValue := AValue;
-  FUseBCD := True;
+  FUsedFormat := sfBCD;
 end;
 
 procedure TcnocASN1IntegerElement.SetValue(AValue: Int64);
 begin
   FValue := AValue;
-  FUseBCD := False;
+  FUsedFormat := sfInt;
 end;
 
 class function TcnocASN1IntegerElement.GetTagNr: Int64;
@@ -796,9 +947,9 @@ begin
       end;
     if IsNegative then
       FValue := -FValue -1;
-    FUseBCD := False;
+    FUsedFormat := sfInt;
     end
-  else
+  else if ALength <= 32 then // Arbritary
     begin
     FBCDValue := 0;
     for i := 0 to ALength -1 do
@@ -812,7 +963,14 @@ begin
       end;
     if IsNegative then
       FBCDValue := -FBCDValue -1;
-    FUseBCD := True;
+    FUsedFormat := sfBCD;
+    end
+  else
+    begin
+    SetLength(FBinaryValue, ALength);
+    for i := 0 to ALength -1 do
+      AContentStream.ReadBuffer(FBinaryValue[0], ALength);
+    FUsedFormat := sfBytes;
     end;
 end;
 
@@ -834,23 +992,29 @@ var
   B: PByte;
   Buf: TBytes;
 begin
-  if not FUseBCD then
-    begin
-    l := CalculateAmountOfOctets;
-    ValueLE := NtoBE(FValue);
-    B := @ValueLE;
-    Inc(B, SizeOf(ValueLE) -l);
-    for i := 0 to l -1 do
+  case FUsedFormat of
+    sfInt:
       begin
-      AContentStream.WriteByte(B^);
-      inc(B);
+      l := CalculateAmountOfOctets;
+      ValueLE := NtoBE(FValue);
+      B := @ValueLE;
+      Inc(B, SizeOf(ValueLE) -l);
+      for i := 0 to l -1 do
+        begin
+        AContentStream.WriteByte(B^);
+        inc(B);
+        end;
       end;
-    end
-  else
-    begin
-    Buf := BCDToBytes(FBCDValue);
-    AContentStream.WriteBuffer(Buf[0], Length(Buf));
-    end;
+    sfBCD:
+      begin
+      Buf := BCDToBytes(FBCDValue);
+      AContentStream.WriteBuffer(Buf[0], Length(Buf));
+      end;
+    sfBytes:
+      begin
+      AContentStream.WriteBuffer(FBinaryValue[0], Length(FBinaryValue));
+      end;
+  end;
 end;
 
 end.

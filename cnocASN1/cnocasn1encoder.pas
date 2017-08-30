@@ -45,7 +45,7 @@ uses
 type
 
   { TcnocASN1BEREncoder }
-
+  IcnocASN1EncodableClass = Interface;
   TcnocASN1BEREncoder = class
   private
   protected
@@ -54,7 +54,10 @@ type
   public
     procedure SaveObjectToStream(AStream: TStream; AFormat: TcnocASN1Format; AnObject: TObject);
     procedure SaveToStream(AStream: TStream; AFormat: TcnocASN1Format; ALength: Integer; AnObjectList: TObjectList);
-    //function Read128BaseInteger(AStream: TStream; out ASize: Integer): Int64;
+
+    function GetElementLength(AnElement: IcnocASN1EncodableClass; AFormat: TcnocASN1Format; AnIncludeHeader: Boolean): QWord;
+    procedure Write128BaseInteger(AStream: TStream; AValue: Integer);
+    function GetOctetLengthFor128BaseInteger(AValue: Integer): Integer;
   end;
 
   IcnocASN1EncodableClass = Interface['{C9C07D0D-B55E-4FEF-BD67-31CBEAC5AB87}']
@@ -135,7 +138,7 @@ begin
         WriteHighTagNumber(AStream, TagNr);
         end;
 
-      if (length=-1) then
+      if (length=-1) or (length=High(length)) then
         begin
         Assert(Encoding = caeConstructed);
         AStream.WriteByte(%10000000);
@@ -169,6 +172,74 @@ begin
     AStream.WriteByte(0);
     AStream.WriteByte(0);
     end;
+end;
+
+function TcnocASN1BEREncoder.GetElementLength(AnElement: IcnocASN1EncodableClass;
+  AFormat: TcnocASN1Format; AnIncludeHeader: Boolean): QWord;
+var
+  AClass: TcnocASN1Class;
+  Tag: Integer;
+  Encoding: TcnocASN1Encoding;
+  ALength: QWord;
+begin
+  AnElement.GetASN1HeaderInfo(AClass, Tag, Encoding, ALength, Self, AFormat);
+
+  Result := ALength;
+  if Result = High(ALength) then
+    begin
+    // Infinitive
+    Exit;
+    end;
+
+  if AnIncludeHeader then
+    begin
+    if Tag < 31 then
+      Result := Result + 1
+    else
+      raise Exception.Create('Obtaining the length of an element with a tag > 30 is not implemented');
+
+    if ALength < 128 then
+      Result := Result + 1
+    else
+      Result := Result + 1 + ((Floor(log2(ALength)) ) div 8) + 1;
+    end;
+end;
+
+procedure TcnocASN1BEREncoder.Write128BaseInteger(AStream: TStream; AValue: Integer);
+var
+  TmpVal: Int64;
+  Ptr: Pbyte;
+  l, i: Integer;
+  Buf: array[0..Sizeof(Int64)] of Byte;
+begin
+  if AValue < 0 then
+    raise Exception.Create('Negative numbers not supported');
+  if AValue = 0 then
+    AStream.WriteByte(0)
+  else
+    begin
+    TmpVal := AValue;
+    Ptr := @TmpVal;
+    l := GetOctetLengthFor128BaseInteger(AValue);
+    for i := 0 to l -1 do
+      begin
+      Buf[i] := Byte(Ptr^) or %10000000;
+      TmpVal := TmpVal shr 7;
+      end;
+    Buf[0] := Buf[0] and %01111111;
+    for i := l-1 downto 0 do
+      AStream.WriteByte(Buf[i]);
+    end;
+end;
+
+function TcnocASN1BEREncoder.GetOctetLengthFor128BaseInteger(AValue: Integer): Integer;
+begin
+  if AValue < 0 then
+    raise Exception.Create('Negative numbers not supported');
+  if AValue = 0 then
+    Result := 1
+  else
+    Result := (Floor(log2(AValue+1)) div 7) +1;
 end;
 
 end.
