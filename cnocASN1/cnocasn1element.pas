@@ -50,10 +50,9 @@ type
   { TcnocASN1CustomElement }
 
   TcnocASN1CustomElement = class(IcnocASN1DecodableClass, IcnocASN1EncodableClass)
-  private
-    FContentLength: Integer;
   protected
     FEncoding: TcnocASN1Encoding;
+    FContentLength: Integer;
     function GetActualClass: TcnocASN1Class; virtual;
     function GetActualTagNr: Integer; virtual;
   public
@@ -109,6 +108,7 @@ type
     property TagNr: Integer read FTagNr write FTagNr;
     property ASN1Class: TcnocASN1Class read FClass write FClass;
     property Encoding: TcnocASN1Encoding read FEncoding write FEncoding;
+    property ContentLength: Integer read FContentLength write FContentLength;
   end;
 
   { TcnocASN1UniversalElement }
@@ -126,7 +126,7 @@ type
 
 
   TcnocASN1IntegerElement = class(TcnocASN1UniversalElement)
-  private
+  protected
     type TcnocASN1IntegerElementStoreFormat = (sfBCD, sfInt, sfBytes);
   var
     FValue: Int64;
@@ -756,10 +756,10 @@ end;
 procedure TcnocASN1GenericElement.StreamASN1Content(AContentStream: TStream;
   AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
 begin
-  if Encoding = caeConstructed then
-    AnEncoder.SaveToStream(AContentStream, AFormat, ContentLength, Items)
-  else
+  if Length(FContent) > 0 then
     AContentStream.WriteBuffer(FContent[0], Length(FContent));
+  if Items.Count > 0 then
+    AnEncoder.SaveToStream(AContentStream, AFormat, ContentLength, Items)
 end;
 
 { TcnocASN1IntegerElement }
