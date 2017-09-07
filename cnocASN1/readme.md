@@ -49,7 +49,7 @@ This packages comes with an example, called asn1parser. This executable can
 parse a BER-encoded stream, and show it's contents. It is also able to
 encode-the stream again and output it to file. (Useless, but.. hey... it's an
 example)
-It is possible to run the with and without the universal classes.
+It is possible to run the example with and without the universal classes.
 
 More information about ASN.1, BER and DER
 ------------
