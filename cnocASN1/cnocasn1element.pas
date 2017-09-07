@@ -127,7 +127,7 @@ type
 
   TcnocASN1IntegerElement = class(TcnocASN1UniversalElement)
   protected
-    type TcnocASN1IntegerElementStoreFormat = (sfBCD, sfInt, sfBytes);
+    type TcnocASN1IntegerElementStoreFormat = (sfInt, sfBCD, sfBytes);
   var
     FValue: Int64;
     FBCDValue: tBCD;
@@ -777,7 +777,7 @@ begin
         v := FValue;
 
       if v=0 then
-        v := 1
+        Result := 1
       else
         begin
         v := Floor(Log2(v)) +2;
