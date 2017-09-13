@@ -19,6 +19,7 @@ begin
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('cnocASN1');
     P.Dependencies.Add('openssl');
+    P.Dependencies.Add('fcl-web');
 
     T:=P.Targets.AddUnit('cnocrsa.pas');
 
