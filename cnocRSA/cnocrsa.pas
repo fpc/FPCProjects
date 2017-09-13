@@ -10,6 +10,7 @@ uses
   strutils,
   ctypes,
   base64,
+  fpjwt,
   cnocASN1,
   cnocASN1Encoder,
   cnocASN1Element,
@@ -109,7 +110,6 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;
     property LineWidth: Integer read FLineWidth write SetLineWidth;
   end;
-
 
 implementation
 
@@ -449,7 +449,6 @@ var
   key: PEVP_PKEY;
 begin
   Key := GetOpenSSLKey;
-
   mdctx := EVP_MD_CTX_create;
   try
     if not Assigned(mdctx) then
@@ -461,7 +460,7 @@ begin
     if EVP_DigestVerifyUpdate(mdctx, @Content[0], Length(Content)) <> 1 then
       raise Exception.Create('Failed to process the content');
 
-    Result := EVP_DigestVerifyFinal(mdctx, @Signature[0], Length(Signature)) = 1
+    Result := EVP_DigestVerifyFinal(mdctx, @Signature[0], Length(Signature)) = 1;
   finally
     EVP_MD_CTX_destroy(mdctx);
   end;
@@ -492,8 +491,7 @@ end;
 
 function TcnocRSABignum.GetAsBase64UrlEncoded: string;
 begin
-  Result := StringsReplace(AsBase64Encoded, ['+', '/'], ['-', '_'], [rfReplaceAll]);
-  Result := TrimRightSet(Result, ['=']);
+  Result := TBaseJWT.Base64ToBase64URL(AsBase64Encoded);
 end;
 
 function TcnocRSABignum.Clone: TcnocRSABignum;
@@ -537,15 +535,8 @@ begin
 end;
 
 procedure TcnocRSABignum.SetAsBase64UrlEncoded(AValue: string);
-var
-  i,l: integer;
 begin
-  AValue := StringsReplace(AValue, ['-', '_'], ['+', '/'], [rfReplaceAll]);
-  l := length(AValue) mod 4;
-  if l > 0 then
-    for i := l to 3 do
-      AValue := AValue + '=';
-  AsBase64Encoded := AValue;
+  AsBase64Encoded := TBaseJWT.Base64URLToBase64(AValue);
 end;
 
 end.
