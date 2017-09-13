@@ -18,14 +18,14 @@ type
 
   { TbaBuildCommand }
 
-  TbaBuildCommand = class(TbaCustomCommand, IDCSHTTPCommand)
+  TbaBuildCommand = class(TbaCustomCommand)
   protected
     FTempArchiveFileName: string;
   public
     class function TextName: string; override;
     destructor Destroy; override;
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
-    procedure FillCommandBasedOnRequest(ARequest: TRequest);
+    procedure FillCommandBasedOnRequest(ARequest: TRequest); override;
   published
     property OSTarget;
     property CPUTarget;
@@ -81,6 +81,7 @@ procedure TbaBuildCommand.FillCommandBasedOnRequest(ARequest: TRequest);
 var
   fs: TFileStream;
 begin
+  Inherited;
   FTempArchiveFileName := GetTempFileName;
   fs := TFileStream.Create(FTempArchiveFileName, fmCreate);
   try

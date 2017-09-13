@@ -9,17 +9,21 @@ uses
   SysUtils,
   process,
   dcsHandler,
+  DCSHTTPRestServer,
+  HTTPDefs,
+  cnocOpenIDConnect,
   dcsGlobalSettings;
 
 type
 
   { TbaCustomCommand }
 
-  TbaCustomCommand = class(TDCSThreadCommand)
+  TbaCustomCommand = class(TDCSThreadCommand, IDCSHTTPCommand)
   private
     FCPUTarget: string;
     FFPCVersion: string;
     FOSTarget: string;
+    FAuthorizationToken: string;
     function GetPathSetting(ASettingKey: string): string;
   protected
     function GetFPCSourcePath: string;
@@ -34,8 +38,10 @@ type
     property OSTarget: string read FOSTarget write FOSTarget;
     property CPUTarget: string read FCPUTarget write FCPUTarget;
     property FPCVersion: string read FFPCVersion write FFPCVersion;
+  public
+    procedure PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean); override;
+    procedure FillCommandBasedOnRequest(ARequest: TRequest); virtual;
   end;
-
 
 implementation
 
@@ -60,6 +66,41 @@ begin
     end;
   result := CommandOutput;
   FDistributor.Log(Format('External command output.' +sLineBreak+ '%s', [Result]), etDebug, Null, FSendByLisId);
+end;
+
+procedure TbaCustomCommand.PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean);
+var
+  s: string;
+  OIDC: TcnocOpenIDConnect;
+begin
+  inherited PreExecute(AController, DoQueueCommand);
+  if DoQueueCommand then
+    begin
+    OIDC := TcnocOpenIDConnect.Create;
+    try
+      OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString('OpenIDProviderURL');
+
+      if copy(FAuthorizationToken, 1, 7) = 'Bearer ' then
+        begin
+        s := copy(FAuthorizationToken, 8, length(FAuthorizationToken)-7);
+        DoQueueCommand := OIDC.VerifyJWT(s);
+        if not DoQueueCommand then
+          FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied.', TextName, [TextName]);
+        end
+      else
+        begin
+        DoQueueCommand := False;
+        FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied.', TextName, [TextName]);
+        end;
+    finally
+      OIDC.Free;
+    end;
+    end;
+end;
+
+procedure TbaCustomCommand.FillCommandBasedOnRequest(ARequest: TRequest);
+begin
+  FAuthorizationToken := ARequest.Authorization;
 end;
 
 

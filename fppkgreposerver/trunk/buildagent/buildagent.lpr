@@ -75,6 +75,8 @@ begin
   GlobalSettings.AddSettingTemplate('TestEnv-', 'StartCompiler', 'TestEnvStartCompiler-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
 
+  GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('OpenIDWebClientURL', 'OIDC', 'WebClientURL', '', #0, dcsPHasParameter);
   // quick check parameters
   ErrorMsg := GlobalSettings.CheckProgramParameters(Self);
   if ErrorMsg<>'' then begin
@@ -145,6 +147,7 @@ begin
 
     HTTPRestServer := TDCSHTTPRestServer.create(FDistributor, 8080);
     HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat];
+    HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('OpenIDWebClientURL'), 'POST, GET', '', True);
 
     ConsoleServer := TDCSConsoleServer.Create(FDistributor);
     try
