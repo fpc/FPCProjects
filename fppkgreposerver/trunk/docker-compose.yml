@@ -1,0 +1,9 @@
+identityserver:
+    build: .
+    dockerfile: docker-identityserver.dockerfile
+    container_name: identityserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:5000"
+
