@@ -8,7 +8,6 @@ uses
   Classes,
   SysUtils,
   dcsHandler,
-  dcsGlobalSettings,
   dcsThreadCommandFactory,
   baCommand;
 
@@ -67,10 +66,8 @@ end;
 
 function TbaBuildFPCEnvironment.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
-  TemplatePath: string;
   LocalBasePath: string;
   MakeParams: array of string;
-  GlobalSettings: TDCSGlobalSettings;
   FPCSourcePath, StartCompiler, PristineEnvironmentPath, BuildPath: string;
   CompilerVersion: string;
 begin
