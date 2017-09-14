@@ -12,6 +12,7 @@ import { AuthModule } from './auth/modules/auth.module';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { OpenIDImplicitFlowConfiguration } from './auth/modules/auth.configuration';
 import { PackageuploadComponent } from './packageupload/packageupload.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { PackageuploadComponent } from './packageupload/packageupload.component'
     AppRoutingModule,
     FileUploadModule,
     AlertModule.forRoot(),
-    AuthModule.forRoot()
+    AuthModule.forRoot(),
+    NgbModule.forRoot()
   ],
   providers: [OidcSecurityService],
   bootstrap: [AppComponent]
