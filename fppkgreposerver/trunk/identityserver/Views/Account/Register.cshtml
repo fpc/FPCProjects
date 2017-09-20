@@ -3,10 +3,10 @@
     ViewData["Title"] = "Register";
 }
 
-<h2>@ViewData["Title"].</h2>
+<h5>@ViewData["Title"].</h5>
 
 <form asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
-    <h4>Create a new account.</h4>
+    <h6>Create a new account.</h6>
     <hr />
     <div asp-validation-summary="All" class="text-danger"></div>
     <div class="form-group">

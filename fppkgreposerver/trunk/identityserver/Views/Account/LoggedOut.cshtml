@@ -1,15 +1,14 @@
 ﻿@model LoggedOutViewModel
 
-@{ 
+@{
     // set this so UI rendering sees an anonymous user
     Context.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
 }
 
 <div class="page-header logged-out">
-    <h1>
-        Logout
-        <small>You are now logged out</small>
-    </h1>
+    <h5>
+        You are now logged out
+    </h5>
 
     @if (Model.PostLogoutRedirectUri != null)
     {
