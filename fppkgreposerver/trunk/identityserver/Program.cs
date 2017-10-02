@@ -2,13 +2,13 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace IdentityServerWithAspNetIdentity
+namespace FPPKGIdentityServer
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            Console.Title = "IdentityServer";
+            Console.Title = "FPPKGIdentityServer";
 
             var host = new WebHostBuilder()
                 .UseKestrel()

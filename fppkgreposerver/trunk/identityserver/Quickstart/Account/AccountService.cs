@@ -38,7 +38,7 @@ namespace IdentityServer4.Quickstart.UI
                 {
                     EnableLocalLogin = false,
                     ReturnUrl = returnUrl,
-                    Email = context?.LoginHint,
+                    Username = context?.LoginHint,
                     ExternalProviders = new ExternalProvider[] {new ExternalProvider { AuthenticationScheme = context.IdP } }
                 };
             }
@@ -87,7 +87,7 @@ namespace IdentityServer4.Quickstart.UI
                 AllowRememberLogin = AccountOptions.AllowRememberLogin,
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
                 ReturnUrl = returnUrl,
-                Email = context?.LoginHint,
+                Username = context?.LoginHint,
                 ExternalProviders = providers.ToArray()
             };
         }
@@ -95,7 +95,7 @@ namespace IdentityServer4.Quickstart.UI
         public async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
         {
             var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
-            vm.Email = model.Email;
+            vm.Username = model.Username;
             vm.RememberLogin = model.RememberLogin;
             return vm;
         }
