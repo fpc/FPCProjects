@@ -146,7 +146,7 @@ begin
       TCPServerThread := nil;
 
     HTTPRestServer := TDCSHTTPRestServer.create(FDistributor, 8080);
-    HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat];
+    HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat, dcsRestServerFlagAllowDifferentChunkedSetting];
     HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('OpenIDWebClientURL'), 'POST, GET', '', True);
 
     ConsoleServer := TDCSConsoleServer.Create(FDistributor);
