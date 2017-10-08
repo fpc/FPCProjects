@@ -1,41 +1,24 @@
+<div class="card">
+    <div class="card-header">
+        Linux, x86_64
+    </div>
+    <div class="card-body">
+      <h4 class="card-title">Test-build packages</h4>
+      <p class="card-text">Select and upload a FPMake-source package so it will be build on one of the build-machines.</p>
 
-<div class="container">
-    <div class="row">
+      <input type="file" #file (change)="onChange(file.files)"/>
 
-        <div class="col-md-3">
-            <h3>Select fpmake-archive to test</h3>
-            <input type="file" ng2FileSelect [uploader]="uploader" />
-        </div>
+      <button type="button" [disabled]="((!((files)&&(files.length==1)))||isBusy)" (click)="uploadPackage()" class="btn btn-primary">Build package <spinner [show]="isBusy" [size]="20"></spinner></button>
+      <ngb-alert type="danger" (close)="isError=false" *ngIf="isError">
+        Failed to build package. {{errorMsg}}
+      </ngb-alert>
 
-
-        <div *ngFor="let item of uploader.queue | slice:uploader.queue.length - 1">
-            <td *ngIf="uploader.isHTML5" nowrap>{{ item?.file?.size/1024/1024 | number:'.2' }} MB</td>
-            <td *ngIf="uploader.isHTML5">
-                <div class="progress" style="margin-bottom: 0;">
-                    <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': item.progress + '%' }"></div>
-                </div>
-            </td>
-            <td class="text-center">
-                <span *ngIf="item.isSuccess"><i class="glyphicon glyphicon-ok"></i></span>
-                <span *ngIf="item.isCancel"><i class="glyphicon glyphicon-ban-circle"></i></span>
-                <span *ngIf="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
-            </td>
-            <td nowrap>
-                <button type="button" class="btn btn-success btn-xs"
-                        (click)="item.upload()" [disabled]="item.isReady || item.isUploading || item.isSuccess">
-                    <span class="glyphicon glyphicon-upload"></span> Upload
-                </button>
-            </td>
-        </div>
-
-        <div *ngFor="let item of uploadResponse">
-          <span>{{item.timestamp}}</span><span>{{item.message}}</span>
-
-        </div>
-
-
+      <div *ngIf="buildAgentResponse" class="pt-3 pb-3">
+        <app-view-dcsresponse
+          [dcsResponse]="buildAgentResponse">
+        </app-view-dcsresponse>
+      </div>
 
     </div>
-
 </div>
 

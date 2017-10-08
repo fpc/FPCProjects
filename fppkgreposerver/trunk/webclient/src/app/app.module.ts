@@ -5,30 +5,56 @@ import { provideRoutes } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 import { FileUploadModule } from 'ng2-file-upload';
-import { AlertModule } from 'ngx-bootstrap';
+import { Angular2FontawesomeModule } from 'angular2-fontawesome/angular2-fontawesome'
+import { FormsModule } from '@angular/forms';
 
 import { AuthModule } from './auth/modules/auth.module';
+import { AuthGuardService } from './auth-guard.service';
+import { AdminGuardService } from './admin-guard.service';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { OpenIDImplicitFlowConfiguration } from './auth/modules/auth.configuration';
 import { PackageuploadComponent } from './packageupload/packageupload.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NavbarComponent } from './navbar/navbar.component';
+import { LoginComponent } from './login/login.component';
+import { LoggedOutComponent } from './logged-out/logged-out.component';
+import { BuildPackageComponent } from './build-package/build-package.component';
+import { AdminComponent } from './admin/admin.component';
+import { BuildAgentService } from './build-agent.service';
+import { SpinnerComponent } from './spinner/spinner.component';
+import { ViewDCSResponseComponent } from './view-dcsresponse/view-dcsresponse.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    PackageuploadComponent
+    PackageuploadComponent,
+    NavbarComponent,
+    LoginComponent,
+    LoggedOutComponent,
+    BuildPackageComponent,
+    AdminComponent,
+    SpinnerComponent,
+    ViewDCSResponseComponent
   ],
   imports: [
     BrowserModule,
     HttpModule,
+    HttpClientModule,
     AppRoutingModule,
     FileUploadModule,
-    AlertModule.forRoot(),
+    Angular2FontawesomeModule,
+    FormsModule,
     AuthModule.forRoot(),
     NgbModule.forRoot()
   ],
-  providers: [OidcSecurityService],
+  providers: [
+    OidcSecurityService,
+    AuthGuardService,
+    AdminGuardService,
+    BuildAgentService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
@@ -42,7 +68,7 @@ export class AppModule {
     // The ID Token MUST be rejected if the ID Token does not list the Client as a valid audience, or if it contains additional audiences not trusted by the Client.
     openIDImplicitFlowConfiguration.client_id = 'FPPKGWebClient';
     openIDImplicitFlowConfiguration.response_type = 'id_token token';
-    openIDImplicitFlowConfiguration.scope = 'openid';
+    openIDImplicitFlowConfiguration.scope = 'openid profile role buildagent';
     openIDImplicitFlowConfiguration.post_logout_redirect_uri = 'http://localhost:4200/unauthorized';
     openIDImplicitFlowConfiguration.start_checksession = true;
     openIDImplicitFlowConfiguration.silent_renew = true;

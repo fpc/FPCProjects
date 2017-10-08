@@ -23,6 +23,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isAuthorizedSubscription = this.oidcSecurityService.getIsAuthorized().subscribe(
           (isAuthorized: boolean) => {
               this.isAuthorized = isAuthorized;
+              console.log('received autorizarion change in app-component');
           });
 
       if (window.location.hash) {

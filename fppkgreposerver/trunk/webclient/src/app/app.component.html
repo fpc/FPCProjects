@@ -1,22 +1,5 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{title}}!!
-  </h1>
+<app-navbar></app-navbar>
+
+<div class="container">
+  <router-outlet></router-outlet>
 </div>
-<h2>A simple menu:</h2>
-<ul>
-  <li *ngIf="!isAuthorized">
-    <h2><a class="navigationLinkButton" (click)="login()">Login</a></h2>
-  </li>
-  <li *ngIf="isAuthorized">
-    <h2><a class="navigationLinkButton" (click)="logout()">Logout</a></h2>
-  </li>
-  <li *ngIf="isAuthorized">
-    <h2><a class="navigationLinkButton" (click)="buildfpcenvironment()">(Re-)build FPC environment on build-server</a></h2>
-  </li>
-</ul>
-
-<app-packageupload *ngIf="isAuthorized"></app-packageupload>
-
-<router-outlet></router-outlet>

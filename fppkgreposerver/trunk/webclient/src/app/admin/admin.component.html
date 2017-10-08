@@ -1,0 +1,20 @@
+<div class="card">
+  <div class="card-header">
+      Linux, x86_64
+  </div>
+  <div class="card-body">
+    <h4 class="card-title">Rebuild FPC/test-environment</h4>
+    <p class="card-text">Clear the test-environment, rebuild and install FPC and initialize the test-environment of the build-agent.</p>
+    <button type="button" [disabled]="isBusy" (click)="rebuildTestEnvironment()" class="btn btn-primary">Rebuild test-environment <spinner [show]="isBusy" [size]="20"></spinner></button>
+    <ngb-alert type="danger" (close)="closeError()" *ngIf="isError">
+      Failed to re-build test-environment. {{errorMsg}}
+    </ngb-alert>
+
+    <div *ngIf="buildAgentResponse" class="pt-3 pb-3">
+      <app-view-dcsresponse
+        [dcsResponse]="buildAgentResponse">
+      </app-view-dcsresponse>
+    </div>
+
+  </div>
+</div>

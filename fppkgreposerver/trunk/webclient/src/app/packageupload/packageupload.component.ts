@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FileUploader } from 'ng2-file-upload';
-import { FileItem } from 'ng2-file-upload';
-import { ParsedResponseHeaders } from 'ng2-file-upload';
-import { OidcSecurityService } from '../auth/services/oidc.security.service';
+import { BuildAgentService } from '../build-agent.service';
+import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 
 const URL = 'http://localhost:8080/build?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&loglevel=error,warning,info,debug';
 
@@ -18,35 +16,58 @@ export class LogMessage{
   styleUrls: ['./packageupload.component.css']
 })
 export class PackageuploadComponent implements OnInit {
-  public uploader:FileUploader = new FileUploader({url: URL});
-  uploadResponse: Array<LogMessage> = [];
+  isError: boolean = false;
+  isBusy: boolean = false;
+  errorMsg: string = '';
+  buildAgentResponse: any;
+  files: FileList = null;
 
-  constructor(private _securityService: OidcSecurityService) {
-    this.uploader.options.disableMultipart = true;
-    this.uploader.onProgressItem = this.doProgressItem;
-    this.uploader.onCompleteItem = (item, response, status, headers) => this.doCompleteItem(item, response, status, headers);
+  constructor(private buildAgentService: BuildAgentService) {}
 
-    let token = this._securityService.getToken();
-    if (token !== '') {
-        let tokenValue = 'Bearer ' + token;
-        this.uploader.authToken = tokenValue;
+  onChange(files) {
+    this.files = files;
+  }
+
+  uploadPackage() {
+    this.buildAgentResponse = null;
+    if ((this.files == null) || (this.files.length!=1)) {
+      this.isError = true;
+      this.isBusy = false;
+      this.errorMsg = 'Please select a file to upload first';
+      return
     }
-  }
-
-  doCompleteItem(item: FileItem, response: string, status: number, headers: ParsedResponseHeaders): any {
-    this.uploadResponse = [];
-    var responseArray = item._xhr.responseText.split('\n');
-    responseArray.forEach(respString => {
-      if (respString) {
-        let respLogMessage = <LogMessage> JSON.parse(respString);
-        this.uploadResponse.push(respLogMessage);
+    this.buildAgentService.buildPackage(this.files[0]).subscribe(
+      (event: HttpEvent<any>) => {
+        switch (event.type) {
+          case HttpEventType.Sent:
+            this.isBusy = true;
+            break;
+          case HttpEventType.ResponseHeader:
+            console.log('Response header received!');
+            break;
+          case HttpEventType.DownloadProgress:
+            const kbLoaded = Math.round(event.loaded / 1024);
+            console.log(`Download in progress! ${ kbLoaded }Kb loaded`);
+            break;
+          case HttpEventType.UploadProgress:
+            //const kbLoaded = Math.round(event.loaded / 1024);
+            console.log(`Upload in progress!`);
+            break;
+          case HttpEventType.Response:
+            this.isError = false;
+            this.isBusy = false;
+            this.buildAgentResponse = event.body;
         }
-    })
+      },
+      (err: HttpErrorResponse) => {
+        this.isError = true;
+        this.isBusy = false;
+        this.errorMsg = 'Call to the Build-Agent failed. ' + err.message;
+      }
+    );
+
   }
 
-  public doProgressItem(fileItem: FileItem, progress: any): any {
-    //console.log('progress');
-  }
   ngOnInit() {
   }
 }

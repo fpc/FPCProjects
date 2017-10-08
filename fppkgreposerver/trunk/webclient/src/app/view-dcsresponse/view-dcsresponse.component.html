@@ -1,0 +1,34 @@
+<div class="card mb-3" [class.border-danger]="line.type == ['Failed']" [class.border-success]="line.type != ['Failed']" *ngFor="let line of dcsResponse | slice:dcsResponse.length - 1">
+  <div class="card-header bg-transparent" [class.border-danger]="line.type == ['Failed']" [class.border-success]="line.type != ['Failed']">Build results</div>
+  <div class="card-body" [class.text-danger]="line.type == ['Failed']" [class.text-success]="line.type != ['Failed']">
+    <h4 class="card-title">{{line.type}}</h4>
+    <p class="card-text">{{line.message}}</p>
+
+    <div class="btn-group" ngbRadioGroup name="radioBasic" [(ngModel)]="showLog">
+      <label class="btn btn-secondary active" ngbButtonLabel>
+        <input ngbButton type="radio" value="hide"> Hide log
+      </label>
+      <label class="btn btn-secondary" ngbButtonLabel>
+        <input ngbButton type="radio" value="show"> Show log
+      </label>
+    </div>
+
+    <div *ngIf="(showLog == 'show')">
+      <h4 class="pt-3 pb-1">Log</h4>
+      <div class="row" [class.text-success]="line.type == ['Done']" [class.text-warning]="line.type == ['Warning']" *ngFor="let line of dcsResponse">
+        <div class="col">
+          {{line.timestamp}}
+        </div>
+        <div class="col">
+          {{line.type}}
+        </div>
+        <div class="col-7 bg-faded">
+          {{line.message}}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+</div>
