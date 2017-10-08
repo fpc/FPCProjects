@@ -69,7 +69,8 @@ type
   end;
 
   TDCSHTTPRestServerFlag = (
-    dcsRestServerFlagAllowDifferentOutputFormat
+    dcsRestServerFlagAllowDifferentOutputFormat,
+    dcsRestServerFlagAllowDifferentChunkedSetting
   );
   TDCSHTTPRestServerFlags = set of TDCSHTTPRestServerFlag;
 
@@ -99,6 +100,7 @@ type
   private
     FCorsOriginList: TDCSHTTPCorsEntryList;
     FDefaultInOutputProcessorName: string;
+    FDefaultUseChunkedOutput: Boolean;
     FFlags: TDCSHTTPRestServerFlags;
     FPort: integer;
     FDistributor: TDCSDistributor;
@@ -118,6 +120,7 @@ type
     procedure ForceTerminate;
     procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
     property DefaultInOutputProcessorName: string read FDefaultInOutputProcessorName write FDefaultInOutputProcessorName;
+    property DefaultUseChunkedOutput: Boolean read FDefaultUseChunkedOutput write FDefaultUseChunkedOutput;
     property Flags: TDCSHTTPRestServerFlags read FFlags write FFlags;
     property CorsOriginList: TDCSHTTPCorsEntryList read FCorsOriginList;
   end;
@@ -469,7 +472,7 @@ var
   InOutputProcessor: TDCSCustomInOutputProcessor;
   InOutputProcessorName: string;
   HTTPCommand: IDCSHTTPCommand;
-  StopProcessing: Boolean;
+  StopProcessing, UseChunkedOutput: Boolean;
 begin
   try
     HandleCors(ARequest, AResponse, StopProcessing);
@@ -498,6 +501,11 @@ begin
             raise EHTTP.CreateFmtHelp('In-output processor class [%s] is not known.', [InOutputProcessorName], 400);
           InOutputProcessor := InOutputProcessorClass.create(Listener.ListenerId, FDistributor);
 
+          if (dcsRestServerFlagAllowDifferentChunkedSetting in Flags) and (ARequest.QueryFields.IndexOfName('chunked') > -1) then
+            UseChunkedOutput := StrToBoolDef(ARequest.QueryFields.Values['chunked'], DefaultUseChunkedOutput)
+          else
+            UseChunkedOutput := DefaultUseChunkedOutput;
+
           ACommand := InOutputProcessor.TextToCommand(ARequest.URI);
           if not assigned(ACommand) then
             begin
@@ -522,8 +530,13 @@ begin
                 try
                   if Event.EventType = dcsetLog then
                     begin
-                    AResponse.Content := InOutputProcessor.EventToText(Event);
-                    (AResponse as TDCSContinousHTTPConnectionResponse).SendIntermediateContent;
+                    if UseChunkedOutput then
+                      begin
+                      AResponse.Content := InOutputProcessor.EventToText(Event);
+                      (AResponse as TDCSContinousHTTPConnectionResponse).SendIntermediateContent;
+                      end
+                    else
+                      InOutputProcessor.AddEventTextToOutputContents(InOutputProcessor.EventToText(Event), AResponse.Contents);
                     end
                   else if Event.EventType = dcsetNotification then
                     begin
@@ -531,7 +544,10 @@ begin
 
                     if (NotificationEvent.NotificationType in [ntExecutedCommand, ntFailedCommand]) then
                       begin
-                      AResponse.Content := InOutputProcessor.EventToText(Event);;
+                      if UseChunkedOutput then
+                        AResponse.Content := InOutputProcessor.EventToText(Event)
+                      else
+                        InOutputProcessor.AddEventTextToOutputContents(InOutputProcessor.EventToText(Event), AResponse.Contents);
                       Break;
                       end;
                     end;
@@ -710,6 +726,7 @@ begin
   FDistributor:=ADistributor;
   FDefaultInOutputProcessorName := 'http-json-basic';
   FCorsOriginList := TDCSHTTPCorsEntryList.Create;
+  FDefaultUseChunkedOutput := True;
   inherited Create(false);
 end;
 

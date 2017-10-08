@@ -28,6 +28,7 @@ type
     constructor create(ALisId: integer; ADistributor: TDCSDistributor); virtual;
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; virtual; abstract;
     function EventToText(AnEvent: TDCSEvent): string; virtual; abstract;
+    procedure AddEventTextToOutputContents(const AText: string; AContents: TStrings); virtual;
   end;
   TDCSInOutputProcessorClass = class of TDCSCustomInOutputProcessor;
 
@@ -40,6 +41,7 @@ type
   public
     function TextToCommand(const ACommandText: string): TDCSThreadCommand; override;
     function EventToText(AnEvent: TDCSEvent): string; override;
+    procedure AddEventTextToOutputContents(const AText: string; AContents: TStrings); override;
   end;
 
   { TDCSInOutputProcessorFactory }
@@ -98,6 +100,11 @@ constructor TDCSCustomInOutputProcessor.create(ALisId: integer; ADistributor: TD
 begin
   FLisId:=ALisId;
   FDistributor:=ADistributor;
+end;
+
+procedure TDCSCustomInOutputProcessor.AddEventTextToOutputContents(const AText: string; AContents: TStrings);
+begin
+  AContents.Add(AText);
 end;
 
 { TDCSJSonInOutputProcessor }
@@ -217,6 +224,18 @@ begin
   finally
     JSonEvent.Free;
   end;
+end;
+
+procedure TDCSJSonInOutputProcessor.AddEventTextToOutputContents(const AText: string; AContents: TStrings);
+begin
+  if AContents.Count = 0 then
+    begin
+    AContents.Add('[');
+    AContents.add(AText);
+    AContents.Add(']');
+    end
+  else
+    AContents.Insert(AContents.Count -1, ',' + AText);
 end;
 
 function TDCSJSonInOutputProcessor.EventToJSOn(AnEvent: TDCSEvent): TJSONObject;
