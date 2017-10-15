@@ -65,7 +65,7 @@ begin
   FDistributor.Log(Format('Create build-environment at (%s), based on pristine FPC-installation at (%s)', [BuildPath, PristineEnvironmentPath]), etInfo, Null, FSendByLisId);
 
   ForceDirectories(BuildPath);
-  RunTestCommandIndir(PristineEnvironmentPath, 'rsync', ['-rtvu', '--delete', PristineEnvironmentPath, BuildPath], 'sync FPC-installation');
+  RunTestCommandIndir(PristineEnvironmentPath, 'rsync', ['-rtvul', '--delete', PristineEnvironmentPath, BuildPath], 'sync FPC-installation');
   ArchiveName := ConcatPaths([BuildPath, ChangeFileExt(ExtractFileName(FTempArchiveFileName), '.zip')]);
 
   if not CopyFile(FTempArchiveFileName, ArchiveName) then

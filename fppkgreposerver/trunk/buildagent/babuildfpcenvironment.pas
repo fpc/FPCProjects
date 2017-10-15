@@ -7,6 +7,7 @@ interface
 uses
   Classes,
   SysUtils,
+  BaseUnix,
   dcsHandler,
   dcsThreadCommandFactory,
   baCommand;
@@ -70,6 +71,7 @@ var
   MakeParams: array of string;
   FPCSourcePath, StartCompiler, PristineEnvironmentPath, BuildPath: string;
   CompilerVersion: string;
+  CompilerBinary: string;
 begin
 
   FPCSourcePath := GetFPCSourcePath;
@@ -105,7 +107,11 @@ begin
   RunTestCommandIndir(FPCSourcePath, 'make', MakeParams, 'install FPC');
 
   LocalBasePath :=  IncludeTrailingPathDelimiter(ConcatPaths([BuildPath, 'user','lib','fpc']));
-  CompilerVersion := Trim(RunTestCommandIndir(PristineEnvironmentPath, PristineEnvironmentPath+'bin'+PathDelim+'fpc', ['-iV'], 'get compiler-version'));
+
+  // How does this work on Windows?
+  CompilerBinary := Trim(RunTestCommandIndir(PristineEnvironmentPath, PristineEnvironmentPath+'bin'+PathDelim+'fpc', ['-PB'], 'get the compiler executable-name'));;
+  CompilerVersion := Trim(RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([FPCSourcePath, 'compiler', CompilerBinary]), ['-iV'], 'get compiler-version'));
+  fpSymlink(pchar(ConcatPaths(['..', 'lib', 'fpc', CompilerVersion, ExtractFileName(CompilerBinary)])), pchar(PristineEnvironmentPath+'bin'+PathDelim+ExtractFileName(CompilerBinary)));
 
   //ForceDirectories(LocalBasePath+CompilerVersion);
 
@@ -120,7 +126,7 @@ begin
   MakeParams[5] := 'sharepath='+ConcatPaths([BuildPath, 'share','fpc','$fpcversion']);
   MakeParams[6] := '-d';
   MakeParams[7] := 'localbasepath='+LocalBasePath+'$fpcversion';
-  RunTestCommandIndir(ConcatPaths([PristineEnvironmentPath,'bin']), 'fpcmkcfg', MakeParams, 'create fpc.cfg');
+  RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create fpc.cfg');
 
   SetLength(MakeParams, 12);
   MakeParams[1] := ConcatPaths([PristineEnvironmentPath, 'etc', 'fppkg.cfg']);
@@ -130,7 +136,7 @@ begin
   MakeParams[5] := 'GlobalPrefix='+BuildPath;
   MakeParams[10] := '-d';
   MakeParams[11] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
-  RunTestCommandIndir(ConcatPaths([PristineEnvironmentPath,'bin']), 'fpcmkcfg', MakeParams, 'create fppkg.cfg');
+  RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create fppkg.cfg');
 
 
   SetLength(MakeParams, 12);
@@ -141,7 +147,7 @@ begin
   MakeParams[5] := 'fpcbin='+ConcatPaths([BuildPath, 'bin','fpc']);
   MakeParams[10] := '-d';
   MakeParams[11] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
-  RunTestCommandIndir(ConcatPaths([PristineEnvironmentPath,'bin']), 'fpcmkcfg', MakeParams, 'create default fppkg compiler file');
+  RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create default fppkg compiler file');
 
   ForceDirectories(ConcatPaths([PristineEnvironmentPath, 'user','config','conf.d']));
 
