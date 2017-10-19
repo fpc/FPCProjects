@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { BuildAgentService } from '../build-agent.service';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 
-const URL = 'http://localhost:8080/build?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&loglevel=error,warning,info,debug';
-
 export class LogMessage{
   timestamp: string;
   type: string;
