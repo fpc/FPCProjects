@@ -85,7 +85,7 @@ begin
         s := copy(FAuthorizationToken, 8, length(FAuthorizationToken)-7);
         DoQueueCommand := OIDC.VerifyJWT(s);
         if not DoQueueCommand then
-          FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied.', TextName, [TextName]);
+          FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied: '+OIDC.GetLatestError, TextName, [TextName]);
         end
       else
         begin
