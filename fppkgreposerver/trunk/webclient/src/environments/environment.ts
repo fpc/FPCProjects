@@ -4,5 +4,8 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  identityServerUrl: 'http://localhost:5000/identityserver',
+  webclientUrl: 'http://localhost:4200',
+  buildAgentUrl: 'http://localhost:8080'
 };

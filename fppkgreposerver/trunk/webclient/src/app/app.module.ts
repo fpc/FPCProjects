@@ -25,6 +25,7 @@ import { AdminComponent } from './admin/admin.component';
 import { BuildAgentService } from './build-agent.service';
 import { SpinnerComponent } from './spinner/spinner.component';
 import { ViewDCSResponseComponent } from './view-dcsresponse/view-dcsresponse.component';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -58,18 +59,18 @@ import { ViewDCSResponseComponent } from './view-dcsresponse/view-dcsresponse.co
   bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor(public oidcSecurityService: OidcSecurityService) {
+  constructor(public oidcSecurityService: OidcSecurityService, public buildAgentService: BuildAgentService) {
 
     let openIDImplicitFlowConfiguration = new OpenIDImplicitFlowConfiguration();
-    openIDImplicitFlowConfiguration.stsServer = 'http://localhost:5000';
+    openIDImplicitFlowConfiguration.stsServer = environment.identityServerUrl;
 
-    openIDImplicitFlowConfiguration.redirect_url = 'http://localhost:4200';
+    openIDImplicitFlowConfiguration.redirect_url = environment.webclientUrl;
     // The Client MUST validate that the aud (audience) Claim contains its client_id value registered at the Issuer identified by the iss (issuer) Claim as an audience.
     // The ID Token MUST be rejected if the ID Token does not list the Client as a valid audience, or if it contains additional audiences not trusted by the Client.
     openIDImplicitFlowConfiguration.client_id = 'FPPKGWebClient';
     openIDImplicitFlowConfiguration.response_type = 'id_token token';
     openIDImplicitFlowConfiguration.scope = 'openid profile role buildagent';
-    openIDImplicitFlowConfiguration.post_logout_redirect_uri = 'http://localhost:4200/unauthorized';
+    openIDImplicitFlowConfiguration.post_logout_redirect_uri = environment.webclientUrl + '/unauthorized';
     openIDImplicitFlowConfiguration.start_checksession = true;
     openIDImplicitFlowConfiguration.silent_renew = true;
     openIDImplicitFlowConfiguration.startup_route = '/';
@@ -84,5 +85,6 @@ export class AppModule {
     openIDImplicitFlowConfiguration.max_id_token_iat_offset_allowed_in_seconds = 10;
 
     this.oidcSecurityService.setupModule(openIDImplicitFlowConfiguration);
+    this.buildAgentService.setBuildAgentUrl(environment.buildAgentUrl);
   }
 }
