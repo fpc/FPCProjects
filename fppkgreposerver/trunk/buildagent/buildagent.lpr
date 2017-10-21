@@ -19,7 +19,7 @@ uses
   dcsGlobalSettings,
   dcsInOutputProcessor,
   DCSHTTPRestServer,
-  dbconnector,
+  DBConnector,
   InOutputProcessor,
   baBuildCommand,
   baBuildFPCEnvironment,
@@ -76,7 +76,7 @@ begin
   GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
 
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
-  GlobalSettings.AddSetting('OpenIDWebClientURL', 'OIDC', 'WebClientURL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AllowCorsOrigin', 'OIDC', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   // quick check parameters
   ErrorMsg := GlobalSettings.CheckProgramParameters(Self);
   if ErrorMsg<>'' then begin
@@ -147,7 +147,8 @@ begin
 
     HTTPRestServer := TDCSHTTPRestServer.create(FDistributor, 8080);
     HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat, dcsRestServerFlagAllowDifferentChunkedSetting];
-    HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('OpenIDWebClientURL'), 'POST, GET', '', True);
+    if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+      HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
 
     ConsoleServer := TDCSConsoleServer.Create(FDistributor);
     try
