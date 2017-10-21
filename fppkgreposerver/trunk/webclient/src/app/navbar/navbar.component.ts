@@ -14,6 +14,7 @@ export class NavbarComponent implements OnInit {
 
   userDataSubscription: Subscription;
   isAdmin: boolean;
+  isNavbarCollapsed: boolean = false;
 
   constructor(public oidcSecurityService: OidcSecurityService) { }
 
