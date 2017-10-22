@@ -12,7 +12,7 @@ namespace FPPKGIdentityServer
 
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://0.0.0.0:5000")
+                .UseUrls("http://0.0.0.0:5000/identityserver/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

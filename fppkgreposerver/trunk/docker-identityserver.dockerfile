@@ -7,7 +7,7 @@ RUN update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
 RUN npm install -g bower
 
 COPY ./identityserver/FPPKGIdentityServer.csproj /app/
-COPY ./NuGet.Config /app/
+COPY ./identityserver/NuGet.Config /app/
 WORKDIR /app/
 RUN dotnet restore
 ADD ./identityserver/ /app/

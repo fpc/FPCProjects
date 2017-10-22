@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  identityserver:
+      environment:
+        - ASPNETCORE_ENVIRONMENT=Production
+        - ISSUERURI=http://fpc.cnoc.nl/identityserver
+        - WEBCLIENTURI=http://fpc.cnoc.nl
+
+  webclient:
+      build:
+        args:
+          nginxconffile: nginx-default.conf.prod
+      ports:
+        - "80:80"
+
+  buildagent:
+      build:
+        args:
+          inifile: buildagent_docker_x86_64_linux_trunk.ini.prod

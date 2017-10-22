@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:5000/identityserver",
       "sslPort": 0
     }
   },
@@ -17,7 +17,7 @@
     },
     "FPPKGIdentityServer": {
       "commandName": "Project",
-      "launchUrl": "http://localhost:5000",
+      "launchUrl": "http://localhost:5000/identityserver",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
