@@ -3,6 +3,7 @@ using IdentityServer4.Models;
 using System.Collections.Generic;
 using System.Security.Claims;
 using IdentityServer4.Test;
+using System;
 
 
 namespace FPPKGIdentityServer
@@ -54,6 +55,11 @@ namespace FPPKGIdentityServer
         // clients want to access resources (aka scopes)
         public static IEnumerable<Client> GetClients()
         {
+            var webClientUri = Environment.GetEnvironmentVariable("WEBCLIENTURI");
+            if (webClientUri == null)
+            {
+                webClientUri = "http://localhost:4200";
+            }
             // client credentials client
             return new List<Client>
             {
@@ -73,9 +79,9 @@ namespace FPPKGIdentityServer
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                     },
-                    RedirectUris = { "http://localhost:4200" },
-                    PostLogoutRedirectUris = { "http://localhost:4200/unauthorized" },
-                    AllowedCorsOrigins = { "http://localhost:4200" },
+                    RedirectUris = { webClientUri },
+                    PostLogoutRedirectUris = { webClientUri + "/unauthorized" },
+                    AllowedCorsOrigins = { webClientUri },
                     AllowAccessTokensViaBrowser = true
                 }
             };

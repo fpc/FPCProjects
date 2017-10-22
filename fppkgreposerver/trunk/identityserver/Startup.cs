@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using System;
 
 namespace FPPKGIdentityServer
 {
@@ -15,7 +19,14 @@ namespace FPPKGIdentityServer
         {
             services.AddMvc();
 
-            services.AddIdentityServer()
+            var optionIssuerUri = Environment.GetEnvironmentVariable("ISSUERURI");
+            if (optionIssuerUri == null)
+            {
+                optionIssuerUri = "http://localhost:4200/identityserver";
+            }
+
+            services
+                .AddIdentityServer(options => options.IssuerUri = optionIssuerUri)
                 .AddTemporarySigningCredential()
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
@@ -23,9 +34,12 @@ namespace FPPKGIdentityServer
                 .AddInMemoryClients(Config.GetClients());
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
             app.UseIdentityServer();
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
