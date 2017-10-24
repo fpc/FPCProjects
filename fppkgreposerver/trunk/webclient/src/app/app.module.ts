@@ -26,6 +26,7 @@ import { BuildAgentService } from './build-agent.service';
 import { SpinnerComponent } from './spinner/spinner.component';
 import { ViewDCSResponseComponent } from './view-dcsresponse/view-dcsresponse.component';
 import { environment } from '../environments/environment';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { environment } from '../environments/environment';
     BuildPackageComponent,
     AdminComponent,
     SpinnerComponent,
-    ViewDCSResponseComponent
+    ViewDCSResponseComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,

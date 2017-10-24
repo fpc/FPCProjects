@@ -5,6 +5,7 @@ import { AdminGuardService } from './admin-guard.service';
 import { BuildPackageComponent } from './build-package/build-package.component';
 import { LoginComponent } from './login/login.component';
 import { AdminComponent } from './admin/admin.component';
+import { AboutComponent } from './about/about.component';
 import { LoggedOutComponent } from './logged-out/logged-out.component';
 
 const routes: Routes = [
@@ -34,6 +35,11 @@ const routes: Routes = [
     path: 'admin',
     canActivate: [AdminGuardService],
     component: AdminComponent,
+    children: []
+  },
+  {
+    path: 'about',
+    component: AboutComponent,
     children: []
   }
 

@@ -1,0 +1,90 @@
+<h1 id="fppkg-repository-server">FPPKG Repository Server</h1>
+<p>Version 0.1, Joost van der Sluis (CNOC) -- 16 Oct 2017</p>
+<h2 id="introduction">Introduction</h2>
+<p>Fppkg is the package system from Free Pascal. One of the features is the ability to install packages from a central repository. The goal of this application is to create a web-based system to manage such a central repository. Which may lead to a central database of available Free Pascal packages.</p>
+<p>At this moment it is only possible to test-build fppkg packages.</p>
+<p>The idea is to build the server using separate components, working together. Docker is used for the isolation of the build-agens and to ease the deployment.</p>
+<h2 id="components">Components</h2>
+<ul>
+<li><h4 id="identityserver"><a href="/identityserver_readme.html">IdentityServer</a></h4>
+<p>The IdentityServer is an OIDC-resource provider to handle the authentication and authorization. It is written in C#, using the <a href="https://github.com/IdentityServer">IdentityServer framework</a>. At this moment there is no user-database but a hard-coded list of users.</p></li>
+<li><h4 id="buildagent"><a href="/buildagent_readme.html">BuildAgent</a></h4>
+<p>A <a href="http://www.lazarus-ide.org/">Lazarus</a> console application which can handle package-builds. It handles requests sequentially and uses a pristine build-environment for each build.</p></li>
+<li><h4 id="webclient"><a href="/webclient_readme.html">WebClient</a></h4>
+<p>An <a href="https://angular.io/">Angular-2</a> web-application which serves as front-end.</p></li>
+</ul>
+<h2 id="how-to-start">How to start</h2>
+<h3 id="install-the-dependencies">Install the dependencies</h3>
+<p>What you need to setup the test-environment:</p>
+<ul>
+<li>Linux OS</li>
+<li>An svn-client (subversion)</li>
+<li>The <a href="https://cli.angular.io/">Angular CLI</a></li>
+<li>Free Pascal</li>
+<li>Some extra Fppkg packages</li>
+<li>Docker and Docker-compose</li>
+</ul>
+<h3 id="setup-a-test-environment">Setup a test environment</h3>
+<p>Checkout the Fppkg Repository sources from svn.</p>
+<pre><code>svn checkout https://svn.freepascal.org/svn/fpcprojects/fppkgreposerver/trunk fppkgreposerver</code></pre>
+<p>Compile the buildagent in fppkgreposerver/buildagent. (Make sure all dependencies are installed, see the buildagent readme for details)</p>
+<pre><code>cd fppkgreposerver/buildagent
+fpc buildagent.lpr</code></pre>
+<p>Now build the web-client. You need the Angular 2-CLI (client-interface) for this.</p>
+<pre><code>cd ../webclient
+ng build</code></pre>
+<p>Now build the docker images, and start those images.</p>
+<pre><code>docker-compose build
+docker-compose up</code></pre>
+<h3 id="do-a-test-build-of-a-package">Do a test-build of a package</h3>
+<ul>
+<li>Open a web-browser and browse to <a href="http://localhost:4200/" class="uri">http://localhost:4200/</a></li>
+<li>Log in using 'joost' and 'jachtluipaard'</li>
+<li>Select 'admin' from the top-menu</li>
+<li>Re-build the FPC-test environment. (This can take a while)</li>
+<li>Go to the main-screen</li>
+<li>Select a Fppkg-source archive, and upload it to do a test-build</li>
+</ul>
+<p>If your package could be compiled, the system will response with a success message.</p>
+<p>If you want to continue from here, take a look at the description of the individual packages:</p>
+<ul>
+<li><a href="/identityserver_readme.html">IdentityServer</a></li>
+<li><a href="/identityserver_readme.html">IdentityServer</a></li>
+<li><a href="/webclient_readme.html">WebClient</a></li>
+</ul>
+<h2 id="configurations">Configurations</h2>
+<p>The docker-setup has three different configurations:</p>
+<ul>
+<li><h4 id="debug-default">Debug (default)</h4>
+<p>Each docker is mapped to a different port on localhost. Some dockers may communicate directly to each other through the internal network. Because each component uses it's own port, CORS is configured in such a way that the webclient can access all components. With this setup it is possible to stop one or more dockers, and run the components on the main system. This way it is possible to debug them.</p>
+<p>Specific command to build using this configuration:</p>
+<pre><code>ng build
+docker-compose build
+docker-compose up</code></pre></li>
+<li><h4 id="qa">QA</h4>
+<p>Only the webclient docker is mapped to a port (4200) on localhost. The other components are proxied by the webclient docker. Still Some dockers may communicate directly to each other through the internal network. It is not possible to connect to the components directly. All component use the same base-url so there's no need for CORS.</p>
+<p>Specific command to build using this configuration:</p>
+<pre><code>ng build -prod --environment qa
+docker-compose -f docker-compose.yml -f docker-compose.qa.yml build
+docker-compose -f docker-compose.yml -f docker-compose.qa.yml up</code></pre></li>
+<li><h4 id="production">Production</h4>
+<p>Basicly the same as QA, except for the port being port 80, and it does not reference localhost, but http://fpc.cnoc.nl.</p>
+<p>Specific command to build using this configuration:</p>
+<pre><code>ng build -prod --environment prod
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up</code></pre></li>
+</ul>
+<h2 id="how-to-debug-single-components">How to debug single components</h2>
+<p>It is possible to run the BuildAgent in a debugger when the BuildAgent container (docker) is stopped first. Then the BuildAgent in the debugger will bind to localhost, and will be used by the WebClient. This does only work in the debug-configuration.</p>
+<pre><code>docker stop buildagent</code></pre>
+<p>The same principle holds for the webclient. It is possible to review changes in the webclient almost immediately after they are saved by running an internal web-server, using the Angular-CLI. You have to stop the docker- container first</p>
+<pre><code>docker stop webclient
+ng serve</code></pre>
+<p>While 'ng serve' is running, after each change of one of the sourcefiles of the weblient is changed, the site will be re-compiled. And when the site is open in a browser, it will be refreshed automatically.</p>
+<p>It is not that simple to run the IdentityServer in a debugger, because other components (the BuildAgent) will try to connect through it directly on the internal Docker-network. So it can only be run in a docker-container.</p>
+<h2 id="wanna-help">Wanna help?</h2>
+<p>Do you have any questions, bugs or a patch? Please contact me at <a href="mailto:joost@cnoc.nl">joost@cnoc.nl</a>. Maybe we can work together.</p>
+<h2 id="license">License</h2>
+<p>This source is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
+<p>This code is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<p>A copy of the GNU General Public License is available on the World Wide Web at <a href="http://www.gnu.org/copyleft/gpl.html" class="uri">http://www.gnu.org/copyleft/gpl.html</a>. You can also obtain it by writing to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1335, USA.</p>
