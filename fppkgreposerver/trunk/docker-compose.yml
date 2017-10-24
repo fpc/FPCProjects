@@ -2,12 +2,14 @@ version: '3'
 
 services:
   identityserver:
+      image: 'trunk_identityserver:latest'
       build:
         context: .
         dockerfile: docker-identityserver.dockerfile
       container_name: identityserver
 
   webclient:
+      image: 'trunk_webclient:latest'
       build:
         context: .
         dockerfile: docker-webclient.dockerfile
@@ -17,6 +19,7 @@ services:
         - identityserver
 
   buildagent:
+      image: 'trunk_buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
