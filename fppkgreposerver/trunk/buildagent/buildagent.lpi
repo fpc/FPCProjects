@@ -24,7 +24,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="-t -a -d"/>
+        <CommandLineParams Value="-t -a"/>
       </local>
     </RunParams>
     <RequiredPackages Count="1">
@@ -32,36 +32,26 @@
         <PackageName Value="DCServer"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="4">
       <Unit0>
         <Filename Value="buildagent.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="../dbconnector.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="DBConnector"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="../inoutputprocessor.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="InOutputProcessor"/>
-      </Unit2>
-      <Unit3>
         <Filename Value="babuildcommand.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="baBuildCommand"/>
-      </Unit3>
-      <Unit4>
+      </Unit1>
+      <Unit2>
         <Filename Value="babuildfpcenvironment.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="baBuildFPCEnvironment"/>
-      </Unit4>
-      <Unit5>
+      </Unit2>
+      <Unit3>
         <Filename Value="bacommand.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="baCommand"/>
-      </Unit5>
+      </Unit3>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -71,7 +61,6 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value=".."/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

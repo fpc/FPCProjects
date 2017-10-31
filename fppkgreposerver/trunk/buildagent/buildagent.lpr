@@ -19,8 +19,6 @@ uses
   dcsGlobalSettings,
   dcsInOutputProcessor,
   DCSHTTPRestServer,
-  DBConnector,
-  InOutputProcessor,
   baBuildCommand,
   baBuildFPCEnvironment,
   baCommand;
@@ -49,7 +47,6 @@ var
   ConsoleServer: TDCSConsoleServer;
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
-  ADbConnector: TDCSHandlerThread;
   GlobalSettings: TDCSGlobalSettings;
   ConfigFileStream: TFileStream;
   HTTPRestServer: TDCSHTTPRestServer;
@@ -65,7 +62,6 @@ begin
   GlobalSettings.AddSetting('dbname','','','dbname',#0, dcsPHasParameter);
   GlobalSettings.AddSetting('dbuser','','','dbuser',#0, dcsPHasParameter);
   GlobalSettings.AddSetting('dbpassword','','','dbpassword',#0, dcsPHasParameter);
-  GlobalSettings.AddSetting('dbstorage','','','dbstorage','d', dcsPNoParameter);
   GlobalSettings.SetSettingAsString('dbname', 'localhost:fppkg');
   GlobalSettings.SetSettingAsString('dbuser', 'sysdba');
   GlobalSettings.SetSettingAsString('dbpassword', 'masterkey');
@@ -121,7 +117,7 @@ begin
     Exit;
     end;
 
-  TDCSInOutputProcessorFactory.RegisterCommandClass('json', TJSONInOutputProcessor);
+  TDCSInOutputProcessorFactory.RegisterCommandClass('json', TDCSJSonInOutputProcessor);
 
   FDistributor := TDCSDistributor.Create;
   try
@@ -132,13 +128,6 @@ begin
       FRepositoryTestThread.Free;
       raise;
     end;
-
-    if GlobalSettings.GetSettingAsBoolean('dbstorage') then
-      begin
-      ADbConnector := TDCSHandlerThread.Create(FDistributor, TDBController);
-      end
-    else
-      ADbConnector := nil;
 
     if GlobalSettings.GetSettingAsBoolean('tcp') then
       TCPServerThread := TDCSTcpServer.Create(FDistributor, Port, SensePorts)
@@ -171,10 +160,6 @@ begin
         begin
         HTTPRestServer.ForceTerminate;
         end;
-      if Assigned(ADbConnector) then
-        begin
-        ADbConnector.Terminate;
-        end;
 
       ConsoleServer.Terminate;
       ConsoleServer.WaitFor;
@@ -184,12 +169,6 @@ begin
         begin
         TCPServerThread.WaitFor;
         TCPServerThread.Free;
-        end;
-
-      if Assigned(ADbConnector) then
-        begin
-        ADbConnector.WaitFor;
-        ADbConnector.Free;
         end;
 
     end;
