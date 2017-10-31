@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="10"/>
+    <General>
+      <Flags>
+        <MainUnitHasCreateFormStatements Value="False"/>
+      </Flags>
+      <SessionStorage Value="InProjectDir"/>
+      <MainUnit Value="0"/>
+      <Title Value="packagemanager"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+    </General>
+    <BuildModes Count="1">
+      <Item1 Name="Default" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="DCServer"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="WebLaz"/>
+      </Item2>
+    </RequiredPackages>
+    <Units Count="5">
+      <Unit0>
+        <Filename Value="packagemanager.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="pmpackagewebmodule.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="pmPackageWM"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="DataModule"/>
+        <UnitName Value="pmPackageWebModule"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="pmpackage.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="pmPackage"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="pmerrorhandling.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="pmErrorHandling"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="pmpackagejsonstreaming.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="pmPackageJSonStreaming"/>
+      </Unit4>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="4">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+      </Item3>
+      <Item4>
+        <Name Value="EResNotFound"/>
+      </Item4>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

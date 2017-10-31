@@ -1,0 +1,13 @@
+object pmPackageWM: TpmPackageWM
+  OldCreateOrder = False
+  Actions = <>
+  BeforeRequest = DataModuleBeforeRequest
+  OnRequest = DataModuleRequest
+  CreateSession = False
+  Kind = wkOneShot
+  Height = 969
+  HorizontalOffset = 1723
+  VerticalOffset = 692
+  Width = 1200
+  PPI = 192
+end
