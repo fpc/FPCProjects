@@ -73,7 +73,6 @@ var
   CompilerVersion: string;
   CompilerBinary: string;
 begin
-
   FPCSourcePath := GetFPCSourcePath;
 
   StartCompiler := GetStartCompiler;
@@ -109,7 +108,7 @@ begin
   LocalBasePath :=  IncludeTrailingPathDelimiter(ConcatPaths([BuildPath, 'user','lib','fpc']));
 
   // How does this work on Windows?
-  CompilerBinary := Trim(RunTestCommandIndir(PristineEnvironmentPath, PristineEnvironmentPath+'bin'+PathDelim+'fpc', ['-PB'], 'get the compiler executable-name'));;
+  CompilerBinary := ExtractFileName(Trim(RunTestCommandIndir(PristineEnvironmentPath, PristineEnvironmentPath+'bin'+PathDelim+'fpc', ['-PB'], 'get the compiler executable-name')));
   CompilerVersion := Trim(RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([FPCSourcePath, 'compiler', CompilerBinary]), ['-iV'], 'get compiler-version'));
   fpSymlink(pchar(ConcatPaths(['..', 'lib', 'fpc', CompilerVersion, ExtractFileName(CompilerBinary)])), pchar(PristineEnvironmentPath+'bin'+PathDelim+ExtractFileName(CompilerBinary)));
 
