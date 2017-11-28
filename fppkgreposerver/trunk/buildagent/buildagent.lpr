@@ -117,8 +117,6 @@ begin
     Exit;
     end;
 
-  TDCSInOutputProcessorFactory.RegisterCommandClass('json', TDCSJSonInOutputProcessor);
-
   FDistributor := TDCSDistributor.Create;
   try
     FRepositoryTestThread := TDCSHandlerThread.Create(FDistributor, TDCSCustomController);
