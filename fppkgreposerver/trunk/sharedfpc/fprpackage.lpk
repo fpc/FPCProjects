@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="4">
+    <Name Value="fprPackage"/>
+    <Type Value="RunAndDesignTime"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Files Count="4">
+      <Item1>
+        <Filename Value="fprwebmodule.pas"/>
+        <UnitName Value="fprWebModule"/>
+      </Item1>
+      <Item2>
+        <Filename Value="fprpackageideintf.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="fprPackageIDEIntf"/>
+      </Item2>
+      <Item3>
+        <Filename Value="fprerrorhandling.pas"/>
+        <UnitName Value="fprerrorhandling"/>
+      </Item3>
+      <Item4>
+        <Filename Value="fprpackageutils.pas"/>
+        <UnitName Value="fprpackageutils"/>
+      </Item4>
+    </Files>
+    <RequiredPkgs Count="3">
+      <Item1>
+        <PackageName Value="DCServer"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="weblaz"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="FCL"/>
+      </Item3>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
