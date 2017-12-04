@@ -27,10 +27,13 @@
         <CommandLineParams Value="-t -a"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="DCServer"/>
+        <PackageName Value="fprPackage"/>
       </Item1>
+      <Item2>
+        <PackageName Value="DCServer"/>
+      </Item2>
     </RequiredPackages>
     <Units Count="4">
       <Unit0>
