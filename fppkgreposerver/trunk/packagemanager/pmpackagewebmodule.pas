@@ -10,12 +10,9 @@ uses
   httpdefs,
   fpjson,
   fpHTTP,
-  fpWeb,
   fphttpserver,
-  cnocOpenIDConnect,
-  cnocOIDCIDToken,
-  dcsGlobalSettings,
-  pmErrorHandling,
+  fprWebModule,
+  fprErrorHandling,
   pmPackage,
   pmPackageJSonStreaming;
 
@@ -23,18 +20,15 @@ type
 
   { TpmPackageWM }
 
-  TpmPackageWM = class(TFPWebModule)
-    Procedure DataModuleBeforeRequest(Sender: TObject; ARequest: TRequest);
+  TpmPackageWM = class(TfprWebModule)
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     FPackageStreamer: TpmPackageJSonStreaming;
-    Procedure HandlePostRequest(ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean; SubjectId: string);
-    Procedure HandleGetRequest(ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
-
+    Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+    Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
-
   end;
 
 var
@@ -46,100 +40,115 @@ implementation
 
 { TpmPackageWM }
 
-Procedure TpmPackageWM.DataModuleBeforeRequest(Sender: TObject; ARequest: TRequest);
-begin
-  //
-end;
-
 Procedure TpmPackageWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 var
-  OIDC: TcnocOpenIDConnect;
-  AuthorizationToken, s: string;
-  AllowRequest: Boolean;
-  JWT: TcnocOIDCIDTokenJWT;
-  SubjectId: string;
+  PackageName: string;
+  SubObject: string;
 begin
-  OIDC := TcnocOpenIDConnect.Create;
-  try
-    OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString('OpenIDProviderURL');
-
-    AuthorizationToken := ARequest.Authorization;
-
-    if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
-      begin
-      s := copy(AuthorizationToken, 8, length(AuthorizationToken)-7);
-      AllowRequest := OIDC.VerifyJWT(s);
-      if not AllowRequest then
-        s := OIDC.GetLatestError;
-
-      JWT := TcnocOIDCIDTokenJWT.Create;
-      try
-        JWT.AsEncodedString := s;
-        SubjectId := JWT.Claims.sub;
-      finally
-        JWT.Free;
-      end;
-
-      end
+  PackageName := ARequest.GetNextPathInfo;
+  if (PackageName = '') and (ARequest.Method = 'GET') then
+    begin
+    // Return list of all packages
+    AResponse.Content := FPackageStreamer.PackageListToJSon(TpmPackageList.Instance);
+    AResponse.Code := 200;
+    end
+  else
+    begin
+    SubObject := ARequest.GetNextPathInfo;
+    case SubObject of
+      '':
+        begin
+        HandlePackage(PackageName, ARequest, AResponse);
+        AResponse.Code := 200;
+        end;
+      'version':
+        begin
+        HandlePackageVersion(PackageName, ARequest, AResponse);
+        AResponse.Code := 200;
+        end
     else
       begin
-      AllowRequest := False;
-      s := 'No authorization information';
-      end;
-  finally
-    OIDC.Free;
-  end;
-
-  if not AllowRequest then
-    begin
-    AResponse.Code := 401;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
-    AResponse.Content := Format('Authentication failed (%s).', [s]);
-    Handled := True;
-    Exit;
+      AResponse.Code := 404;
+      end
+    end; { case }
     end;
 
-  if ARequest.Method = 'POST' then
-    HandlePostRequest(ARequest, AResponse, Handled, SubjectId)
-  else if ARequest.Method = 'GET' then
-    HandleGetRequest(ARequest, AResponse, Handled)
+
+  AResponse.CodeText := GetStatusCode(AResponse.Code);
+  Handled := True;
 end;
 
-Procedure TpmPackageWM.HandlePostRequest(ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean; SubjectId: string);
+Procedure TpmPackageWM.HandlePackageVersion(PackageName: string; ARequest: TRequest;
+  AResponse: TResponse);
+var
+  Package: TpmPackage;
+  PackageVersion: TpmPackageVersion;
+begin
+  if ARequest.Method = 'POST' then
+    begin
+    PackageVersion := TpmPackageVersion.Create;
+    try
+      JSONContentStringToObject(ARequest.Content, PackageVersion);
+      Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+      if not Assigned(Package) then
+        raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
+      if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.Tag)) then
+        raise Exception.Create('Packagename of URL does not match with the packagename of the contents');
+
+      AResponse.Content := ObjectToJSONContentString(PackageVersion);
+
+      Package.PackageVersionList.Add(PackageVersion);
+      PackageVersion := nil;
+
+      if Package.PackageState = pmpsInitial then
+        Package.PackageState := pmpsAcceptance;
+    finally
+      PackageVersion.Free;
+    end;
+    end
+  else
+    raise Exception.Create('Get package version not implemented');
+end;
+
+Procedure TpmPackageWM.HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
 var
   Package: TpmPackage;
   ErrStr: string;
 begin
-  Package := TpmPackage.Create;
-  try
-    FPackageStreamer.JSonToPackage(ARequest.Content, Package);
-    Package.OwnerId := SubjectId;
-    Package.PackageState := pmpsInitial;
+  if ARequest.Method = 'POST' then
+    begin
+    Package := TpmPackage.Create;
+    try
+      FPackageStreamer.JSonToPackage(ARequest.Content, Package);
+      Package.OwnerId := FSubjectId;
+      Package.PackageState := pmpsInitial;
 
-    if not Package.Validate(ErrStr) then
-      Raise EJsonWebException.Create(ErrStr);
+      if not Package.Validate(ErrStr) then
+        Raise EJsonWebException.Create(ErrStr);
 
-    if Assigned(TpmPackageList.Instance.FindPackageByName(Package.Name)) then
-      Raise EJsonWebException.CreateFmt('Package with the name %s does already exist', [Package.Name]);
+      if Assigned(TpmPackageList.Instance.FindPackageByName(Package.Name)) then
+        Raise EJsonWebException.CreateFmt('Package with the name %s does already exist', [Package.Name]);
+
+      AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+
+      TpmPackageList.Instance.Add(Package);
+      Package := Nil;
+    finally
+      Package.Free;
+    end;
+    end
+  else if ARequest.Method = 'GET' then
+    begin
+    Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+    if not Assigned(Package) then
+      raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
     AResponse.Content := FPackageStreamer.PackageToJSon(Package);
-    AResponse.Code := 200;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
-
-    TpmPackageList.Instance.Add(Package);
-    Handled := True;
-    Package := Nil;
-  finally
-    Package.Free;
-  end;
-end;
-
-Procedure TpmPackageWM.HandleGetRequest(ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
-begin
-  AResponse.Content := FPackageStreamer.PackageListToJSon(TpmPackageList.Instance);
+    end
+  else
+    raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
   AResponse.Code := 200;
   AResponse.CodeText := GetStatusCode(AResponse.Code);
-  Handled := True;
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);

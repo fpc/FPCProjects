@@ -7,9 +7,11 @@ uses
   sysutils,
   fphttpapp,
   dcsGlobalSettings,
+  fprErrorHandling,
   pmPackageWebModule,
   pmPackage,
-  pmErrorHandling, pmPackageJSonStreaming;
+  pmPackageJSonStreaming,
+  pmFunctionsWM;
 
 var
   ConfigFileStream: TFileStream;

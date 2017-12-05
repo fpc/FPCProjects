@@ -11,7 +11,29 @@ uses
   fpjsonrtti;
 
 type
-  TpmPackageState = (pmpsInitial);
+  TpmPackageState = (pmpsInitial, pmpsAcceptance);
+
+  { TpmPackageVersion }
+
+  TpmPackageVersion = class
+  private
+    FAuthor: string;
+    FFilename: string;
+    FTag: string;
+  published
+    property Tag: string read FTag write FTag;
+    property Filename: string read FFilename write FFilename;
+    property Author: string read FAuthor write FAuthor;
+  end;
+
+  TpmGenPackageVersionList = specialize TFPGObjectList<TpmPackageVersion>;
+
+  { TpmPackageVersionList }
+
+  TpmPackageVersionList = class(TpmGenPackageVersionList)
+  public
+    function FindVersionByTag(ATag: string): TpmPackageVersion;
+  end;
 
   { TpmPackage }
 
@@ -20,14 +42,17 @@ type
     FName: string;
     FOwnerId: string;
     FPackageState: TpmPackageState;
+    FPackageVersionList: TpmPackageVersionList;
     procedure SetPackageState(AValue: TpmPackageState);
   public
+    constructor Create; virtual;
+    destructor Destroy; override;
     function Validate(out AnErrStr: string): Boolean;
   published
     property Name: string read FName write FName;
     property OwnerId: string read FOwnerId write FOwnerId;
     property PackageState: TpmPackageState read FPackageState write SetPackageState;
-
+    property PackageVersionList: TpmPackageVersionList read FPackageVersionList;
   end;
 
   TpmGenPackageList = specialize TFPGObjectList<TpmPackage>;
@@ -45,10 +70,38 @@ type
     function FindPackageByName(AName: string): TpmPackage;
   end;
 
+  { TpmManifest }
+
+  TpmManifest = class
+  private
+    FAuthor: string;
+    FFilename: string;
+  published
+    property Filename: string read FFilename write FFilename;
+    property Author: string read FAuthor write FAuthor;
+  end;
+
 const
-  CpmPackageStateString: array[TpmPackageState] of string = ('new');
+  CpmPackageStateString: array[TpmPackageState] of string = ('new', 'acceptance');
 
 implementation
+
+{ TpmPackageVersionList }
+
+function TpmPackageVersionList.FindVersionByTag(ATag: string): TpmPackageVersion;
+var
+  i: Integer;
+begin
+  for i := 0 to Count -1 do
+    begin
+    if Items[i].Tag = ATag then
+      begin
+      Result := Items[I];
+      Exit;
+      end;
+    end;
+  Result := Nil;
+end;
 
 { TpmPackage }
 
@@ -56,6 +109,17 @@ procedure TpmPackage.SetPackageState(AValue: TpmPackageState);
 begin
   if FPackageState = AValue then Exit;
   FPackageState := AValue;
+end;
+
+constructor TpmPackage.Create;
+begin
+  FPackageVersionList := TpmPackageVersionList.Create(True);
+end;
+
+destructor TpmPackage.Destroy;
+begin
+  FPackageVersionList.Free;
+  inherited Destroy;
 end;
 
 function TpmPackage.Validate(out AnErrStr: string): Boolean;

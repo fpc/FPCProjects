@@ -1,0 +1,16 @@
+object pmFunctionsWM: TpmFunctionsWM
+  OldCreateOrder = False
+  Actions = <  
+    item
+      Name = 'clear'
+      Default = False
+      OnRequest = clearRequest
+      Template.AllowTagParams = False
+    end>
+  CreateSession = False
+  Kind = wkOneShot
+  Height = 150
+  HorizontalOffset = 552
+  VerticalOffset = 55
+  Width = 150
+end

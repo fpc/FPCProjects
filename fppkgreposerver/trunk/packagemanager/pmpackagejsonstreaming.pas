@@ -10,7 +10,7 @@ uses
   fpjsonrtti,
   fpjson,
   typinfo,
-  pmErrorHandling,
+  fprErrorHandling,
   pmPackage;
 
 type
