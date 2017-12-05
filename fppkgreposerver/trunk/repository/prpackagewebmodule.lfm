@@ -1,0 +1,14 @@
+object prPackageWM: TprPackageWM
+  OldCreateOrder = False
+  Actions = <>
+  OnRequest = DataModuleRequest
+  CreateSession = False
+  Kind = wkOneShot
+  Left = 1321
+  Top = 925
+  Height = 337
+  HorizontalOffset = 376
+  VerticalOffset = 395
+  Width = 300
+  PPI = 192
+end
