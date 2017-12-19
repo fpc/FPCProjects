@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:1.1.1-sdk
+FROM microsoft/dotnet:1.1.5-sdk
 
 RUN apt-get update
 RUN apt-get -qq update
