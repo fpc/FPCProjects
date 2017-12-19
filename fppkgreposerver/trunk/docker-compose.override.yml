@@ -14,3 +14,12 @@ services:
   buildagent:
       ports:
         - "8080:8080"
+
+  repository:
+      ports:
+        - "8089:8089"
+
+
+  packagemanager:
+      ports:
+        - "8088:8088"

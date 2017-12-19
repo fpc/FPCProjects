@@ -25,4 +25,16 @@ services:
         dockerfile: docker-buildagent.dockerfile
       container_name: buildagent
 
+  repository:
+      image: 'trunk_repository:latest'
+      build:
+        context: .
+        dockerfile: docker-repository.dockerfile
+      container_name: repository
 
+  packagemanager:
+      image: 'trunk_packagemanager:latest'
+      build:
+        context: .
+        dockerfile: docker-packagemanager.dockerfile
+      container_name: packagemanager
