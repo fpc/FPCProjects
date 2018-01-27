@@ -16,6 +16,7 @@ uses
   cnocOpenIDConnect,
   cnocOIDCIDToken,
   dcsGlobalSettings,
+  DCSHTTPRestServer,
   fpWeb,
   fprErrorHandling;
 
@@ -25,6 +26,7 @@ type
 
   TfprWebModule = class(TFPWebModule)
   private
+    FCorsOriginList: TDCSHTTPCorsEntryList;
     FDeStreamer: TJSONDeStreamer;
     FStreamer: TJSONStreamer;
   protected
@@ -32,6 +34,7 @@ type
     FAccessToken: string;
     procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse;
       var AHandled: boolean); override;
+    procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
     function ObtainJSONRestRequest(AnURL: string; IncludeAccessToken: boolean; Method: string = 'GET';
       Content: TStream = nil): TJSONData;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
@@ -39,6 +42,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
+    procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
   end;
 
 implementation
@@ -50,9 +54,16 @@ procedure TfprWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse;
 var
   OIDC: TcnocOpenIDConnect;
   AuthorizationToken, s: string;
-  AllowRequest: boolean;
+  AllowRequest, StopProcessing: boolean;
   JWT: TcnocOIDCIDTokenJWT;
 begin
+  HandleCors(ARequest, AResponse, StopProcessing);
+  if StopProcessing then
+    begin
+    AHandled := True;
+    Exit;
+    end;
+
   OIDC := TcnocOpenIDConnect.Create;
   try
     OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
@@ -96,6 +107,85 @@ begin
   end;
 
   inherited DoOnRequest(ARequest, AResponse, AHandled);
+end;
+
+procedure TfprWebModule.HandleCors(ARequest: TRequest; AResponse: TResponse; out
+  StopProcessing: Boolean);
+var
+  i, j: Integer;
+  CorsEntry: TDCSHTTPCorsEntry;
+  Origin: string;
+  RefuseMethod: Boolean;
+  s: string;
+begin
+  StopProcessing := False;
+  i := ARequest.CustomHeaders.IndexOfName('Origin');
+  if i > -1 then
+    begin
+    CorsEntry := nil;
+    RefuseMethod := False;
+    Origin := ARequest.CustomHeaders.ValueFromIndex[i];
+    for j := 0 to FCorsOriginList.Count-1 do
+      begin
+      if (FCorsOriginList.Items[j].Origin = '*') or (FCorsOriginList.Items[j].Origin = Origin) then
+        begin
+        CorsEntry := FCorsOriginList.Items[j];
+        RefuseMethod := False;
+        if ARequest.Method='OPTIONS' then
+          begin
+          s := ARequest.CustomHeaders.Values['Access-Control-Request-Method'];
+          if s <> '' then
+            begin
+            if Pos(s, CorsEntry.Methods) = 0 then
+              RefuseMethod := True
+            else
+              Break;
+            end
+          else
+            Break;
+          end
+        else
+          begin
+          if Pos(ARequest.Method, CorsEntry.Methods) = 0 then
+            RefuseMethod := True
+          else
+            Break;
+          end;
+        end;
+      end;
+
+    if RefuseMethod then
+      begin
+      AResponse.Code := 405;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      StopProcessing := True;
+      end
+    else if Assigned(CorsEntry) then
+      begin
+      AResponse.CustomHeaders.Values['Access-Control-Allow-Origin'] := CorsEntry.Origin;
+      if CorsEntry.Credentials then
+        AResponse.CustomHeaders.Values['Access-Control-Allow-Credentials'] := 'true';
+      if ARequest.Method='OPTIONS' then
+        begin
+        AResponse.CustomHeaders.Values['Access-Control-Allow-Methods'] := CorsEntry.Methods;
+        if ARequest.CustomHeaders.IndexOfName('Access-Control-Request-Headers') > -1 then
+          begin
+          if CorsEntry.Headers <> '' then
+            AResponse.CustomHeaders.Values['Access-Control-Allow-Headers'] := CorsEntry.Headers
+          else
+            AResponse.CustomHeaders.Values['Access-Control-Allow-Headers'] := ARequest.CustomHeaders.Values['Access-Control-Request-Headers'];
+          end;
+        StopProcessing := true;
+        end;
+      end
+    else
+      begin
+      AResponse.Code := 403;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      StopProcessing := true;
+      end;
+
+    end;
 end;
 
 function TfprWebModule.ObtainJSONRestRequest(AnURL: string;
@@ -166,13 +256,34 @@ begin
 
   FStreamer := TJSONStreamer.Create(Self);
   FStreamer.Options := [jsoLowerPropertyNames];
+
+  FCorsOriginList := TDCSHTTPCorsEntryList.Create;
 end;
 
 Destructor TfprWebModule.Destroy;
 begin
   FDeStreamer.Free;
   FStreamer.Free;
+
+  FCorsOriginList.Free;
+
   inherited Destroy;
+end;
+
+procedure TfprWebModule.AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
+var
+  CorsEntry: TDCSHTTPCorsEntry;
+begin
+  try
+    CorsEntry := TDCSHTTPCorsEntry.Create;
+    CorsEntry.Origin := Origin;
+    CorsEntry.Methods := Methods;
+    CorsEntry.Headers := Headers;
+    CorsEntry.Credentials := Credentials;
+    FCorsOriginList.Add(CorsEntry);
+  except
+    CorsEntry.Free;
+  end;
 end;
 
 end.
