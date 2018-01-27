@@ -23,6 +23,7 @@ type
   private
 
   public
+    constructor Create(AOwner: TComponent); override;
 
   end;
 
@@ -48,6 +49,17 @@ begin
     begin
     Exception.Create('Failed to clear package-repositories');
     end;
+end;
+
+constructor TprFunctionsWM.Create(AOwner: TComponent);
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  inherited Create(AOwner);
+
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
 end;
 
 initialization

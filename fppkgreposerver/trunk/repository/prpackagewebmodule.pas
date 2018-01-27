@@ -37,6 +37,7 @@ type
     procedure TagPackage(PackageName, GITTag, TagMessage: string);
 
   public
+    constructor Create(AOwner: TComponent); override;
 
   end;
 
@@ -97,7 +98,7 @@ begin
     if PackageObject.Get('packagestate', '') = 'new' then
       TagPackage(PackageName, '0.0.0.0', 'Initial version');
 
-    AResponse.Content := '{sourcehash: '''+RevHash+'''}';
+    AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
     AResponse.Code := 200;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     end
@@ -269,6 +270,17 @@ begin
   finally
     DeleteDirectory(TmpPath, False);
   end;
+end;
+
+constructor TprPackageWM.Create(AOwner: TComponent);
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  inherited Create(AOwner);
+
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
 end;
 
 initialization

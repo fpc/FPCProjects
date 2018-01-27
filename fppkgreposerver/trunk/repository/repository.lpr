@@ -5,12 +5,13 @@ program repository;
 uses
   classes,
   sysutils,
+  HTTPDefs,
   fphttpapp,
   jsonparser,
   fprErrorHandling,
   dcsGlobalSettings,
   prPackageWebModule,
-  HTTPDefs, prFunctionsWebModule;
+  prFunctionsWebModule;
 
 var
   GlobalSettings: TDCSGlobalSettings;
@@ -20,7 +21,8 @@ begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('packagemanagerurl','Connections','PackageManagerURL','',#0, dcsPHasParameter);
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
-  //GlobalSettings.AddSetting('AllowCorsOrigin', 'OIDC', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
+
   GlobalSettings.AddSetting('GITRepositoriesPath', 'GIT', 'RepositoriesPath', '', #0, dcsPHasParameter);
 
   ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
