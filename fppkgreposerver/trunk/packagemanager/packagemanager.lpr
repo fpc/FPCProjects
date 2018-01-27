@@ -19,7 +19,7 @@ var
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
-
+  GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
 
   ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
   try
@@ -29,7 +29,6 @@ begin
   end;
 
 
-  Application.Title:='httpproject1';
   Application.Port:=8088;
   Application.OnShowRequestException := @pmOnShowRequestException;
   Application.Initialize;

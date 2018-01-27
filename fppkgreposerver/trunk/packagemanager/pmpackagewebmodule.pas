@@ -13,6 +13,7 @@ uses
   fphttpserver,
   fprWebModule,
   fprErrorHandling,
+  dcsGlobalSettings,
   pmPackage,
   pmPackageJSonStreaming;
 
@@ -152,9 +153,15 @@ begin
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);
+var
+  GlobalSettings: TDCSGlobalSettings;
 begin
   inherited Create(AOwner);
   FPackageStreamer := TpmPackageJSonStreaming.Create;
+
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
 end;
 
 Destructor TpmPackageWM.Destroy;
