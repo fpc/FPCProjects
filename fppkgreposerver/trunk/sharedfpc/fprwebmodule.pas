@@ -29,6 +29,7 @@ type
     FCorsOriginList: TDCSHTTPCorsEntryList;
     FDeStreamer: TJSONDeStreamer;
     FStreamer: TJSONStreamer;
+    FOIDC: TcnocOpenIDConnect;
   protected
     FSubjectId: string;
     FAccessToken: string;
@@ -39,6 +40,7 @@ type
       Content: TStream = nil): TJSONData;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function ObjectToJSONContentString(AnObject: TObject): string;
+    function GetUserRole: string;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -52,7 +54,6 @@ implementation
 procedure TfprWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse;
   var AHandled: boolean);
 var
-  OIDC: TcnocOpenIDConnect;
   AuthorizationToken, s: string;
   AllowRequest, StopProcessing: boolean;
   JWT: TcnocOIDCIDTokenJWT;
@@ -64,9 +65,9 @@ begin
     Exit;
     end;
 
-  OIDC := TcnocOpenIDConnect.Create;
+  FOIDC := TcnocOpenIDConnect.Create;
   try
-    OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
+    FOIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
       'OpenIDProviderURL');
 
     AuthorizationToken := ARequest.Authorization;
@@ -74,9 +75,9 @@ begin
     if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
     begin
       s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
-      AllowRequest := OIDC.VerifyJWT(s);
+      AllowRequest := FOIDC.VerifyJWT(s);
       if not AllowRequest then
-        s := OIDC.GetLatestError
+        s := FOIDC.GetLatestError
       else
       begin
         JWT := TcnocOIDCIDTokenJWT.Create;
@@ -94,19 +95,20 @@ begin
       AllowRequest := False;
       s := 'No authorization information';
     end;
-  finally
-    OIDC.Free;
-  end;
-  if not AllowRequest then
-  begin
-    AResponse.Code := 401;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
-    AResponse.Content := Format('Authentication failed (%s).', [s]);
-    AHandled := True;
-    Exit;
-  end;
 
-  inherited DoOnRequest(ARequest, AResponse, AHandled);
+    if not AllowRequest then
+    begin
+      AResponse.Code := 401;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      AResponse.Content := Format('Authentication failed (%s).', [s]);
+      AHandled := True;
+      Exit;
+    end;
+
+    inherited DoOnRequest(ARequest, AResponse, AHandled);
+  finally
+    FreeAndNil(FOIDC);
+  end;
 end;
 
 procedure TfprWebModule.HandleCors(ARequest: TRequest; AResponse: TResponse; out
@@ -235,6 +237,25 @@ begin
       JSO.Free;
     end;
   finally
+  end;
+end;
+
+function TfprWebModule.GetUserRole: string;
+var
+  JSonData: TJSONData;
+begin
+  if not Assigned(FOIDC) then
+    raise Exception.Create('OpenIDConnect provider not assigned');
+
+  Result := '';
+  JSonData := ObtainJSONRestRequest(FOIDC.UserinfoEndpoint, True);
+  try
+    if JSonData.JSONType = jtObject then
+      begin
+      Result := (JSonData as TJSONObject).Get('role', '');
+      end;
+  finally
+    JSonData.Free;
   end;
 end;
 
