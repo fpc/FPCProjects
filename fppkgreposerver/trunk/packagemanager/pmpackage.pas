@@ -11,7 +11,7 @@ uses
   fpjsonrtti;
 
 type
-  TpmPackageState = (pmpsInitial, pmpsAcceptance);
+  TpmPackageState = (pmpsInitial, pmpsAcceptance, pmpsApproved, pmpsPublished, pmpsRevoked);
 
   { TpmPackageVersion }
 
@@ -82,7 +82,7 @@ type
   end;
 
 const
-  CpmPackageStateString: array[TpmPackageState] of string = ('new', 'acceptance');
+  CpmPackageStateString: array[TpmPackageState] of string = ('new', 'acceptance', 'approved', 'published', 'revoked');
 
 implementation
 

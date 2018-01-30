@@ -27,6 +27,7 @@ type
     FPackageStreamer: TpmPackageJSonStreaming;
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+    Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -66,6 +67,11 @@ begin
         begin
         HandlePackageVersion(PackageName, ARequest, AResponse);
         AResponse.Code := 200;
+        end;
+      'approve':
+        begin
+        HandlePackageApprove(PackageName, ARequest, AResponse);
+        AResponse.Code := 200;
         end
     else
       begin
@@ -94,7 +100,7 @@ begin
       if not Assigned(Package) then
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
       if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.Tag)) then
-        raise Exception.Create('Packagename of URL does not match with the packagename of the contents');
+        raise Exception.Create('Package-version already exists');
 
       AResponse.Content := ObjectToJSONContentString(PackageVersion);
 
@@ -152,6 +158,28 @@ begin
   AResponse.CodeText := GetStatusCode(AResponse.Code);
 end;
 
+Procedure TpmPackageWM.HandlePackageApprove(PackageName: string; ARequest: TRequest;
+  AResponse: TResponse);
+var
+  Package: TpmPackage;
+begin
+  if ARequest.Method = 'PUT' then
+    begin
+    Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+    if not Assigned(Package) then
+      raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
+
+    if GetUserRole <> 'admin' then
+      raise EHTTP.CreateFmtHelp('Approve is denied', [PackageName], 403);
+
+    Package.PackageState := pmpsApproved;
+
+    AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+    end
+  else
+    raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
+end;
+
 constructor TpmPackageWM.Create(AOwner: TComponent);
 var
   GlobalSettings: TDCSGlobalSettings;
@@ -161,7 +189,7 @@ begin
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
-    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
 Destructor TpmPackageWM.Destroy;
