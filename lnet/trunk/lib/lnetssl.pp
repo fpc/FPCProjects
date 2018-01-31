@@ -14,7 +14,7 @@ uses
   lNet, lEvents;
   
 type
-  TLSSLMethod = (msSSLv2or3, msSSLv2, msSSLv3, msTLSv1);
+  TLSSLMethod = (msSslTLS, msSSLv2or3, msSSLv2, msSSLv3, msTLSv1);
   TLSSLStatus = (slNone, slConnect, slActivateTLS, slShutdown);
 
   TLPasswordCB = function(buf: pChar; num, rwflag: cInt; userdata: Pointer): cInt; cdecl;
@@ -509,6 +509,7 @@ begin
     Exit;
 
   case FMethod of
+    msSslTLS   : aMethod := SslTLSMethod;
     msSSLv2or3 : aMethod := SslMethodV23;
     msSSLv2    : aMethod := SslMethodV2;
     msSSLv3    : aMethod := SslMethodV3;
