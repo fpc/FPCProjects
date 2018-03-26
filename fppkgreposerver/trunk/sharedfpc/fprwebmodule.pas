@@ -7,6 +7,8 @@ interface
 uses
   Classes,
   SysUtils,
+  fgl,
+  typinfo,
   HTTPDefs,
   fphttpclient,
   fphttpserver,
@@ -30,9 +32,17 @@ type
     FDeStreamer: TJSONDeStreamer;
     FStreamer: TJSONStreamer;
     FOIDC: TcnocOpenIDConnect;
+    FAuthError: string;
+    Procedure DoRestoreProperty(Sender: TObject; AObject: TObject; Info: PPropInfo;
+      AValue: TJSONData; Var Handled: Boolean);
+    Procedure FStreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo;
+      var Res: TJSONData);
+    function ListToJSon(AList: TFPSList): TJSONArray;
   protected
     FSubjectId: string;
     FAccessToken: string;
+    procedure DoneSession; override;
+    Procedure DoBeforeRequest(ARequest: TRequest); override;
     procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse;
       var AHandled: boolean); override;
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
@@ -41,6 +51,7 @@ type
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function ObjectToJSONContentString(AnObject: TObject): string;
     function GetUserRole: string;
+    function RequireAuthentication(ARequest: TRequest): Boolean; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -51,12 +62,9 @@ implementation
 
 { TfprWebModule }
 
-procedure TfprWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse;
-  var AHandled: boolean);
+procedure TfprWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse; var AHandled: boolean);
 var
-  AuthorizationToken, s: string;
-  AllowRequest, StopProcessing: boolean;
-  JWT: TcnocOIDCIDTokenJWT;
+  StopProcessing: boolean;
 begin
   HandleCors(ARequest, AResponse, StopProcessing);
   if StopProcessing then
@@ -65,9 +73,59 @@ begin
     Exit;
     end;
 
-  FOIDC := TcnocOpenIDConnect.Create;
+  if not Assigned(FOIDC) and RequireAuthentication(ARequest) then
+  begin
+    AResponse.Code := 401;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    AResponse.Content := Format('Authentication failed (%s).', [FAuthError]);
+    AHandled := True;
+    Exit;
+  end;
+
+  inherited DoOnRequest(ARequest, AResponse, AHandled);
+end;
+
+function TfprWebModule.ListToJSon(AList: TFPSList): TJSONArray;
+var
+  JA: TJSONArray;
+  i : Integer;
+begin
+  JA:=TJSONArray.Create;
   try
-    FOIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
+    For I:=0 to AList.Count-1 do
+      JA.Add(FStreamer.ObjectToJSON(TObject(AList.Items[i]^)));
+    Result := JA;
+    JA := nil;
+  finally
+    JA.Free;
+  end;
+end;
+
+procedure TfprWebModule.DoneSession;
+begin
+  inherited DoneSession;
+  FreeAndNil(FOIDC);
+  FAccessToken := '';
+  FSubjectId := '';
+  FAuthError := '';
+end;
+
+Procedure TfprWebModule.DoBeforeRequest(ARequest: TRequest);
+var
+  AuthorizationToken, s: string;
+  OIDC: TcnocOpenIDConnect;
+  AllowRequest: boolean;
+  JWT: TcnocOIDCIDTokenJWT;
+begin
+  inherited DoBeforeRequest(ARequest);
+  FSubjectId := '';
+  FAccessToken := '';
+  FreeAndNil(FOIDC);
+  FAuthError := '';
+
+  OIDC := TcnocOpenIDConnect.Create;
+  try
+    OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
       'OpenIDProviderURL');
 
     AuthorizationToken := ARequest.Authorization;
@@ -75,9 +133,9 @@ begin
     if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
     begin
       s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
-      AllowRequest := FOIDC.VerifyJWT(s);
+      AllowRequest := OIDC.VerifyJWT(s);
       if not AllowRequest then
-        s := FOIDC.GetLatestError
+        s := OIDC.GetLatestError
       else
       begin
         JWT := TcnocOIDCIDTokenJWT.Create;
@@ -85,7 +143,9 @@ begin
           JWT.AsEncodedString := s;
           FSubjectId := JWT.Claims.sub;
           FAccessToken := s;
-        finally
+          FOIDC := OIDC;
+          OIDC :=nil;
+       finally
           JWT.Free;
         end;
       end;
@@ -98,17 +158,83 @@ begin
 
     if not AllowRequest then
     begin
-      AResponse.Code := 401;
-      AResponse.CodeText := GetStatusCode(AResponse.Code);
-      AResponse.Content := Format('Authentication failed (%s).', [s]);
-      AHandled := True;
-      Exit;
+      FAuthError := Format('Authentication failed (%s).', [s]);
     end;
 
-    inherited DoOnRequest(ARequest, AResponse, AHandled);
   finally
-    FreeAndNil(FOIDC);
+    FreeAndNil(OIDC);
   end;
+end;
+
+Procedure TfprWebModule.FStreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
+var
+  PropObject: TObject;
+  i: Integer;
+  s: string;
+begin
+  case Info^.PropType^.Kind of
+    tkClass:
+      begin
+      PropObject := GetObjectProp(AObject, Info);
+      if PropObject is TFPSList then
+        begin
+        Res := ListToJSon(TFPSList(PropObject));
+        end;
+      end;
+    tkEnumeration:
+      begin
+      if Res.JSONType = jtString then
+        begin
+        s := TJSONString(Res).AsString;
+        for i := 1 to High(s) do
+          begin
+          if upcase(s[i]) = s[i] then
+            begin
+            if i > 1 then
+              TJSONString(Res).AsString := Copy(s, i, length(s)-i+1);
+            Break;
+            end;
+          end;
+        end;
+      end;
+  end;
+end;
+
+Procedure TfprWebModule.DoRestoreProperty(Sender: TObject; AObject: TObject; Info: PPropInfo;
+  AValue: TJSONData; Var Handled: Boolean);
+var
+  EnumName: String;
+  i, j: Integer;
+begin
+  if AValue.JSONType = jtNull then
+    begin
+    Handled := True;
+    Exit;
+    end;
+
+  if Info^.PropType^.Kind = tkEnumeration then
+    begin
+    if AValue.JSONType = jtString then
+      begin
+      for i := 0 to GetEnumNameCount(Info^.PropType) -1 do
+        begin
+        EnumName := GetEnumName(Info^.PropType, i);
+        for j := 1 to length(EnumName) do
+          begin
+          if upcase(EnumName[j])=EnumName[j] then
+            begin
+            EnumName := copy(EnumName, j, Length(EnumName));
+            Break;
+            end;
+          end;
+        if SameText(EnumName, AValue.AsString) then
+          begin
+          SetOrdProp(AObject, Info, i);
+          Handled := True;
+          end;
+        end;
+      end;
+    end;
 end;
 
 procedure TfprWebModule.HandleCors(ARequest: TRequest; AResponse: TResponse; out
@@ -227,10 +353,13 @@ end;
 
 function TfprWebModule.ObjectToJSONContentString(AnObject: TObject): string;
 var
-  JSO: TJSONObject;
+  JSO: TJSONData;
 begin
   try
-    JSO := FStreamer.ObjectToJSON(AnObject);
+    if AnObject is TFPSList then
+      JSO := ListToJSon(TFPSList(AnObject))
+    else
+      JSO := FStreamer.ObjectToJSON(AnObject);
     try
       Result := JSO.AsJSON;
     finally
@@ -259,6 +388,11 @@ begin
   end;
 end;
 
+function TfprWebModule.RequireAuthentication(ARequest: TRequest): Boolean;
+begin
+  Result := True;
+end;
+
 procedure TfprWebModule.JSONContentStringToObject(AContentString: string; AnObject: TObject);
 begin
   try
@@ -274,9 +408,11 @@ begin
   inherited Create(AOwner);
   FDeStreamer := TJSONDeStreamer.Create(Self);
   FDeStreamer.Options := [jdoCaseInsensitive];
+  FDeStreamer.OnRestoreProperty := @DoRestoreProperty;
 
   FStreamer := TJSONStreamer.Create(Self);
   FStreamer.Options := [jsoLowerPropertyNames];
+  FStreamer.OnStreamProperty := @FStreamerStreamProperty;
 
   FCorsOriginList := TDCSHTTPCorsEntryList.Create;
 end;

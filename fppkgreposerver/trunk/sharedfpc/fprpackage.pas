@@ -8,7 +8,8 @@ unit fprPackage;
 interface
 
 uses
-  fprWebModule, fprPackageIDEIntf, fprErrorHandling, fprPackageUtils, LazarusPackageIntf;
+  fprWebModule, fprPackageIDEIntf, fprErrorHandling, fprPackageUtils, fprBuildTask, fprGCollection, 
+  fprDeleteTree, fprBuildAgentResponse, fprCopyTree, LazarusPackageIntf;
 
 implementation
 
