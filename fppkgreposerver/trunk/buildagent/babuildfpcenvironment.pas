@@ -10,6 +10,7 @@ uses
   BaseUnix,
   dcsHandler,
   dcsThreadCommandFactory,
+  fprDeleteTree,
   baCommand;
 
 type
@@ -27,36 +28,6 @@ type
   end;
 
 implementation
-
-function DeleteDirectory(const DirectoryName: string; OnlyChildren: boolean): boolean;
-const
-  //Don't follow symlinks on *nix, just delete them
-  DeleteMask = faAnyFile {$ifdef unix} or faSymLink{%H-} {$endif unix};
-var
-  FileInfo: TSearchRec;
-  CurSrcDir: String;
-  CurFilename: String;
-begin
-  Result:=false;
-  CurSrcDir:=IncludeTrailingPathDelimiter(DirectoryName);
-  if FindFirst(CurSrcDir+AllFilesMask,DeleteMask,FileInfo)=0 then begin
-    repeat
-      // check if special file
-      if (FileInfo.Name='.') or (FileInfo.Name='..') or (FileInfo.Name='') then
-        continue;
-      CurFilename:=CurSrcDir+FileInfo.Name;
-      if ((FileInfo.Attr and faDirectory)>0)
-         {$ifdef unix} and ((FileInfo.Attr and faSymLink{%H-})=0) {$endif unix} then begin
-        if not DeleteDirectory(CurFilename,false) then exit;
-      end else begin
-        if not DeleteFile(CurFilename) then exit;
-      end;
-    until FindNext(FileInfo)<>0;
-  end;
-  FindClose(FileInfo);
-  if (not OnlyChildren) and (not RemoveDir(CurSrcDir)) then exit;
-  Result:=true;
-end;
 
 { TbaBuildFPCEnvironment }
 
@@ -81,7 +52,7 @@ begin
 
   BuildPath := GetBuildPath;
   FDistributor.Log('Clear pristine path', etInfo, Null, FSendByLisId);
-  if DirectoryExists(PristineEnvironmentPath) and not DeleteDirectory(PristineEnvironmentPath, False) then
+  if DirectoryExists(PristineEnvironmentPath) and not DeleteTree(PristineEnvironmentPath, False) then
     raise Exception.CreateFmt('Failed to remove pristine-environment-path ''%s''', [PristineEnvironmentPath]);
 
   if not ForceDirectories(PristineEnvironmentPath) then
