@@ -21,7 +21,8 @@ uses
   DCSHTTPRestServer,
   baBuildCommand,
   baBuildFPCEnvironment,
-  baCommand;
+  baCommand,
+  baRegisterWithBuildManager;
 
 type
 
@@ -66,10 +67,17 @@ begin
   GlobalSettings.SetSettingAsString('dbuser', 'sysdba');
   GlobalSettings.SetSettingAsString('dbpassword', 'masterkey');
 
+  GlobalSettings.AddSetting('buildmanagerurl', 'Connections', 'BuildManagerURL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AgentName', 'Agent', 'Name', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AgentURL', 'Agent', 'URL', '', #0, dcsPHasParameter);
+
   GlobalSettings.AddSettingTemplate('TestEnv-', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'StartCompiler', 'TestEnvStartCompiler-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
+
+  GlobalSettings.AddSetting('BuildFilesLocation', 'BuildFiles', 'Location', '', #0, dcsPHasParameter, '');
+  GlobalSettings.AddSetting('BuildFilesURL', 'BuildFiles', 'URL', '', #0, dcsPHasParameter, '');
 
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AllowCorsOrigin', 'OIDC', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
@@ -136,6 +144,10 @@ begin
     HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat, dcsRestServerFlagAllowDifferentChunkedSetting];
     if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
       HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
+
+    CheckSynchronize(100);
+
+    FDistributor.QueueCommand(TbaRegisterWithBuildManagerCommand.Create(-1, null, FDistributor));
 
     ConsoleServer := TDCSConsoleServer.Create(FDistributor);
     try

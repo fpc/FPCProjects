@@ -35,7 +35,7 @@
         <PackageName Value="DCServer"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="buildagent.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -55,6 +55,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="baCommand"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="baregisterwithbuildmanager.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="baRegisterWithBuildManager"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
