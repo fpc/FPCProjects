@@ -3,6 +3,9 @@ program repository;
 {$mode objfpc}{$H+}
 
 uses
+  {$IFDEF UNIX}
+  cthreads,
+  {$ENDIF}
   classes,
   sysutils,
   HTTPDefs,
@@ -24,6 +27,8 @@ begin
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
 
   GlobalSettings.AddSetting('GITRepositoriesPath', 'GIT', 'RepositoriesPath', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('GITUserName', 'GIT', 'UserName', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('GITEmail', 'GIT', 'Email', '', #0, dcsPHasParameter);
 
   ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
   try
@@ -32,7 +37,7 @@ begin
     ConfigFileStream.Free;;
   end;
 
-  Application.OnShowRequestException := @pmOnShowRequestException;
+  Application.OnShowRequestException := @fprOnShowRequestException;
 
   Application.Port:=8089;
   Application.Threaded := False;

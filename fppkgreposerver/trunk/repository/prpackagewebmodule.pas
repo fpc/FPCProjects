@@ -17,6 +17,9 @@ uses
   fpHTTP,
   fphttpclient,
   fpjson,
+  fpmkunit,
+  fprepos,
+  pkgrepos,
   zipper,
   jsonparser,
   fprPackageUtils,
@@ -30,11 +33,14 @@ type
   TprPackageWM = class(TfprWebModule)
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
+    procedure SetGitUserAndEmail(ARepoPath: string);
     function GetPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
     function AddSourcesToGITRepository(APackageName: string; AFile: TUploadedFile): string;
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
-    procedure TagPackage(PackageName, GITTag, TagMessage: string);
+    function TagPackage(PackageName, TagMessage: string; GITTag: string = ''): string;
+    procedure DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
+    procedure CloneGITPackage(APackageName, TmpPath: string);
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -56,7 +62,10 @@ var
   PackageURL: string;
   PackageJSON: TJSONData;
   PackageObject: TJSONObject;
+  Command: string;
   RevHash: string;
+  PackageTag, TagMessage: string;
+  s: string;
 begin
   Handled := True;
   PackageName := ARequest.GetNextPathInfo;
@@ -76,34 +85,70 @@ begin
         Exit;
         end
       else
-        Raise E;
+        Raise;
       end;
   end;
   if PackageJSON.JSONType = jtObject then
     begin
-    // Todo: Admin?
-
     PackageObject := PackageJSON as TJSONObject;
-    if PackageObject.Get('ownerid', '') <> FSubjectId then
-      raise Exception.Create('You have not enough rights to upload sources for this package');
+    Command := ARequest.GetNextPathInfo;
+    if Command = 'tagpackage' then
+      begin
+      if (PackageObject.Get('ownerid', '') <> FSubjectId) and (GetUserRole<>'admin') then
+        raise Exception.Create('You have not enough rights to add a tag for this package');
 
-    if PackageObject.Get('packagestate', '') = 'new' then
-      AddGITRepositoryForNewPackage(PackageName);
+      if (PackageObject.Get('packagestate', '') <> 'approved') and (PackageObject.Get('packagestate', '') <> 'published') then
+        raise Exception.Create('To be able to add tags package has to be approved or published.');
 
-    if ARequest.Files.Count <> 1 then
-      raise Exception.Create('Missing package in request');
+      TagMessage := ARequest.QueryFields.Values['message'];
+      if TagMessage = '' then
+        raise Exception.Create('Missing message');
 
-    RevHash := AddSourcesToGITRepository(PackageName, ARequest.Files.First);
+      PackageTag := TagPackage(PackageName, TagMessage);
 
-    if PackageObject.Get('packagestate', '') = 'new' then
-      TagPackage(PackageName, '0.0.0.0', 'Initial version');
+      AResponse.Content := '{"tag": "'+PackageTag+'"}';
+      AResponse.Code := 200;
+      end
+    else if ARequest.Method='POST' then
+      begin
+      if (PackageObject.Get('ownerid', '') <> FSubjectId) and (GetUserRole<>'admin') then
+        raise Exception.Create('You have not enough rights to upload sources for this package');
 
-    AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
-    AResponse.Code := 200;
+      if PackageObject.Get('packagestate', '') = 'new' then
+        AddGITRepositoryForNewPackage(PackageName);
+
+      if ARequest.Files.Count <> 1 then
+        raise Exception.Create('Missing package in request');
+
+      RevHash := AddSourcesToGITRepository(PackageName, ARequest.Files.First);
+
+      if PackageObject.Get('packagestate', '') = 'new' then
+        TagPackage(PackageName, 'Initial version', '0.0.0.0');
+
+      AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
+      AResponse.Code := 200;
+      end
+    else if Command <> '' then
+      begin
+      DownloadTAGSource(AResponse, PackageName, Command);
+      AResponse.Code := 200;
+      end
+    else
+      begin
+      AResponse.Code := 405;
+      end;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     end
   else
     raise Exception.Create('Invalid response from PackageManager.');
+end;
+
+procedure TprPackageWM.SetGitUserAndEmail(ARepoPath: string);
+var
+  CmdRes: string;
+begin
+  RunGit(ARepoPath, 'set user-email', ['config', '--global', 'user.email', QuotedStr(TDCSGlobalSettings.GetInstance.GetSettingAsString('GITEmail'))], CmdRes );
+  RunGit(ARepoPath, 'set user-name', ['config', '--global', 'user.name', QuotedStr(TDCSGlobalSettings.GetInstance.GetSettingAsString('GITUserName'))], CmdRes );
 end;
 
 function TprPackageWM.GetPackageRepoPath(APackageName: string): string;
@@ -137,6 +182,8 @@ begin
         Raise Exception.Create('Failed to create GIT repository');
 
       RenameFile(TmpPath, PackageRepoPath);
+
+      SetGitUserAndEmail(PackageRepoPath);
     finally
       DeleteDirectory(TmpPath, False);
     end;
@@ -157,7 +204,7 @@ begin
   TmpPath := GetTempFileName;
   ForceDirectories(TmpPath);
   try
-    RunGit(TmpPath, 'clone git repository', ['clone', GetPackageRepoPath(APackageName), 'pkgclone'], CmdRes );
+    CloneGITPackage(APackageName, TmpPath);
 
     ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
     ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
@@ -194,58 +241,69 @@ procedure TprPackageWM.RunGit(const curdir:string; const desc: string; const com
 var
   ExitStatus: Integer;
 begin
-  if RunCommandInDir(curdir, 'git', commands, outputstring, ExitStatus) <> 0 then
+  if RunCommandInDir(curdir, 'git', commands, outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
     Raise Exception.Create('Failed to execute GIT to ' + desc);
   if ExitStatus <> 0 then
     Raise Exception.Create('Failed to ' + desc + '. ' + outputstring);
 end;
 
-procedure TprPackageWM.TagPackage(PackageName, GITTag, TagMessage: string);
+function TprPackageWM.TagPackage(PackageName, TagMessage: string; GITTag: string): string;
 var
   TmpPath: string;
   ClonePath: string;
   CmdRes, NotifyPackageManagerTagAddedURL: string;
-  ManifestXML: TXMLDocument;
-  ManifestJSON: TJSONObject;
   VersionJSON: TJSONObject;
+  VersionNumberJSON: TJSONObject;
   TagAdded: string;
   ResponseJSON: TJSONData;
   StrStream: TStringStream;
   JSO: TJSONObject;
+  Package: TFPPackage;
 begin
   TmpPath := GetTempFileName;
   ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
   ForceDirectories(TmpPath);
   try
-    RunGit(TmpPath, 'clone git repository', ['clone', GetPackageRepoPath(PackageName), 'pkgclone'], CmdRes );
-    RunGit(ClonePath, 'tag new version', ['tag', '-a', '''' + GITTag + '''', '-m', '''' +TagMessage + ''''], CmdRes);
+    CloneGITPackage(PackageName, TmpPath);
 
-    ReadXMLFile(ManifestXML, ConcatPaths([ClonePath, 'manifest.xml']));
+    Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
     try
-      ManifestJSON := ManifestToJSON(ManifestXML).Items[0] as TJSONObject;
+      VersionJSON := TJSONObject.Create();
       try
-        VersionJSON := TJSONObject.Create();
+        if GITTag = '' then
+          GITTag := Package.Version.AsString;
+
+        VersionJSON.Add('tag', GITTag);
+        Result := GITTag;
+
+        VersionJSON.Add('filename', Package.FileName);
+        VersionJSON.Add('author', Package.Author);
+        VersionJSON.Add('license', Package.License);
+        VersionJSON.Add('homepageurl', Package.HomepageURL);
+        VersionJSON.Add('email', Package.Email);
+        VersionJSON.Add('description', Package.Description);
+
+        VersionNumberJSON := TJSONObject.Create;
         try
-          VersionJSON.Add('tag', GITTag);
-
-          VersionJSON.Add('filename', ManifestJSON.Get('filename', ''));
-          VersionJSON.Add('author', ManifestJSON.Get('author', ''));
-          VersionJSON.Add('license', ManifestJSON.Get('license', ''));
-          VersionJSON.Add('homepageurl', ManifestJSON.Get('homepageurl', ''));
-          VersionJSON.Add('email', ManifestJSON.Get('email', ''));
-          VersionJSON.Add('description', ManifestJSON.Get('description', ''));
-
-          TagAdded := VersionJSON.AsJSON;
+          VersionNumberJSON.Add('major', Package.Version.Major);
+          VersionNumberJSON.Add('minor', Package.Version.Minor);
+          VersionNumberJSON.Add('micro', Package.Version.Micro);
+          VersionNumberJSON.Add('build', Package.Version.Build);
+          VersionJSON.Add('version', VersionNumberJSON);
+          VersionNumberJSON := nil;
         finally
-          VersionJSON.Free;
+          VersionNumberJSON.Free;
         end;
+
+        TagAdded := VersionJSON.AsJSON;
       finally
-        ManifestJSON.Free;
+        VersionJSON.Free;
       end;
     finally
-      ManifestXML.Free;
+      Package.Free;
     end;
 
+    RunGit(ClonePath, 'tag new version', ['tag', '-a', GITTag, '-m', '''' +TagMessage + ''''], CmdRes);
     NotifyPackageManagerTagAddedURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+PackageName+'/version';
 
     StrStream := TStringStream.Create(TagAdded);
@@ -265,11 +323,64 @@ begin
       StrStream.Free;
     end;
 
-    RunGit(ClonePath, 'push tag', ['push'], CmdRes);
+    RunGit(ClonePath, 'push tag', ['push', 'origin', GITTag], CmdRes);
 
   finally
     DeleteDirectory(TmpPath, False);
   end;
+end;
+
+procedure TprPackageWM.DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
+var
+  TmpPath: string;
+  FS: TFileStream;
+  MS: TMemoryStream;
+  ArchiveName: string;
+  ClonePath: string;
+  CmdRes: string;
+begin
+  TmpPath := GetTempFileName;
+  ForceDirectories(TmpPath);
+  try
+    CloneGITPackage(APackageName, TmpPath);
+
+    ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
+    ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
+    RunGit(ClonePath, 'archive git repository', ['archive', '--output', ArchiveName, '--format', 'zip', ATag], CmdRes );
+
+    FS := TFileStream.Create(ArchiveName, fmOpenRead);
+    try
+      MS := TMemoryStream.Create;
+      try
+        MS.CopyFrom(FS, FS.Size);
+
+        AResponse.ContentStream := MS;
+        AResponse.FreeContentStream := True;
+        MS := nil;
+      finally
+        MS.Free;
+      end;
+    finally
+      FS.Free;
+    end;
+    AResponse.Code := 200;
+    AResponse.ContentType := 'application/zip';
+  finally
+    DeleteDirectory(TmpPath, False);
+  end;
+end;
+
+procedure TprPackageWM.CloneGITPackage(APackageName, TmpPath: string);
+var
+  RepoPath, CmdRes: String;
+begin
+  RepoPath := GetPackageRepoPath(APackageName);
+
+  if not FileExists(RepoPath) then
+    raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
+
+  RunGit(TmpPath, 'clone git repository', ['clone', RepoPath, 'pkgclone'], CmdRes );
+  SetGitUserAndEmail(RepoPath);
 end;
 
 constructor TprPackageWM.Create(AOwner: TComponent);
