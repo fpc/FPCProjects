@@ -163,14 +163,17 @@ Procedure TpmPackageWM.HandlePackageApprove(PackageName: string; ARequest: TRequ
 var
   Package: TpmPackage;
 begin
+  if GetUserRole <> 'admin' then
+    raise EHTTP.CreateFmtHelp('Approve is denied', [PackageName], 403);
+
   if ARequest.Method = 'PUT' then
     begin
     Package := TpmPackageList.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
-    if GetUserRole <> 'admin' then
-      raise EHTTP.CreateFmtHelp('Approve is denied', [PackageName], 403);
+    if Package.PackageState <> pmpsAcceptance then
+      raise Exception.Create('Only packages in Acceptance state can be approved.');
 
     Package.PackageState := pmpsApproved;
 
