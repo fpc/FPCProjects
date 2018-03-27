@@ -3,7 +3,7 @@ FROM fedora
 ARG inifile=repository_docker.ini
 
 RUN dnf -y update
-RUN dnf -y install openssl-devel
+RUN dnf -y install openssl-devel git
 RUN dnf clean all
 
 RUN useradd --create-home --shell /bin/bash repository
