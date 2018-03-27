@@ -66,6 +66,7 @@
         <Filename Value="pmfunctionswm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="pmFunctionsWM"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <UnitName Value="pmFunctionsWM"/>
       </Unit5>
@@ -73,6 +74,9 @@
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
+    <Target>
+      <Filename Value="packagemanager"/>
+    </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
