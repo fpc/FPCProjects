@@ -30,7 +30,7 @@ begin
 
 
   Application.Port:=8088;
-  Application.OnShowRequestException := @pmOnShowRequestException;
+  Application.OnShowRequestException := @fprOnShowRequestException;
   Application.Initialize;
   Application.Run;
 end.
