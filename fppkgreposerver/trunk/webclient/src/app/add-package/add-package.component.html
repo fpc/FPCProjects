@@ -1,0 +1,23 @@
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" >Add new package</h5>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label for="inputPackageName">Package name</label>
+        <input [(ngModel)]="newPackage.name" class="form-control" [ngClass]="{'is-invalid': errMessage}" id="inputPackageName" aria-describedby="packageNameHelp" placeholder="Enter package name">
+        <small id="packageNameHelp" class="form-text text-muted">The package name has to be unique</small>
+
+          <div class="invalid-feedback">
+          Adding package failed. {{errMessage}}
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="activeModal.close('Cancel')">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="addPackage()">Add package</button>
+    </div>
+  </div>
+</div>

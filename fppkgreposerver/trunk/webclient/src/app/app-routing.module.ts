@@ -6,6 +6,9 @@ import { BuildPackageComponent } from './build-package/build-package.component';
 import { LoginComponent } from './login/login.component';
 import { AdminComponent } from './admin/admin.component';
 import { AboutComponent } from './about/about.component';
+import { PackagePageComponent } from './package-page/package-page.component';
+import { PackagesPageComponent } from './packages-page/packages-page.component';
+import { BuildTaskPageComponent } from './build-task-page/build-task-page.component';
 import { LoggedOutComponent } from './logged-out/logged-out.component';
 
 const routes: Routes = [
@@ -13,6 +16,12 @@ const routes: Routes = [
     path: '',
     canActivate: [AuthGuardService],
     component: BuildPackageComponent,
+    children: []
+  },
+  {
+    path: 'packages',
+    canActivate: [AuthGuardService],
+    component: PackagesPageComponent,
     children: []
   },
   {
@@ -41,8 +50,15 @@ const routes: Routes = [
     path: 'about',
     component: AboutComponent,
     children: []
-  }
-
+  },
+  {
+    path: 'buildtask/:uniqueString',
+    canActivate: [AuthGuardService],
+    component: BuildTaskPageComponent,
+  },
+  { path: 'package/:name',
+    canActivate: [AuthGuardService],
+    component: PackagePageComponent },
 ];
 
 @NgModule({

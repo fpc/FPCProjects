@@ -1,0 +1,21 @@
+<app-add-package id="addPackageModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-add-package>
+
+<div class="card">
+  <div class="card-header">
+    &nbsp;
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Package list</h5>
+    <p class="card-text">A complete list of all packages</p>
+    <p class="card-text">
+      <app-package-list [packageList]="packageList"></app-package-list>
+    </p>
+    <p class="card-text">
+      <button type="button" class="btn btn-primary" (click)="open()">
+        Add package
+      </button>
+    </p>
+
+  </div>
+</div>
+

@@ -1,0 +1,21 @@
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" >Upload package sources</h5>
+    </div>
+    <div class="modal-body">
+
+      <input type="file" #file (change)="onChange(file.files)"/>
+
+      <ngb-alert type="danger" (close)="isError=false" *ngIf="isError">
+        Failed to upload sources. {{errorMsg}}
+      </ngb-alert>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="activeModal.close('Cancel')">Cancel</button>
+        <button type="button" [disabled]="((!((files)&&(files.length==1)))||isBusy)" (click)="uploadPackage()" class="btn btn-primary">Upload source<spinner [show]="isBusy" [size]="20"></spinner></button>
+      </div>
+    </div>
+  </div>
+
+

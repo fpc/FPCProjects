@@ -1,0 +1,30 @@
+<app-upload-package id="uploadPackageModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-upload-package>
+<app-tag-package id="tagPackageModal" [package]="package" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-tag-package>
+
+<div class="card" *ngIf="(package)">
+  <div class="card-header">
+    {{package.name}} ({{package.packagestate}})
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Overview</h5>
+
+
+    <div class="my-3 p-3 bg-white rounded box-shadow">
+        <h6 class="border-bottom border-gray pb-2 mb-0">Recent versions</h6>
+        <div class="media text-muted pt-3" *ngFor="let version of package.packageversionlist" >
+          <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+            <strong class="d-block text-gray-dark">{{version.tag}}</strong>
+            {{version.author}}
+          </p>
+          <button class="btn btn-primary" (click)="requestBuild(version.tag)">Request build</button>
+                  </div>
+
+      </div>
+
+
+    <p class="card-text"></p>
+    <button class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
+    <button class="btn" (click)="showTagDialog()">Add tag</button>
+    <button class="btn" *ngIf="(package.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
+  </div>
+</div>

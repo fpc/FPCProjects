@@ -8,6 +8,9 @@
   <div class="collapse navbar-collapse" [ngbCollapse]="!isNavbarCollapsed" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item">
+        <a class="nav-link" routerLink="/packages">Packages</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" routerLink="/admin" *ngIf="isAdmin">Admin</a>
       </li>
       <li class="nav-item">
