@@ -1,0 +1,24 @@
+object bmBuildWM: TbmBuildWM
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  OldCreateOrder = False
+  Actions = <  
+    item
+      Name = 'register'
+      Default = False
+      OnRequest = registeragentRequest
+      Template.AllowTagParams = False
+    end  
+    item
+      Name = 'list'
+      Default = True
+      OnRequest = listRequest
+      Template.AllowTagParams = False
+    end>
+  CreateSession = False
+  Height = 300
+  HorizontalOffset = 2439
+  VerticalOffset = 1228
+  Width = 300
+  PPI = 192
+end

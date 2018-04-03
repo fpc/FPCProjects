@@ -7,6 +7,10 @@ services:
       ports:
         - "5000:5000"
 
+  buildmanager:
+      ports:
+        - "8181:8181"
+
   webclient:
       ports:
         - "4200:80"
@@ -19,7 +23,10 @@ services:
       ports:
         - "8089:8089"
 
-
   packagemanager:
       ports:
         - "8088:8088"
+
+  fppkgrepository:
+      ports:
+        - "8282:8282"

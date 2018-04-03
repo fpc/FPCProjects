@@ -1,0 +1,16 @@
+object repRepositoryWM: TrepRepositoryWM
+  OldCreateOrder = False
+  Actions = <  
+    item
+      Name = 'rebuild'
+      Default = False
+      OnRequest = rebuildRequest
+      Template.AllowTagParams = False
+    end>
+  OnRequest = DataModuleRequest
+  CreateSession = False
+  Height = 113
+  HorizontalOffset = 566
+  VerticalOffset = 64
+  Width = 150
+end

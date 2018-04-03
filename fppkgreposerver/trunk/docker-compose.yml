@@ -8,6 +8,15 @@ services:
         dockerfile: docker-identityserver.dockerfile
       container_name: identityserver
 
+  buildmanager:
+      image: 'trunk_buildmanager:latest'
+      build:
+        context: .
+        dockerfile: docker-buildmanager.dockerfile
+      depends_on:
+        - identityserver
+      container_name: buildmanager
+
   webclient:
       image: 'trunk_webclient:latest'
       build:
@@ -17,13 +26,9 @@ services:
       depends_on:
         - buildagent
         - identityserver
-
-  buildagent:
-      image: 'trunk_buildagent:latest'
-      build:
-        context: .
-        dockerfile: docker-buildagent.dockerfile
-      container_name: buildagent
+      volumes:
+        - buildfiles:/usr/share/nginx/html/buildfiles
+        - repo:/usr/share/nginx/html/repo
 
   repository:
       image: 'trunk_repository:latest'
@@ -31,6 +36,8 @@ services:
         context: .
         dockerfile: docker-repository.dockerfile
       container_name: repository
+      volumes:
+        - gitrepos:/home/repository/gitrepos
 
   packagemanager:
       image: 'trunk_packagemanager:latest'
@@ -38,3 +45,30 @@ services:
         context: .
         dockerfile: docker-packagemanager.dockerfile
       container_name: packagemanager
+
+  buildagent:
+      image: 'trunk_buildagent:latest'
+      build:
+        context: .
+        dockerfile: docker-buildagent.dockerfile
+      container_name: buildagent
+      depends_on:
+        - buildmanager
+      volumes:
+       - buildfiles:/home/buildagent/buildfiles
+
+  fppkgrepository:
+      image: 'trunk_fppkgrepository:latest'
+      build:
+        context: .
+        dockerfile: docker-fppkgrepository.dockerfile
+      container_name: fppkgrepository
+      depends_on:
+        - buildmanager
+      volumes:
+       - repo:/home/fppkgrepository/repo
+
+volumes:
+  gitrepos:
+  buildfiles:
+  repo:
