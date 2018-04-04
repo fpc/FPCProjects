@@ -213,7 +213,7 @@ var
   Application: TFppkgRepoServer;
 begin
   Application:=TFppkgRepoServer.Create(nil);
-  Application.Title:='Fppkg build server';
+  Application.Title := 'Fppkg repository agent';
   Application.Run;
   Application.Free;
 end.
