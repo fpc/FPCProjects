@@ -33,8 +33,8 @@ type
   { TrepRepositoryWM }
 
   TrepRepositoryWM = class(TfprWebModule)
+    procedure DataModuleCreate(Sender: TObject);
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
-    Procedure rebuildRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     function RebuildRepository(ARepository: TrepRepository): string;
   end;
@@ -48,37 +48,56 @@ implementation
 
 { TrepRepositoryWM }
 
-Procedure TrepRepositoryWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+procedure TrepRepositoryWM.DataModuleCreate(Sender: TObject);
+var
+  GlobalSettings: TDCSGlobalSettings;
 begin
-  Handled := False;
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
-Procedure TrepRepositoryWM.rebuildRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+Procedure TrepRepositoryWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 var
   FPCVersionStr, RepName: String;
   FPCVersion: TrepFPCVersion;
   Repository: TrepRepository;
 begin
-  if GetUserRole <> 'admin' then
-    raise EHTTPClient.CreateHelp('Only administrators may rebuild repositories', 401);
+  if not Handled then
+    begin
+    FPCVersionStr := ARequest.GetNextPathInfo;
+    if FPCVersionStr = '' then
+      begin
+      AResponse.Content := ObjectToJSONContentString( TrepFPCVersionList.Instance );
+      AResponse.Code := 200;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);;
+      end
+    else
+      begin
+      FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
+      if not Assigned(FPCVersion) then
+        raise EHTTPClient.CreateFmt('FPC-Version %s is not available', [FPCVersionStr]);
 
-  FPCVersionStr := ARequest.GetNextPathInfo;
+      RepName := ARequest.GetNextPathInfo;
+      if RepName = '' then
+        AResponse.Content := ObjectToJSONContentString( FPCVersion.RepositoryList )
+      else
+        begin
+        Repository := FPCVersion.RepositoryList.FindRepository(RepName);
+        if not Assigned(Repository) then
+          raise EHTTPClient.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
 
-  FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
-  if not Assigned(FPCVersion) then
-    raise EHTTPClient.CreateFmt('FPC-Version %s is not available', [FPCVersionStr]);
+        if ARequest.GetNextPathInfo = '' then
+          AResponse.Content := ObjectToJSONContentString( Repository.PackageList )
+        else
+          AResponse.Content := RebuildRepository(Repository);
 
-  RepName := ARequest.GetNextPathInfo;
-  Repository := FPCVersion.RepositoryList.FindRepository(RepName);
-  if not Assigned(Repository) then
-    raise EHTTPClient.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
-
-  AResponse.Content := RebuildRepository(Repository);
-
-  AResponse.Code := 200;
-  AResponse.CodeText := GetStatusCode(AResponse.Code);
-
-  Handled := true;
+        end;
+      end;
+    AResponse.Code := 200;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);;
+    end;
+  Handled := True;
 end;
 
 function TrepRepositoryWM.RebuildRepository(ARepository: TrepRepository): string;

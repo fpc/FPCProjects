@@ -18,3 +18,16 @@
 
   </div>
 </div>
+<div class="card" *ngFor="let repository of repositoryList">
+    <div class="card-header">
+        {{repository.name}} repository
+    </div>
+    <div class="card-body">
+      <h4 class="card-title">Rebuild FPC 3.1.1 {{repository.name}} repository</h4>
+      <p class="card-text">Rebuild the complete repository and place it online. This will add updated and new packages to the repository.</p>
+      <button type="button" [disabled]="isBusy" (click)="rebuildRepository(repository)" class="btn btn-primary">Rebuild repository <spinner [show]="isBusy" [size]="20"></spinner></button>
+      <ngb-alert type="danger" (close)="closeError()" *ngIf="isError">
+        Failed to rebuild {{repository.name}} repository. {{errorMsg}}
+      </ngb-alert>
+    </div>
+  </div>

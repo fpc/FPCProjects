@@ -24,6 +24,7 @@ import { BuildPackageComponent } from './build-package/build-package.component';
 import { AdminComponent } from './admin/admin.component';
 import { BuildAgentService } from './build-agent.service';
 import { RepositoryService } from './repository.service';
+import { FppkgRepositoryService } from './fppkg-repository.service';
 import { BuildManagerService } from './build-manager.service';
 import { SpinnerComponent } from './spinner/spinner.component';
 import { ViewDCSResponseComponent } from './view-dcsresponse/view-dcsresponse.component';
@@ -80,6 +81,7 @@ import { TagPackageComponent } from './tag-package/tag-package.component';
     BuildManagerService,
     PackageService,
     RepositoryService,
+    FppkgRepositoryService,
     NgbActiveModal,
     {
       provide: HTTP_INTERCEPTORS,

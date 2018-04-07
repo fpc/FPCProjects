@@ -9,7 +9,8 @@ uses
   dcsGlobalSettings,
   fprErrorHandling,
   repPackageWebmodule,
-  repPackage, reprepositorywebmodule;
+  repPackage,
+  reprepositorywebmodule;
 
 var
   GlobalSettings: TDCSGlobalSettings;

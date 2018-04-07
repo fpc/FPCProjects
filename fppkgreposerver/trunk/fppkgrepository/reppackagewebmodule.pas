@@ -44,7 +44,12 @@ implementation
 { TrepPackageWM }
 
 procedure TrepPackageWM.DataModuleCreate(Sender: TObject);
+var
+  GlobalSettings: TDCSGlobalSettings;
 begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
 procedure TrepPackageWM.DataModuleDestroy(Sender: TObject);

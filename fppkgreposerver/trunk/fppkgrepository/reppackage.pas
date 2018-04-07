@@ -49,13 +49,14 @@ type
     constructor Create;
     destructor Destroy; override;
     property PackageList: TrepPackageList read FPackageList;
-    property Name: string read FName write FName;
     property MasterRepositoryName: string read FMasterRepositoryName write FMasterRepositoryName;
-    property NeedAdminRights: Boolean read FNeedAdminRights write FNeedAdminRights;
     property Path: string read FPath write FPath;
     property BaseURL: string read FBaseURL write FBaseURL;
     property Contact: string read FContact write FContact;
     property FPCVersion: string read FFPCVersion write FFPCVersion;
+  published
+    property Name: string read FName write FName;
+    property NeedAdminRights: Boolean read FNeedAdminRights write FNeedAdminRights;
   end;
 
   TrepCustomRepositoryList = specialize TFPGObjectList<TrepRepository>;
@@ -77,8 +78,9 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    property FPCVersion: string read FFPCVersion write FFPCVersion;
     property RepositoryList: TrepRepositoryList read FRepositoryList;
+  published
+    property FPCVersion: string read FFPCVersion write FFPCVersion;
   end;
 
   TrepCustomFPCVersionList = specialize TFPGObjectList<TrepFPCVersion>;

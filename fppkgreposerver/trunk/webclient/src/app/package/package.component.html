@@ -16,11 +16,12 @@
             <strong class="d-block text-gray-dark">{{version.tag}}</strong>
             {{version.author}}
           </p>
+          <span *ngIf="(package.packagestate!='acceptance')">
+            <button *ngFor="let repository of repositoryList" class="btn" (click)="publishTag(repository, version.tag)">publish to {{repository.name}}</button>
+          </span>
           <button class="btn btn-primary" (click)="requestBuild(version.tag)">Request build</button>
-                  </div>
-
+        </div>
       </div>
-
 
     <p class="card-text"></p>
     <button class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
