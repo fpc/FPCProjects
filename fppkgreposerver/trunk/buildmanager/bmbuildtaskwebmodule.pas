@@ -181,7 +181,6 @@ procedure TbmBuildTaskWM.DataModuleCreate(Sender: TObject);
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
-  writeln('jaja');
   FBuildTaskList := TfprBuildTaskList.Create(True);
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
