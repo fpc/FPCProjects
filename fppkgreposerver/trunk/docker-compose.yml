@@ -45,6 +45,8 @@ services:
         context: .
         dockerfile: docker-packagemanager.dockerfile
       container_name: packagemanager
+      volumes:
+        - packagedata:/home/packagemanager/data
 
   buildagent:
       image: 'trunk_buildagent:latest'
@@ -72,3 +74,4 @@ volumes:
   gitrepos:
   buildfiles:
   repo:
+  packagedata:

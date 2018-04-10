@@ -8,6 +8,7 @@ uses
   Classes,
   SysUtils,
   fgl,
+  fprGCollection,
   fpjsonrtti;
 
 type
@@ -15,7 +16,7 @@ type
 
   { TpmPackageVersion }
 
-  TpmPackageVersion = class
+  TpmPackageVersion = class(TCollectionItem)
   private
     FAuthor: string;
     FFilename: string;
@@ -26,48 +27,50 @@ type
     property Author: string read FAuthor write FAuthor;
   end;
 
-  TpmGenPackageVersionList = specialize TFPGObjectList<TpmPackageVersion>;
+  TpmGenPackageVersionCollection = specialize TcnocGCollection<TpmPackageVersion>;
 
-  { TpmPackageVersionList }
+  { TpmPackageVersionCollection }
 
-  TpmPackageVersionList = class(TpmGenPackageVersionList)
+  TpmPackageVersionCollection = class(TpmGenPackageVersionCollection)
   public
     function FindVersionByTag(ATag: string): TpmPackageVersion;
   end;
 
   { TpmPackage }
 
-  TpmPackage = class
+  TpmPackage = class(TCollectionItem)
   private
     FName: string;
     FOwnerId: string;
     FPackageState: TpmPackageState;
-    FPackageVersionList: TpmPackageVersionList;
+    FPackageVersionList: TpmPackageVersionCollection;
     procedure SetPackageState(AValue: TpmPackageState);
   public
-    constructor Create; virtual;
+    constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
     function Validate(out AnErrStr: string): Boolean;
   published
     property Name: string read FName write FName;
     property OwnerId: string read FOwnerId write FOwnerId;
     property PackageState: TpmPackageState read FPackageState write SetPackageState;
-    property PackageVersionList: TpmPackageVersionList read FPackageVersionList;
+    property PackageVersionList: TpmPackageVersionCollection read FPackageVersionList;
   end;
 
-  TpmGenPackageList = specialize TFPGObjectList<TpmPackage>;
+  TpmGenPackageCollection = specialize TcnocGCollection<TpmPackage>;
 
-  { TpmPackageList }
+  { TpmPackageCollection }
 
-  TpmPackageList = class(TpmGenPackageList)
+  TpmPackageCollection = class(TpmGenPackageCollection)
   private
-    class var FPackageList: TpmPackageList;
-    class function GetInstance: TpmPackageList; static;
+    class var FPackageList: TpmPackageCollection;
+    class function GetInstance: TpmPackageCollection; static;
   public
     class constructor Create;
     class destructor Destroy;
-    class property Instance: TpmPackageList read GetInstance;
+    class property Instance: TpmPackageCollection read GetInstance;
     function FindPackageByName(AName: string): TpmPackage;
+    procedure LoadFromFile(AFileName: string);
+    procedure SaveToFile(AFileName: string);
   end;
 
   { TpmManifest }
@@ -86,9 +89,9 @@ const
 
 implementation
 
-{ TpmPackageVersionList }
+{ TpmPackageVersionCollection }
 
-function TpmPackageVersionList.FindVersionByTag(ATag: string): TpmPackageVersion;
+function TpmPackageVersionCollection.FindVersionByTag(ATag: string): TpmPackageVersion;
 var
   i: Integer;
 begin
@@ -111,9 +114,10 @@ begin
   FPackageState := AValue;
 end;
 
-constructor TpmPackage.Create;
+constructor TpmPackage.Create(ACollection: TCollection);
 begin
-  FPackageVersionList := TpmPackageVersionList.Create(True);
+  inherited;
+  FPackageVersionList := TpmPackageVersionCollection.Create();
 end;
 
 destructor TpmPackage.Destroy;
@@ -146,24 +150,24 @@ begin
     end;
 end;
 
-{ TpmPackageList }
+{ TpmPackageCollection }
 
-class function TpmPackageList.GetInstance: TpmPackageList; static;
+class function TpmPackageCollection.GetInstance: TpmPackageCollection; static;
 begin
   Result := FPackageList;
 end;
 
-class constructor TpmPackageList.Create;
+class constructor TpmPackageCollection.Create;
 begin
-  FPackageList := TpmPackageList.Create(True);
+  FPackageList := TpmPackageCollection.Create();
 end;
 
-class destructor TpmPackageList.Destroy;
+class destructor TpmPackageCollection.Destroy;
 begin
   FPackageList.Free;
 end;
 
-function TpmPackageList.FindPackageByName(AName: string): TpmPackage;
+function TpmPackageCollection.FindPackageByName(AName: string): TpmPackage;
 var
   i: Integer;
 begin
@@ -176,6 +180,44 @@ begin
       end;
     end;
   Result := Nil;
+end;
+
+procedure TpmPackageCollection.LoadFromFile(AFileName: string);
+var
+  DeStreamer: TJSONDeStreamer;
+  FS: TStringStream;
+begin
+  DeStreamer := TJSONDeStreamer.Create(nil);
+  try
+    FS := TStringStream.Create();
+    try
+      FS.LoadFromFile(AFileName);
+      FS.Seek(0, soFromBeginning);
+      DeStreamer.JSONToCollection(FS.DataString, Self);
+    finally
+      FS.Free;
+    end;
+  finally
+    DeStreamer.Free;
+  end;
+end;
+
+procedure TpmPackageCollection.SaveToFile(AFileName: string);
+var
+  Streamer: TJSONStreamer;
+  FS: TStringStream;
+begin
+  Streamer := TJSONStreamer.Create(nil);
+  try
+    FS := TStringStream.Create(Streamer.ObjectToJSONString(Self));
+    try
+      FS.SaveToFile(AFileName);
+    finally
+      FS.Free;
+    end;
+  finally
+    Streamer.Free;
+  end;
 end;
 
 end.

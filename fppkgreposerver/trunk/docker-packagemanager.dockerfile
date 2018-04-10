@@ -10,6 +10,8 @@ RUN useradd --create-home --shell /bin/bash packagemanager
 USER packagemanager
 WORKDIR /home/packagemanager
 
+RUN mkdir data
+
 COPY packagemanager/packagemanager /home/packagemanager
 COPY packagemanager/config/$inifile /home/packagemanager/packagemanager.ini
 

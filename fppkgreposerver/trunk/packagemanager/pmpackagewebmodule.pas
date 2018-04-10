@@ -28,6 +28,7 @@ type
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+    procedure SavePackageList;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -51,7 +52,7 @@ begin
   if (PackageName = '') and (ARequest.Method = 'GET') then
     begin
     // Return list of all packages
-    AResponse.Content := FPackageStreamer.PackageListToJSon(TpmPackageList.Instance);
+    AResponse.Content := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance);
     AResponse.Code := 200;
     end
   else
@@ -93,10 +94,10 @@ var
 begin
   if ARequest.Method = 'POST' then
     begin
-    PackageVersion := TpmPackageVersion.Create;
+    PackageVersion := TpmPackageVersion.Create(nil);
     try
       JSONContentStringToObject(ARequest.Content, PackageVersion);
-      Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+      Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
       if not Assigned(Package) then
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
       if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.Tag)) then
@@ -104,14 +105,14 @@ begin
 
       AResponse.Content := ObjectToJSONContentString(PackageVersion);
 
-      Package.PackageVersionList.Add(PackageVersion);
+      PackageVersion.Collection := Package.PackageVersionList;
       PackageVersion := nil;
-
-      if Package.PackageState = pmpsInitial then
-        Package.PackageState := pmpsAcceptance;
     finally
       PackageVersion.Free;
     end;
+    SavePackageList;
+    if Package.PackageState = pmpsInitial then
+      Package.PackageState := pmpsAcceptance;
     end
   else
     raise Exception.Create('Get package version not implemented');
@@ -124,7 +125,7 @@ var
 begin
   if ARequest.Method = 'POST' then
     begin
-    Package := TpmPackage.Create;
+    Package := TpmPackage.Create(nil);
     try
       FPackageStreamer.JSonToPackage(ARequest.Content, Package);
       Package.OwnerId := FSubjectId;
@@ -133,20 +134,21 @@ begin
       if not Package.Validate(ErrStr) then
         Raise EJsonWebException.Create(ErrStr);
 
-      if Assigned(TpmPackageList.Instance.FindPackageByName(Package.Name)) then
+      if Assigned(TpmPackageCollection.Instance.FindPackageByName(Package.Name)) then
         Raise EJsonWebException.CreateFmt('Package with the name %s does already exist', [Package.Name]);
 
       AResponse.Content := FPackageStreamer.PackageToJSon(Package);
 
-      TpmPackageList.Instance.Add(Package);
+      Package.Collection := TpmPackageCollection.Instance;
       Package := Nil;
     finally
       Package.Free;
     end;
+    SavePackageList;
     end
   else if ARequest.Method = 'GET' then
     begin
-    Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
@@ -168,7 +170,7 @@ begin
 
   if ARequest.Method = 'PUT' then
     begin
-    Package := TpmPackageList.Instance.FindPackageByName(PackageName);
+    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
@@ -177,10 +179,21 @@ begin
 
     Package.PackageState := pmpsApproved;
 
+    SavePackageList;
+
     AResponse.Content := FPackageStreamer.PackageToJSon(Package);
     end
   else
     raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
+end;
+
+procedure TpmPackageWM.SavePackageList;
+var
+  PackageListFile: String;
+begin
+  PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
+  if (PackageListFile <> '') then
+    TpmPackageCollection.Instance.SaveToFile(PackageListFile);
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);

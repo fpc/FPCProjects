@@ -20,42 +20,30 @@ type
 
   TpmPackageJSonStreaming = class
   private
-    function ListToJSon(AList: TFPSList): TJSONArray;
+    function CollectionToJSon(AList: TCollection): TJSONArray;
 
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
   public
     function PackageToJSon(APackage: TpmPackage): string;
     procedure JSonToPackage(AJSonStr: String; APackage: TpmPackage);
 
-    function PackageListToJSon(APackageList: TpmPackageList): string;
-    function PackageVersionListToJSon(APackageVersionList: TpmPackageVersionList): string;
+    function PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
+    function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
   end;
 
 implementation
 
 { TpmPackageJSonStreaming }
 
-function TpmPackageJSonStreaming.ListToJSon(AList: TFPSList): TJSONArray;
+function TpmPackageJSonStreaming.CollectionToJSon(AList: TCollection): TJSONArray;
 var
   Streamer: TJSONStreamer;
-  JA: TJSONArray;
-  i : Integer;
 begin
   Streamer := TJSONStreamer.Create(nil);
   try
     Streamer.OnStreamProperty := @StreamerStreamProperty;
     Streamer.Options := Streamer.Options + [jsoLowerPropertyNames];
-
-    JA:=TJSONArray.Create;
-    try
-      For I:=0 to AList.Count-1 do
-        JA.Add(Streamer.ObjectToJSON(TObject(AList.Items[i]^)));
-      Result := JA;
-      JA := nil;
-    finally
-      JA.Free;
-    end;
-
+    Result := Streamer.StreamCollection(AList);
   finally
     Streamer.Free;
   end;
@@ -74,8 +62,8 @@ begin
   else if Info^.PropType^.Kind = tkClass then
     begin
     AnObject := GetObjectProp(AObject, Info);
-    if AnObject is TpmPackageVersionList then
-      Res := ListToJSon(TpmPackageVersionList(AnObject));
+    if AnObject is TpmPackageVersionCollection then
+      Res := CollectionToJSon(TpmPackageVersionCollection(AnObject));
     end;
 end;
 
@@ -117,11 +105,11 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageListToJSon(APackageList: TpmPackageList): string;
+function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
 var
   JSONArr: TJSONArray;
 begin
-  JSONArr := ListToJSon(APackageList);
+  JSONArr := CollectionToJSon(APackageList);
   try
     Result := JSONArr.AsJSON;
   finally
@@ -129,11 +117,11 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageVersionListToJSon(APackageVersionList: TpmPackageVersionList): string;
+function TpmPackageJSonStreaming.PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
 var
   JSONArr: TJSONArray;
 begin
-  JSONArr := ListToJSon(APackageVersionList);
+  JSONArr := CollectionToJSon(APackageVersionList);
   try
     Result := JSONArr.AsJSON;
   finally

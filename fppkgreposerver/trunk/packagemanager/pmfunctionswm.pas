@@ -33,7 +33,7 @@ implementation
 
 Procedure TpmFunctionsWM.ClearRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 begin
-  TpmPackageList.Instance.Clear;
+  TpmPackageCollection.Instance.Clear;
   AResponse.Content := '{Message: ''Cleared all packages''}';
   AResponse.Code := 200;
   AResponse.CodeText := GetStatusCode(AResponse.Code);
