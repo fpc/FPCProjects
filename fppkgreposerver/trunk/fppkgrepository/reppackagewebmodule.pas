@@ -138,6 +138,8 @@ begin
   finally
     Package.Free;
   end;
+  if ARepository.StorageFile <> '' then
+    ARepository.SaveToFile;
 end;
 
 procedure TrepPackageWM.HandleGetPackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
@@ -199,6 +201,8 @@ begin
   finally
     Package.Free;
   end;
+  if ARepository.StorageFile <> '' then
+    ARepository.SaveToFile;
 end;
 
 initialization

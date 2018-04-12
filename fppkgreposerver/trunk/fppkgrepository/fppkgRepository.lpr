@@ -32,6 +32,7 @@ begin
   GlobalSettings.AddSettingTemplate('Repository-', 'Path', 'Path-', '');
   GlobalSettings.AddSettingTemplate('Repository-', 'BaseURL', 'BaseURL-', '');
   GlobalSettings.AddSettingTemplate('Repository-', 'Contact', 'Contact-', '');
+  GlobalSettings.AddSettingTemplate('Repository-', 'StorageFile', 'StorageFile-', '');
 
   ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
   try

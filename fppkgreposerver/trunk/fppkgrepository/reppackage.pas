@@ -8,6 +8,7 @@ uses
   Classes,
   SysUtils,
   fgl,
+  fpjsonrtti,
   dcsGlobalSettings,
   fprGCollection;
 
@@ -45,15 +46,19 @@ type
     FNeedAdminRights: Boolean;
     FPackageList: TrepPackageList;
     FPath: string;
+    FStorageFile: string;
   public
     constructor Create;
     destructor Destroy; override;
+    procedure LoadFromFile;
+    procedure SaveToFile;
     property PackageList: TrepPackageList read FPackageList;
     property MasterRepositoryName: string read FMasterRepositoryName write FMasterRepositoryName;
     property Path: string read FPath write FPath;
     property BaseURL: string read FBaseURL write FBaseURL;
     property Contact: string read FContact write FContact;
     property FPCVersion: string read FFPCVersion write FFPCVersion;
+    property StorageFile: string read FStorageFile write FStorageFile;
   published
     property Name: string read FName write FName;
     property NeedAdminRights: Boolean read FNeedAdminRights write FNeedAdminRights;
@@ -195,7 +200,11 @@ begin
     Repo.Path := Settings.GetSettingAsString('Path-'+SettingTemplate.Values[i]);
     Repo.BaseURL := Settings.GetSettingAsString('BaseURL-'+SettingTemplate.Values[i]);
     Repo.Contact := Settings.GetSettingAsString('Contact-'+SettingTemplate.Values[i]);
+    Repo.StorageFile := Settings.GetSettingAsString('StorageFile-'+SettingTemplate.Values[i]);
     Repo.FPCVersion := FPCVersion.FPCVersion;
+
+    if FileExists(Repo.StorageFile) then
+      Repo.LoadFromFile;
     end;
 end;
 
@@ -223,6 +232,44 @@ destructor TrepRepository.Destroy;
 begin
   FPackageList.Free;
   inherited Destroy;
+end;
+
+procedure TrepRepository.LoadFromFile;
+var
+  DeStreamer: TJSONDeStreamer;
+  FS: TStringStream;
+begin
+  DeStreamer := TJSONDeStreamer.Create(nil);
+  try
+    FS := TStringStream.Create();
+    try
+      FS.LoadFromFile(FStorageFile);
+      FS.Seek(0, soFromBeginning);
+      DeStreamer.JSONToCollection(FS.DataString, FPackageList);
+    finally
+      FS.Free;
+    end;
+  finally
+    DeStreamer.Free;
+  end;
+end;
+
+procedure TrepRepository.SaveToFile;
+var
+  Streamer: TJSONStreamer;
+  FS: TStringStream;
+begin
+  Streamer := TJSONStreamer.Create(nil);
+  try
+    FS := TStringStream.Create(Streamer.ObjectToJSONString(FPackageList));
+    try
+      FS.SaveToFile(FStorageFile);
+    finally
+      FS.Free;
+    end;
+  finally
+    Streamer.Free;
+  end;
 end;
 
 end.

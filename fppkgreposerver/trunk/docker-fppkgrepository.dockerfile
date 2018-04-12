@@ -11,6 +11,7 @@ USER fppkgrepository
 WORKDIR /home/fppkgrepository
 
 RUN mkdir repo
+RUN mkdir data
 
 COPY fppkgrepository/fppkgRepository /home/fppkgrepository
 COPY fppkgrepository/config/$inifile /home/fppkgrepository/fppkgRepository.ini

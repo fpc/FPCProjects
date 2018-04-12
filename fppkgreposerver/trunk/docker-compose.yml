@@ -69,6 +69,7 @@ services:
         - buildmanager
       volumes:
        - repo:/home/fppkgrepository/repo
+       - packagedata:/home/fppkgrepository/data
 
 volumes:
   gitrepos:
