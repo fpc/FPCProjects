@@ -123,6 +123,5 @@ export class AppModule {
     openIDImplicitFlowConfiguration.max_id_token_iat_offset_allowed_in_seconds = 10;
 
     this.oidcSecurityService.setupModule(openIDImplicitFlowConfiguration);
-    this.buildAgentService.setBuildAgentUrl(environment.buildAgentUrl);
   }
 }

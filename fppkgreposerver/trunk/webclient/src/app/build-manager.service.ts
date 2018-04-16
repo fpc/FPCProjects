@@ -3,11 +3,12 @@ import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { BuildTask } from './build-task';
 import { Observable } from 'rxjs/Observable';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class BuildManagerService {
 
-  private buildManagerURL = 'http://localhost:8181/';
+  private buildManagerURL = environment.buildManagerUrl;
 
     constructor(
       private http: HttpClient,
@@ -26,7 +27,7 @@ export class BuildManagerService {
     }
 
     startBuildTask(aPackageName, aTag: string): Observable<BuildTask> {
-      const url = `${this.buildManagerURL}buildtask`;
+      const url = `${this.buildManagerURL}/buildtask`;
       let newBuildTask: BuildTask = {
         packagename: aPackageName,
         tag: aTag,
@@ -38,7 +39,7 @@ export class BuildManagerService {
     }
 
     getBuildTask(uniqueString: string): Observable<BuildTask> {
-      const url = `${this.buildManagerURL}buildtask/${uniqueString}`;
+      const url = `${this.buildManagerURL}/buildtask/${uniqueString}`;
       return this.http.get<BuildTask>(url, {headers: this.getHeaders()});
     }
 

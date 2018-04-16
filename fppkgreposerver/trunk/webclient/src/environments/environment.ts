@@ -7,5 +7,9 @@ export const environment = {
   production: false,
   identityServerUrl: 'http://localhost:5000/identityserver',
   webclientUrl: 'http://localhost:4200',
-  buildAgentUrl: 'http://localhost:8080'
+  buildAgentUrl: 'http://localhost:8080',
+  packageManagerUrl: 'http://localhost:8088',
+  buildManagerUrl: 'http://localhost:8181',
+  repositoryUrl:  'http://localhost:8089',
+  fppkgRepositoryUrl: 'http://localhost:8282'
 };

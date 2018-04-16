@@ -17,3 +17,23 @@ services:
       build:
         args:
           inifile: buildagent_docker_x86_64_linux_trunk.ini.prod
+
+  repository:
+      build:
+        args:
+          inifile: repository_docker.ini.prod
+
+  packagemanager:
+      build:
+        args:
+          inifile: packagemanager_docker.ini.prod
+
+  buildmanager:
+      build:
+        args:
+          inifile: buildmanager_docker.ini.prod
+
+  fppkgrepository:
+      build:
+        args:
+          inifile: fppkgrepository_docker.ini.prod

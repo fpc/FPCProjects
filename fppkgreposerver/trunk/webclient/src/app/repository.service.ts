@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class RepositoryService {
 
-  private repositoryUrl = 'http://localhost:8089/';
+  private repositoryUrl = environment.repositoryUrl;
 
   constructor(private _http: HttpClient, private _securityService: OidcSecurityService) { }
 
@@ -26,7 +27,7 @@ export class RepositoryService {
   uploadPackage(file, packageName: string): Observable<any> {
     let formData = new FormData;
     formData.append('upload', file);
-    const req = new HttpRequest('POST', this.repositoryUrl + `package/${packageName}`, formData, {
+    const req = new HttpRequest('POST', this.repositoryUrl + `/package/${packageName}`, formData, {
       headers: this.getHeaders()
     });
 
@@ -35,7 +36,7 @@ export class RepositoryService {
 
   tagPackage(packageName, tagMessage: string): Observable<any> {
 
-    const url = `${this.repositoryUrl}package/${packageName}/tagpackage`;
+    const url = `${this.repositoryUrl}/package/${packageName}/tagpackage`;
     return this._http.get<any>(url, {headers: this.getHeaders(), params: {message: tagMessage}});
   }
 

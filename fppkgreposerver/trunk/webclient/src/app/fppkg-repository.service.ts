@@ -3,11 +3,12 @@ import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErr
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
 import { Repository } from './repository';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class FppkgRepositoryService {
 
-  private repositoryUrl = 'http://localhost:8282/';
+  private repositoryUrl = environment.fppkgRepositoryUrl;
 
   constructor(private _http: HttpClient, private _securityService: OidcSecurityService) { }
 
@@ -25,17 +26,17 @@ export class FppkgRepositoryService {
   }
 
   getRepositoryList (fpcVersion: string): Observable<Repository[]> {
-    const url = `${this.repositoryUrl}repository/${fpcVersion}`;
+    const url = `${this.repositoryUrl}/repository/${fpcVersion}`;
     return this._http.get<Repository[]>(url, {headers: this.getHeaders()});
   }
 
   rebuildRepository(fpcVersion, repositoryName: string): Observable<any> {
-    const url = `${this.repositoryUrl}repository/${fpcVersion}/${repositoryName}/rebuild`;
+    const url = `${this.repositoryUrl}/repository/${fpcVersion}/${repositoryName}/rebuild`;
     return this._http.get<any>(url, {headers: this.getHeaders()});
   }
 
   addPackage(fpcVersion, repositoryName, packageName, packageTag: string): Observable<any> {
-    const url = `${this.repositoryUrl}package/${fpcVersion}/${repositoryName}`;
+    const url = `${this.repositoryUrl}/package/${fpcVersion}/${repositoryName}`;
     return this._http.post<any>(url, {name: packageName, tag: packageTag}, {headers: this.getHeaders()});
   }
 }

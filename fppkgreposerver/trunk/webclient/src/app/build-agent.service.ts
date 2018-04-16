@@ -2,17 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class BuildAgentService {
 
-  private buildAgentUrl = 'http://localhost:8080/';
+  private buildAgentUrl = environment.buildAgentUrl;
 
   constructor(private _http: HttpClient, private _securityService: OidcSecurityService) { }
-
-  setBuildAgentUrl(url: string) {
-    this.buildAgentUrl = url;
-  }
 
   buildFPCEnvironment(): Observable<any> {
     let headers: HttpHeaders;

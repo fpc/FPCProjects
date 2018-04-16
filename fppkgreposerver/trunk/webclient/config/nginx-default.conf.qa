@@ -25,6 +25,22 @@ server {
         proxy_pass http://buildagent:8080/;
     }
 
+    location /buildmanager/ {
+        proxy_pass http://buildmanager:8181/;
+    }
+
+    location /fppkgrepository/ {
+        proxy_pass http://fppkgrepository:8282/;
+    }
+
+    location /repository/ {
+        proxy_pass http://repository:8089/;
+    }
+
+    location /packagemanager/ {
+        proxy_pass http://packagemanager:8088/;
+    }
+
     location /identityserver/ {
         proxy_pass http://identityserver:5000/identityserver/;
 

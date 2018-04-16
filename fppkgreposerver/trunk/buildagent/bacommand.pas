@@ -90,7 +90,7 @@ begin
       else
         begin
         DoQueueCommand := False;
-        FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied.', TextName, [TextName]);
+        FDistributor.SendNotification(SendByLisId, ntFailedCommand, UID, 'Access denied. Missing authorization token.', TextName, [TextName]);
         end;
     finally
       OIDC.Free;

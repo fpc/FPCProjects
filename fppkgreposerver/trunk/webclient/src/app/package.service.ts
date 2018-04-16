@@ -3,16 +3,16 @@ import { Observable } from 'rxjs/Observable';
 import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Package } from './package';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class PackageService {
 
-  private packageManagerURL = 'http://localhost:8088/';
+  private packageManagerURL = environment.packageManagerUrl;
 
   constructor(
     private http: HttpClient,
     private _securityService: OidcSecurityService) { }
-
 
   getHeaders(): HttpHeaders {
     let authheaders: HttpHeaders;
@@ -28,22 +28,22 @@ export class PackageService {
 
 
   getPackageList (): Observable<Package[]> {
-    const url = `${this.packageManagerURL}package`;
+    const url = `${this.packageManagerURL}/package`;
     return this.http.get<Package[]>(url, {headers: this.getHeaders()});
   }
 
   getPackage(name: string): Observable<Package> {
-    const url = `${this.packageManagerURL}package/${name}`;
+    const url = `${this.packageManagerURL}/package/${name}`;
     return this.http.get<Package>(url, {headers: this.getHeaders()});
   }
 
   approvePackage(name: string): Observable<Package> {
-    const url = `${this.packageManagerURL}package/${name}/approve`;
+    const url = `${this.packageManagerURL}/package/${name}/approve`;
     return this.http.put<Package>(url, null, {headers: this.getHeaders()});
   }
 
   addPackage(newPackage: Package): Observable<Package> {
-    const url = `${this.packageManagerURL}package`;
+    const url = `${this.packageManagerURL}/package`;
     return this.http.post<Package>(url, newPackage, {headers: this.getHeaders()});
   }
 
