@@ -32,11 +32,11 @@ type
   private
     FBuildTaskList: TfprBuildTaskList;
     Procedure HandleNewBuildRequest(ARequest: TRequest; AResponse: TResponse);
-    function RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName: string): TfprSubBuildTask;
-    function RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, TAGName: string): TfprSubBuildTask;
+    function RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName, AccessToken: string): TfprSubBuildTask;
+    function RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName: string): TfprSubBuildTask;
     function GetSourceZip(TaskResponse: string): TBytes;
   public
-    procedure SetSubBuildTask(UniqueString: string; Failed: Boolean; Log: string);
+    procedure SetSubBuildTask(UniqueString, AccessToken: string; Failed: Boolean; Log: string);
 
   end;
 
@@ -95,7 +95,7 @@ end;
 
 procedure TbmBuildTaskThread.DoDoneThread;
 begin
-  FWebModule.SetSubBuildTask(FUniqueString, FFailed, FLog);
+  FWebModule.SetSubBuildTask(FUniqueString, FAccessToken, FFailed, FLog);
   Free;
 end;
 
@@ -165,7 +165,7 @@ begin
     except
       on E: Exception do
         begin
-        FLog := E.Message;
+        FLog := 'Exception during buildtask (' +FBuildURL + '): ' + E.Message + ' (' + E.ClassName + ')';
         end;
     end;
   Finally
@@ -198,7 +198,6 @@ var
   UniqueString: string;
   BuildTask: TfprCustomBuildTask;
 begin
-  writeln('hmm...');
   if ARequest.Method = 'POST' then
     HandleNewBuildRequest(ARequest, AResponse)
   else
@@ -235,7 +234,6 @@ var
   BuildAgentList: TbmBuildAgentList;
   PackageState: TJSONUnicodeStringType;
 begin
-  writeln('tadaa');
   BuildTask := TfprBuildTask.Create;
   try
     JSONContentStringToObject(ARequest.Content, BuildTask);
@@ -250,7 +248,6 @@ begin
       Raise Exception.Create('No PackageManaterURL configured');
     PackageURL := PackageURL + '/package/'+BuildTask.PackageName;
 
-    writeln('tadaa1');
     try
       PackageJSON := ObtainJSONRestRequest(PackageURL, True) as TJSONObject;
     Except
@@ -268,8 +265,6 @@ begin
         end;
     end;
     try
-    writeln('tadaa3');
-
       PackageState := PackageJSON.Get('packagestate', '');
       if (PackageState<>'published') and (PackageState<>'approved') then
         raise Exception.CreateFmt('Package %s can not be build because it''s state is %s', [BuildTask.PackageName, PackageState]);
@@ -278,7 +273,7 @@ begin
       if BuildAgentList.Count = 0 then
         raise Exception.Create('There are no buildagents registered, unable to build package.');
 
-      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, BuildTask.Tag));
+      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, FAccessToken, BuildTask.Tag));
 
       BuildTask.State := btsBuilding;
 
@@ -289,14 +284,12 @@ begin
     finally
       PackageJSON.Free;
     end;
-
-    writeln('tadaa4');
   finally
     BuildTask.Free;
   end;
 end;
 
-function TbmBuildTaskWM.RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName: string): TfprSubBuildTask;
+function TbmBuildTaskWM.RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName, AccessToken: string): TfprSubBuildTask;
 var
   URL: string;
 begin
@@ -305,14 +298,15 @@ begin
   try
     Result.BuildAgent := BuildAgent.Name;
     Result.State := btsBuilding; // incorrect, should be waiting
-    TbmBuildTaskThread.Create(URL, FAccessToken, Result.UniqueString, SourceZIP, Self);
+    Result.URL := URL;
+    TbmBuildTaskThread.Create(URL, AccessToken, Result.UniqueString, SourceZIP, Self);
   except
     result.Free;
     raise;
   end;
 end;
 
-function TbmBuildTaskWM.RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, TAGName: string): TfprSubBuildTask;
+function TbmBuildTaskWM.RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName: string): TfprSubBuildTask;
 var
   URL: string;
   SourceZIP: TBytes;
@@ -324,7 +318,7 @@ begin
 
   HTTPClient := TFPHTTPClient.Create(nil);
   try
-    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + FAccessToken;
+    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
     BytesStream := TBytesStream.Create;
     try
       HTTPClient.Get(URL, BytesStream);
@@ -343,7 +337,8 @@ begin
     Result.BuildAgent := BuildAgent.Name;
     Result.State := btsBuilding; // incorrect, should be waiting
     Result.SourceBuild := True;
-    TbmBuildTaskThread.Create(URL, FAccessToken, Result.UniqueString, SourceZIP, Self);
+    Result.URL := URL;
+    TbmBuildTaskThread.Create(URL, AccessToken, Result.UniqueString, SourceZIP, Self);
   except
     result.Free;
     raise;
@@ -375,7 +370,12 @@ begin
 
   BytesStream := TBytesStream.Create([]);
   try
-    TFPHTTPClient.SimpleGet(SourceURL, BytesStream);
+    try
+      TFPHTTPClient.SimpleGet(SourceURL, BytesStream);
+    except
+      on E: Exception do
+        raise Exception.CreateFmt('Exception during retrieval of source-zip (%s): %s (%s)', [SourceURL, E.Message, E.ClassName]);
+    end;
     Result := BytesStream.Bytes;
     SetLength(Result, BytesStream.Size);
   finally
@@ -383,13 +383,15 @@ begin
   end;
 end;
 
-procedure TbmBuildTaskWM.SetSubBuildTask(UniqueString: string; Failed: Boolean; Log: string);
+procedure TbmBuildTaskWM.SetSubBuildTask(UniqueString, AccessToken: string; Failed: Boolean;
+  Log: string);
 var
   i,j, k: Integer;
   SubTask: TfprSubBuildTask;
   TaskFinished: Boolean;
   TaskFailed, HasAppropiateBuildAgent: Boolean;
   BuildAgentList: TbmBuildAgentList;
+  SourceZip: TBytes;
 begin
   for i := 0 to FBuildTaskList.Count -1 do
     begin
@@ -413,9 +415,10 @@ begin
               begin
               BuildAgentList := TbmBuildAgentList.Instance;
               HasAppropiateBuildAgent := False;
+              SourceZip := GetSourceZip(Log);
               for k := 0 to BuildAgentList.Count -1 do
                 begin
-                FBuildTaskList[i].SubTasks.Add(RequestBuild(BuildAgentList.Items[k], GetSourceZip(Log), FBuildTaskList[i].PackageName));
+                FBuildTaskList[i].SubTasks.Add(RequestBuild(BuildAgentList.Items[k], SourceZip, FBuildTaskList[i].PackageName, AccessToken));
                 HasAppropiateBuildAgent := True;
                 end;
               if HasAppropiateBuildAgent then
@@ -442,7 +445,7 @@ begin
       on E: Exception do
         begin
         FBuildTaskList[i].State := btsFailed;
-        FBuildTaskList[i].ErrorMessage := E.Message;
+        FBuildTaskList[i].ErrorMessage := 'Exception during setup of subtasks: ' + E.Message + ' (' + E.ClassName + ')';
         end;
     end;
     end;
