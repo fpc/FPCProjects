@@ -9,7 +9,8 @@ interface
 
 uses
   fprWebModule, fprPackageIDEIntf, fprErrorHandling, fprPackageUtils, fprBuildTask, fprGCollection, 
-  fprDeleteTree, fprBuildAgentResponse, fprCopyTree, LazarusPackageIntf;
+  fprDeleteTree, fprBuildAgentResponse, fprCopyTree, fprJSONRTTI, fprInterfacedCollection, 
+  LazarusPackageIntf;
 
 implementation
 

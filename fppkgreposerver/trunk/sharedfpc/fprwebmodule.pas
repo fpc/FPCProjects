@@ -20,7 +20,8 @@ uses
   dcsGlobalSettings,
   DCSHTTPRestServer,
   fpWeb,
-  fprErrorHandling;
+  fprErrorHandling,
+  fprJSONRTTI;
 
 type
 
@@ -29,7 +30,7 @@ type
   TfprWebModule = class(TFPWebModule)
   private
     FCorsOriginList: TDCSHTTPCorsEntryList;
-    FDeStreamer: TJSONDeStreamer;
+    FDeStreamer: TfprJSONDeStreamer;
     FStreamer: TJSONStreamer;
     FOIDC: TcnocOpenIDConnect;
     FAuthError: string;
@@ -48,6 +49,8 @@ type
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
     function ObtainJSONRestRequest(AnURL: string; IncludeAccessToken: boolean; Method: string = 'GET';
       Content: TStream = nil): TJSONData;
+    function JSONObjectRestRequest(AnURL: string; IncludeAccessToken: boolean; AnObject: TObject; Method: string = 'GET';
+      Content: TStream = nil): Boolean;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function ObjectToJSONContentString(AnObject: TObject): string;
     function GetUserRole: string;
@@ -351,6 +354,21 @@ begin
   end;
 end;
 
+function TfprWebModule.JSONObjectRestRequest(AnURL: string; IncludeAccessToken: boolean;
+  AnObject: TObject; Method: string; Content: TStream): Boolean;
+var
+  JSonData: TJSONData;
+begin
+  JSonData := ObtainJSONRestRequest(AnURL, IncludeAccessToken, Method, Content );
+  try
+    Result := Assigned(JSonData) and (JSonData.JSONType in [jtObject, jtArray]);
+    if Result then
+      FDeStreamer.JSONToObject(TJSONObject(JSonData), AnObject);
+  finally
+    JSonData.Free;
+  end;
+end;
+
 function TfprWebModule.ObjectToJSONContentString(AnObject: TObject): string;
 var
   JSO: TJSONData;
@@ -406,7 +424,7 @@ end;
 constructor TfprWebModule.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FDeStreamer := TJSONDeStreamer.Create(Self);
+  FDeStreamer := TfprJSONDeStreamer.Create(Self);
   FDeStreamer.Options := [jdoCaseInsensitive];
   FDeStreamer.OnRestoreProperty := @DoRestoreProperty;
 

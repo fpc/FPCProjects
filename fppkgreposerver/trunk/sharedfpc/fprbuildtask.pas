@@ -33,10 +33,12 @@ type
     FLog: string;
     FSourceBuild: Boolean;
     FState: TfprBuildTaskState;
+    FURL: string;
   published
     property BuildAgent: string read FBuildAgent write FBuildAgent;
     property State: TfprBuildTaskState read FState write FState;
     property SourceBuild: Boolean read FSourceBuild write FSourceBuild;
+    property URL: string read FURL write FURL;
     property Log: string read FLog write FLog;
   end;
 

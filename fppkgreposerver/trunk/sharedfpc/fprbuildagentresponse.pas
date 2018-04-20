@@ -8,32 +8,56 @@ uses
   Classes,
   SysUtils,
   contnrs,
-  generics.Collections,
+  fpjson,
+  fprInterfacedCollection,
   fgl,
-  fprGCollection;
+  fprGCollection,
+  fprJSONRTTI;
 
 type
 
   { TfprBuildAgentResponse }
 
-  TfprBuildAgentResponse = class(TCollectionItem)
+  TfprBuildAgentResponse = class(TfprInterfacedCollectionItem, IfprJSONPropertyAttributes)
   private
-    FManifest: string;
+    FManifest: TJSONData;
     FMessage: string;
     FSourceArchive: string;
     FTimeStamp: string;
     FType: string;
+  public
+    function GetPropertyAttributes(PropertyName: string; out ElementName: string; out PropertyOptions: TfprJSONPropertyOptions): Boolean;
   published
     property TimeStamp: string read FTimeStamp write FTimeStamp;
     property Message: string read FMessage write FMessage;
     property AType: string read FType write FType;
     property SourceArchive: string read FSourceArchive write FSourceArchive;
-    property Manifest: string read FManifest write FManifest;
+    property Manifest: TJSONData read FManifest write FManifest;
   end;
 
   TfprBuildAgentResponseList = specialize TcnocGCollection<tfprBuildAgentResponse>;
 
 implementation
+
+{ TfprBuildAgentResponse }
+
+function TfprBuildAgentResponse.GetPropertyAttributes(PropertyName: string; out ElementName: string;
+  out PropertyOptions: TfprJSONPropertyOptions): Boolean;
+begin
+  Result := False;
+  PropertyOptions := [];
+  if PropertyName='AType' then
+    begin
+    ElementName := 'type';
+    Result := True;
+    end;
+  if PropertyName='Manifest' then
+    begin
+    ElementName := 'manifest';
+    PropertyOptions := [jpoJSONContents];
+    Result := True;
+    end;
+end;
 
 end.
 

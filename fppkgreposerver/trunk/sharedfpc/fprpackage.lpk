@@ -9,7 +9,7 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Files Count="9">
+    <Files Count="11">
       <Item1>
         <Filename Value="fprwebmodule.pas"/>
         <UnitName Value="fprWebModule"/>
@@ -29,24 +29,32 @@
       </Item4>
       <Item5>
         <Filename Value="fprbuildtask.pas"/>
-        <UnitName Value="fprbuildtask"/>
+        <UnitName Value="fprBuildTask"/>
       </Item5>
       <Item6>
         <Filename Value="fprgcollection.pas"/>
-        <UnitName Value="fprgcollection"/>
+        <UnitName Value="fprGCollection"/>
       </Item6>
       <Item7>
         <Filename Value="fprdeletetree.pas"/>
-        <UnitName Value="fprdeletetree"/>
+        <UnitName Value="fprDeleteTree"/>
       </Item7>
       <Item8>
         <Filename Value="fprbuildagentresponse.pas"/>
-        <UnitName Value="fprbuildagentresponse"/>
+        <UnitName Value="fprBuildAgentResponse"/>
       </Item8>
       <Item9>
         <Filename Value="fprcopytree.pas"/>
-        <UnitName Value="fprcopytree"/>
+        <UnitName Value="fprCopyTree"/>
       </Item9>
+      <Item10>
+        <Filename Value="fprjsonrtti.pas"/>
+        <UnitName Value="fprJSONRTTI"/>
+      </Item10>
+      <Item11>
+        <Filename Value="fprinterfacedcollection.pas"/>
+        <UnitName Value="fprinterfacedcollection"/>
+      </Item11>
     </Files>
     <RequiredPkgs Count="3">
       <Item1>
