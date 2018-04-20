@@ -23,6 +23,7 @@ uses
   zipper,
   jsonparser,
   fprPackageUtils,
+  fprBuildAgentResponse,
   fphttpserver,
   fprWebModule;
 
@@ -36,6 +37,7 @@ type
     procedure SetGitUserAndEmail(ARepoPath: string);
     function GetPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
+    function CheckUploadedSourceArchive(APackageName: string; AFile: TUploadedFile; out ErrorStr: string): Boolean;
     function AddSourcesToGITRepository(APackageName: string; AFile: TUploadedFile): string;
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
     function TagPackage(PackageName, TagMessage: string; GITTag: string = ''): string;
@@ -120,6 +122,10 @@ begin
       if ARequest.Files.Count <> 1 then
         raise Exception.Create('Missing package in request');
 
+      if not CheckUploadedSourceArchive(PackageName, ARequest.Files.First, s) then
+        begin
+        raise Exception.Create('Validity check on source failed: ' + s);
+        end;
       RevHash := AddSourcesToGITRepository(PackageName, ARequest.Files.First);
 
       if PackageObject.Get('packagestate', '') = 'new' then
@@ -192,6 +198,67 @@ begin
     raise Exception.Create('Failed to create temporary path');
 end;
 
+function TprPackageWM.CheckUploadedSourceArchive(APackageName: string; AFile: TUploadedFile; out
+  ErrorStr: string): Boolean;
+var
+  BuildAgentList: TJSONArray;
+  BuildManagerURL, URL: String;
+  I: Integer;
+  BuildAgentResponseList: TfprBuildAgentResponseList;
+  BuildAgentResponse: TfprBuildAgentResponse;
+  s: TJSONUnicodeStringType;
+begin
+  Result := True;
+  try
+    BuildManagerURL := IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('buildmanagerurl'));
+    BuildAgentList := ObtainJSONRestRequest(BuildManagerURL+'agent/list', False) as TJSONArray;
+    try
+      if BuildAgentList.Count = 0 then
+        raise Exception.Create('No buildagents available');
+      I := Random(BuildAgentList.Count);
+      URL := IncludeHTTPPathDelimiter((BuildAgentList.Items[I] as TJSONObject).Get('url', ''));
+      if URL = '' then
+        raise Exception.Create('Failed to find URL for buildagent');
+    finally
+      BuildAgentList.Free;
+    end;
+
+    AFile.Stream.Seek(0, soFromBeginning);
+    URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false';
+    BuildAgentResponseList := TfprBuildAgentResponseList.Create;
+    try
+      if not JSONObjectRestRequest(URL, True, BuildAgentResponseList, 'POST', AFile.Stream) then
+        begin
+        Result := False;
+        ErrorStr := 'Call to buildagent failed.';
+        Exit;
+        end;
+      BuildAgentResponse := BuildAgentResponseList.Items[BuildAgentResponseList.Count -1];
+
+      if (BuildAgentResponse.AType <> 'Done') or not Assigned(BuildAgentResponse.Manifest) then
+        begin
+        Result := False;
+        ErrorStr := 'Manifest-creation failed. (' + BuildAgentResponse.Message + ')';
+        Exit;
+        end;
+      s := ((BuildAgentResponse.Manifest as TJSONArray).Items[0] as TJSONObject).Get('name', '');
+      if APackageName <> s then
+        begin
+        ErrorStr := Format('Package-name of source archive (%s) does not match package-name (%s).', [s, APackageName]);
+        Result := False;
+        end;
+    finally
+      BuildAgentResponseList.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+      raise EHTTPClient.CreateHelp('Problem while checking the validity of the package: ' + E.Message, 500);
+      end;
+  end;
+end;
+
 function TprPackageWM.AddSourcesToGITRepository(APackageName: string; AFile: TUploadedFile): string;
 var
   TmpPath: string;
@@ -208,6 +275,7 @@ begin
 
     ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
     ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
+    AFile.Stream.Seek(0, soFromBeginning);
     FS := TFileStream.Create(ArchiveName, fmCreate);
     try
       FS.CopyFrom(AFile.Stream, AFile.Size);
