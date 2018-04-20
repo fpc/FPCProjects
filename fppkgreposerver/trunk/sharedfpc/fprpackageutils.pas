@@ -33,6 +33,7 @@ begin
         begin
         JO := TJSONObject.Create;
         JA.Add(JO);
+        JO.Add('name', PackageNode.Attributes.GetNamedItem('name').TextContent);
         Node1 := PackageNode.FirstChild;
         while Assigned(Node1) do
           begin
