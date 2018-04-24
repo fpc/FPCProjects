@@ -14,6 +14,12 @@ object bmBuildWM: TbmBuildWM
       Default = True
       OnRequest = listRequest
       Template.AllowTagParams = False
+    end  
+    item
+      Name = 'unregister'
+      Default = False
+      OnRequest = unregisterRequest
+      Template.AllowTagParams = False
     end>
   CreateSession = False
   Height = 300

@@ -47,7 +47,9 @@ type
     procedure DataModuleDestroy(Sender: TObject);
     Procedure listRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse;
       Var Handled: Boolean);
-    Procedure registeragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+    Procedure RegisteragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+    Procedure UnregisterRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse;
+      Var Handled: Boolean);
   protected
     function RequireAuthentication(ARequest: TRequest): Boolean; override;
   public
@@ -58,6 +60,9 @@ var
   bmBuildWM: TbmBuildWM;
 
 implementation
+
+uses
+  fprErrorHandling;
 
 {$R *.lfm}
 
@@ -109,7 +114,7 @@ begin
   Handled := True;
 end;
 
-Procedure TbmBuildWM.registeragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+Procedure TbmBuildWM.RegisteragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 var
   NewAgent: TbmBuildAgent;
 begin
@@ -136,6 +141,30 @@ begin
   finally
     NewAgent.Free;
   end;
+  Handled := True
+end;
+
+Procedure TbmBuildWM.UnregisterRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse;Var Handled: Boolean);
+var
+  Agent: TbmBuildAgent;
+  BuildAgentName: string;
+begin
+  if ARequest.Method<>'DELETE' then
+    raise EJsonWebException.CreateHelp('Only DELETE requests are allowed to unregister clients.', 405);
+
+  BuildAgentName := ARequest.GetNextPathInfo;
+  if BuildAgentName='' then
+    raise EJsonWebException.CreateHelp('No buildagent name provided', 400);
+  Agent := TbmBuildAgentList.Instance.FindBuildAgentByName(BuildAgentName);
+  if not Assigned(Agent) then
+    raise EJsonWebException.CreateFmtHelp('Buildagent [%s] is not registered.', [BuildAgentName], 404);
+
+  AResponse.Content := ObjectToJSONContentString(Agent);
+
+  TbmBuildAgentList.Instance.Remove(Agent);
+  AResponse.Code := 200;
+  AResponse.CodeText := GetStatusCode(AResponse.Code);
+
   Handled := True
 end;
 
