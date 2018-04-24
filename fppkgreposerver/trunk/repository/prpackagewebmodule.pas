@@ -242,7 +242,7 @@ begin
         Exit;
         end;
       s := ((BuildAgentResponse.Manifest as TJSONArray).Items[0] as TJSONObject).Get('name', '');
-      if APackageName <> s then
+      if not SameText(APackageName, s) then
         begin
         ErrorStr := Format('Package-name of source archive (%s) does not match package-name (%s).', [s, APackageName]);
         Result := False;
