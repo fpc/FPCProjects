@@ -26,6 +26,7 @@ begin
     if AnException is EJsonWebException then
       begin
       ExcMessage := StringReplace(AnException.Message, LineEnding, '\n', [rfReplaceAll]);
+      AResponse.ContentType := 'application/json';
       AResponse.Content := Format('{"error":{"msg":%s}}', [AnsiQuotedStr(ExcMessage, '"')]);
       end
     else
