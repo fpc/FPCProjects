@@ -8,15 +8,12 @@ uses
   SysUtils,
   Classes,
   httpdefs,
-  BaseUnix,
   XMLRead,
   XMLWrite,
   fpHTTP,
   DOM,
-  fpWeb,
   LazFileUtils,
   LazUtils,
-  LazUtilities,
   fpjson,
   fphttpclient,
   fphttpserver,
@@ -122,7 +119,7 @@ var
   PackagePackagesNode, PackageNode: TDOMNode;
   PackagesNode: TDOMElement;
   RepositoryNode: TDOMElement;
-  RepoPath: string;
+  RepoPath, Url: string;
 begin
   Result := '';
   if Arepository.Path='' then
@@ -151,10 +148,22 @@ begin
             HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + FAccessToken;
             BytesStream := TBytesStream.Create;
             try
-              HTTPClient.Get(IncludeHTTPPathDelimiter(RepositoryURL)+'package/'+Package.Name+'/'+Package.Tag, BytesStream);
+              try
+                Url := IncludeHTTPPathDelimiter(RepositoryURL)+'package/'+Package.Name+'/'+Package.Tag;
+                HTTPClient.Get(Url, BytesStream);
+              except
+                on E: Exception do
+                  Raise EHTTPClient.CreateFmtHelp('Exception during downloading ''%s'': %s (%s)', [Url, E.Message, E.ClassName], 500);
+              end;
               BytesStream.Seek(0, soFromBeginning);
               HTTPClient.RequestBody := BytesStream;
-              Resp := HTTPClient.Get(IncludeHTTPPathDelimiter(BuildAgentURL)+'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false');
+              try
+                Url := IncludeHTTPPathDelimiter(BuildAgentURL)+'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false';
+                Resp := HTTPClient.Get(Url);
+              except
+                on E: Exception do
+                  Raise EHTTPClient.CreateFmtHelp('Exception during request to create source-archive ''%s'': %s (%s)', [Url, E.Message, E.ClassName], 500);
+              end;
             finally
               BytesStream.Free;
             end;
@@ -168,12 +177,11 @@ begin
             if (BuildResponseList.Count > 0) then
               begin
               BuildResponse := BuildResponseList.Items[BuildResponseList.Count -1];
-              //if BuildResponse.AType <> 'Done' then
-              //  raise EJsonWebException.CreateFmtHelp('Failed to create source-archive for package %s (%s): %s', [Package.Name, Package.Tag, BuildResponse.Message], 500);
+              if BuildResponse.AType <> 'Done' then
+                raise EJsonWebException.CreateFmtHelp('Failed to create source-archive for package %s (%s): %s', [Package.Name, Package.Tag, BuildResponse.Message], 500);
 
               if BuildResponse.SourceArchive = '' then
                 raise EJsonWebException.CreateFmtHelp('Failed to create source-archive: %s', [BuildResponse.Message], 500);
-
 
               HTTPClient := TFPHTTPClient.Create(nil);
               try
@@ -188,7 +196,7 @@ begin
                 HTTPClient.Free;
               end;
 
-              ManifestStream := TStringStream.Create(BuildResponse.Manifest);
+              ManifestStream := TStringStream.Create(BuildResponse.Manifest.AsJSON);
               try
                 ReadXMLFile(PackageManifest, ManifestStream);
                 try
@@ -212,11 +220,11 @@ begin
             else
               raise EJsonWebException.CreateHelp('Failed to create source-archive', 500);
           except
-            on E: Exception do
-              Raise Exception.CreateFmt('Exception during handling package ''%s'' (%s): %s (%s)', [Package.Name, Package.Tag, E.Message, E.ClassName]);
+            BuildResponseList.Free;
           end;
-        finally
-          BuildResponseList.Free;
+        except
+          on E: Exception do
+            Raise Exception.CreateFmt('Exception during handling package ''%s'' (%s): %s (%s)', [Package.Name, Package.Tag, E.Message, E.ClassName]);
         end;
         end;
 
