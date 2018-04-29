@@ -20,7 +20,7 @@ export class TagPackageComponent implements OnInit {
   @Input() package: Package = null;
 
   constructor(
-    private _activeModal: NgbActiveModal,
+    public activeModal: NgbActiveModal,
     private _repositoryService: RepositoryService,
   ) { }
 
@@ -38,7 +38,7 @@ export class TagPackageComponent implements OnInit {
       .subscribe(
         (response) => {
           this.isBusy = false;
-          this._activeModal.close('tagged');
+          this.activeModal.close('tagged');
         },
         (err: HttpErrorResponse) => {
           this.isError = true;

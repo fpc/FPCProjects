@@ -27,7 +27,7 @@ export class UploadPackageComponent implements OnInit {
 
   constructor(
     private repositoryService: RepositoryService,
-    private activeModal: NgbActiveModal) {}
+    public activeModal: NgbActiveModal) {}
 
   onChange(files) {
     this.files = files;

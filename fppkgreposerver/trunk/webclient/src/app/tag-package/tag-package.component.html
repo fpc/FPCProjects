@@ -5,15 +5,15 @@
     </div>
     <div class="modal-body">
 
-      <input [(ngModel)]="tagMessage" class="form-control" [ngClass]="{'is-invalid': errMessage}" id="tagDescription" aria-describedby="TagDescriptionHelp" placeholder="Enter description of new tag">
+      <input [(ngModel)]="tagMessage" class="form-control" [ngClass]="{'is-invalid': errorMsg}" id="tagDescription" aria-describedby="TagDescriptionHelp" placeholder="Enter description of new tag">
 
       <ngb-alert type="danger" (close)="isError=false" *ngIf="isError">
         Failed to tag sources. {{errorMsg}}
       </ngb-alert>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="_activeModal.close('Cancel')">Cancel</button>
-        <button type="button" [disabled]="((tagMessage==1)||isBusy)" (click)="tagPackage()" class="btn btn-primary">Tag package<spinner [show]="isBusy" [size]="20"></spinner></button>
+        <button type="button" class="btn btn-secondary" (click)="activeModal.close('Cancel')">Cancel</button>
+        <button type="button" [disabled]="((tagMessage=='')||isBusy)" (click)="tagPackage()" class="btn btn-primary">Tag package<spinner [show]="isBusy" [size]="20"></spinner></button>
       </div>
     </div>
   </div>

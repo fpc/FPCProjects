@@ -25,7 +25,7 @@ export class AddPackageComponent implements OnInit {
   errMessage: string = null;
 
   constructor(
-    private activeModal: NgbActiveModal,
+    public activeModal: NgbActiveModal,
     private packageService: PackageService) { }
 
   ngOnInit() {
