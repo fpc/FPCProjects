@@ -10,7 +10,9 @@ uses
   BaseUnix,
   dcsHandler,
   dcsThreadCommandFactory,
+  dcsGlobalSettings,
   fprDeleteTree,
+  fprCopyTree,
   baCommand;
 
 type
@@ -18,6 +20,8 @@ type
   { TbaBuildFPCEnvironment }
 
   TbaBuildFPCEnvironment = class(TbaCustomCommand)
+  private
+    function GetAdditionalPackages: TStringArray;
   public
     class function TextName: string; override;
     function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
@@ -43,6 +47,9 @@ var
   FPCSourcePath, StartCompiler, PristineEnvironmentPath, BuildPath: string;
   CompilerVersion: string;
   CompilerBinary: string;
+  Template: string;
+  AddPackages: TStringArray;
+  i: Integer;
 begin
   FPCSourcePath := GetFPCSourcePath;
 
@@ -96,33 +103,80 @@ begin
   MakeParams[5] := 'sharepath='+ConcatPaths([BuildPath, 'share','fpc','$fpcversion']);
   MakeParams[6] := '-d';
   MakeParams[7] := 'localbasepath='+LocalBasePath+'$fpcversion';
+  Template := TDCSGlobalSettings.GetInstance.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'FpcCfgTemplate');
+  if Template<>'' then
+    begin
+    SetLength(MakeParams, 10);
+    MakeParams[8] := '-t';
+    MakeParams[9] := Template;
+    end;
   RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create fpc.cfg');
 
   SetLength(MakeParams, 12);
   MakeParams[1] := ConcatPaths([PristineEnvironmentPath, 'etc', 'fppkg.cfg']);
-  MakeParams[8] := '-3';
-  MakeParams[9] := '-p';
   MakeParams[3] := 'GlobalPath='+ConcatPaths([BuildPath, 'lib', 'fpc']);
   MakeParams[5] := 'GlobalPrefix='+BuildPath;
-  MakeParams[10] := '-d';
-  MakeParams[11] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
+  MakeParams[8] := '-p';
+  MakeParams[9] := '-d';
+  MakeParams[10] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
+  Template := TDCSGlobalSettings.GetInstance.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'FppkgCfgTemplate');
+  if Template<>'' then
+    begin
+    SetLength(MakeParams, 13);
+    MakeParams[11] := '-t';
+    MakeParams[12] := Template;
+    end
+  else
+    begin
+    MakeParams[11] := '-3';
+    end;
   RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create fppkg.cfg');
-
 
   SetLength(MakeParams, 12);
   MakeParams[1] := ConcatPaths([PristineEnvironmentPath, 'user', 'config', 'default']);
-  MakeParams[8] := '-4';
-  MakeParams[9] := '-p';
   MakeParams[3] := 'GlobalPath='+ConcatPaths([BuildPath, 'lib','fpc']);
   MakeParams[5] := 'fpcbin='+ConcatPaths([BuildPath, 'bin','fpc']);
-  MakeParams[10] := '-d';
-  MakeParams[11] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
+  MakeParams[8] := '-p';
+  MakeParams[9] := '-d';
+  MakeParams[10] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
+  Template := TDCSGlobalSettings.GetInstance.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'FppkgDefaultTemplate');
+  if Template<>'' then
+    begin
+    SetLength(MakeParams, 13);
+    MakeParams[11] := '-t';
+    MakeParams[12] := Template;
+    end
+  else
+    begin
+    MakeParams[11] := '-4';
+    end;
   RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create default fppkg compiler file');
 
   ForceDirectories(ConcatPaths([PristineEnvironmentPath, 'user','config','conf.d']));
 
+  AddPackages := GetAdditionalPackages;
+  if Length(AddPackages) > 0 then
+    begin
+    PrepareBuildEnvironment(BuildPath, '', '');
+    for i := 0 to High(AddPackages) do
+      begin
+      FDistributor.Log(Format('Install additional package [%s]',[AddPackages[i]]), etInfo, Null, FSendByLisId);
+
+      RunTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'install', AddPackages[i]], 'install additional package');
+      end;
+    CopyTree(ConcatPaths([BuildPath, 'user', 'lib']), ConcatPaths([PristineEnvironmentPath, 'user', 'lib']));
+    end;
+
   ReturnMessage := 'Re-created pristine FPC-installation';
   Result := True;
+end;
+
+function TbaBuildFPCEnvironment.GetAdditionalPackages: TStringArray;
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  Result := GlobalSettings.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'AdditionalPackages').Split([',',';']);
 end;
 
 initialization

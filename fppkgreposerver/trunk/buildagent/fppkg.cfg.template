@@ -1,0 +1,27 @@
+[Defaults]
+ConfigVersion=5
+LocalRepository=%LocalRepository%
+BuildDir={LocalRepository}build/
+ArchivesDir={LocalRepository}archives/
+CompilerConfigDir=%CompilerConfigDir%
+RemoteMirrors=http://localhost:4200/repo/testing/mirrors.xml
+RemoteRepository=auto
+CompilerConfig=default
+FPMakeCompilerConfig=default
+Downloader=FPC
+InstallRepository=user
+
+[Repository]
+Name=fpc
+Description=Packages which are installed along with the Free Pascal Compiler
+Path=%GlobalPath%/{CompilerVersion}/
+Prefix=%GlobalPrefix%
+
+[IncludeFiles]
+FileMask=%CompilerConfigDir%/conf.d/*.conf
+
+[Repository]
+Name=user
+Description=User-installed packages
+Path={LocalRepository}lib/fpc/{CompilerVersion}/
+Prefix={LocalRepository}

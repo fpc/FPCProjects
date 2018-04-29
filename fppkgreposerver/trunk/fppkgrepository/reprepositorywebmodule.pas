@@ -196,7 +196,7 @@ begin
                 HTTPClient.Free;
               end;
 
-              ManifestStream := TStringStream.Create(BuildResponse.Manifest.AsJSON);
+              ManifestStream := TStringStream.Create(BuildResponse.ManifestXML);
               try
                 ReadXMLFile(PackageManifest, ManifestStream);
                 try
@@ -218,8 +218,8 @@ begin
               end;
               end
             else
-              raise EJsonWebException.CreateHelp('Failed to create source-archive', 500);
-          except
+              raise EJsonWebException.CreateFmtHelp('Failed to create source-archive for package [%s]', [Package.Name],500);
+          finally
             BuildResponseList.Free;
           end;
         except

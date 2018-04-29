@@ -75,6 +75,11 @@ begin
   GlobalSettings.AddSettingTemplate('TestEnv-', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'StartCompiler', 'TestEnvStartCompiler-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv-', 'AdditionalPackages', 'TestEnvAdditionalPackages-', '');
+
+  GlobalSettings.AddSettingTemplate('TestEnv-', 'FpcCfgTemplate', 'TestEnvFpcCfgTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv-', 'FppkgCfgTemplate', 'TestEnvFppkgCfgTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv-', 'FppkgDefaultTemplate', 'TestEnvFppkgDefaultTemplate-', '');
 
   GlobalSettings.AddSetting('BuildFilesLocation', 'BuildFiles', 'Location', '', #0, dcsPHasParameter, '');
   GlobalSettings.AddSetting('BuildFilesURL', 'BuildFiles', 'URL', '', #0, dcsPHasParameter, '');

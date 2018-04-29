@@ -8,6 +8,7 @@ uses
   Classes,
   SysUtils,
   process,
+  FileUtil,
   dcsHandler,
   DCSHTTPRestServer,
   HTTPDefs,
@@ -35,6 +36,8 @@ type
     function RunTestCommandIndir(const Curdir: string; const Exename: string;
       const Commands: array of string; TaskDescription: string; ExpectedExitStatus: Integer = 0): string;
 
+    procedure PrepareBuildEnvironment(BuildPath: string; TempArchiveFileName, ArchiveName: string);
+
     property OSTarget: string read FOSTarget write FOSTarget;
     property CPUTarget: string read FCPUTarget write FCPUTarget;
     property FPCVersion: string read FFPCVersion write FFPCVersion;
@@ -44,6 +47,9 @@ type
   end;
 
 implementation
+
+uses
+  baBuildFPCEnvironment;
 
 { TbaCustomCommand }
 
@@ -66,6 +72,23 @@ begin
     end;
   result := CommandOutput;
   FDistributor.Log(Format('External command output.' +sLineBreak+ '%s', [Result]), etDebug, Null, FSendByLisId);
+end;
+
+procedure TbaCustomCommand.PrepareBuildEnvironment(BuildPath: string; TempArchiveFileName, ArchiveName: string);
+var
+  PristineEnvironmentPath: String;
+begin
+  PristineEnvironmentPath := GetPristineEnvironmentPath;
+  if not DirectoryExists(PristineEnvironmentPath) then
+    raise Exception.CreateFmt('No pristine FPC-installation available (%s). Please run  %s command first.', [PristineEnvironmentPath, TbaBuildFPCEnvironment.TextName]);
+
+  FDistributor.Log(Format('Create build-environment at (%s), based on pristine FPC-installation at (%s)', [BuildPath, PristineEnvironmentPath]), etInfo, Null, FSendByLisId);
+
+  ForceDirectories(BuildPath);
+  RunTestCommandIndir(PristineEnvironmentPath, 'rsync', ['-rtvul', '--delete', PristineEnvironmentPath, BuildPath], 'sync FPC-installation');
+
+  if (TempArchiveFileName<>'') and not CopyFile(TempArchiveFileName, ArchiveName) then
+    raise Exception.CreateFmt('Failed to copy archive (%s) to build-environment (%s).', [TempArchiveFileName, ArchiveName]);
 end;
 
 procedure TbaCustomCommand.PreExecute(AController: TDCSCustomController; out DoQueueCommand: boolean);

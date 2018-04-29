@@ -13,6 +13,7 @@ WORKDIR /home/buildagent
 RUN mkdir svn
 RUN mkdir bin
 RUN mkdir buildfiles
+RUN mkdir templates
 ENV PATH="/home/buildagent/bin:${PATH}"
 WORKDIR /home/buildagent/svn
 RUN svn checkout https://svn.freepascal.org/svn/fpc/trunk fpc-trunk
@@ -20,6 +21,7 @@ RUN svn checkout https://svn.freepascal.org/svn/fpc/trunk fpc-trunk
 COPY buildagent/buildagent /home/buildagent
 COPY buildagent/config/$inifile /home/buildagent/buildagent.ini
 COPY buildagent/config/ppcx64_3.0.2 /home/buildagent/bin
+COPY buildagent/config/fppkg.cfg.template /home/buildagent/templates
 
 EXPOSE 8080
 

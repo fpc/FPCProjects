@@ -29,7 +29,6 @@ type
   TbaCustomBuildCommand = class(TbaCustomCommand)
   protected
     FTempArchiveFileName: string;
-    procedure PrepareBuildEnvironment(BuildPath: string; ArchiveName: string);
   public
     procedure FillCommandBasedOnRequest(ARequest: TRequest); override;
     destructor Destroy; override;
@@ -64,13 +63,13 @@ type
 
   TDCSSourceArchiveNotificationEvent = class(TDCSNotificationEvent, IDCSJSonResultEvent)
   private
-    FManifest: string;
+    FManifestXML: string;
     FSourceArchive: string;
   public
     procedure AfterEventToJSon(Self: TDCSJSonInOutputProcessor; AnEvent: TDCSEvent; JSonEvent: TJSONObject);
   published
     property SourceArchive: string read FSourceArchive write FSourceArchive;
-    property Manifest: string read FManifest write FManifest;
+    property ManifestXML: string read FManifestXML write FManifestXML;
   end;
 
 
@@ -130,7 +129,7 @@ procedure TDCSSourceArchiveNotificationEvent.AfterEventToJSon(Self: TDCSJSonInOu
   AnEvent: TDCSEvent; JSonEvent: TJSONObject);
 begin
   JSonEvent.Add('sourcearchive', FSourceArchive);
-  JSonEvent.Add('manifest', FManifest);
+  JSonEvent.Add('manifestxml', FManifestXML);
 end;
 
 { TbaCreateSourceArchiveCommand }
@@ -150,7 +149,7 @@ begin
     begin
     BuildFilesURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('BuildFilesURL');
     (Result as TDCSSourceArchiveNotificationEvent).SourceArchive := ConcatPaths([BuildFilesURL, FSourceFilename]);
-    (Result as TDCSSourceArchiveNotificationEvent).Manifest := FManifestXML;
+    (Result as TDCSSourceArchiveNotificationEvent).ManifestXML := FManifestXML;
     end;
 end;
 
@@ -255,7 +254,7 @@ begin
   ArchiveName := ConcatPaths([BuildPath, ChangeFileExt(ExtractFileName(FTempArchiveFileName), '.zip')]);
   FZipOutputPath := ConcatPaths([BuildPath, 'tmppackage']);
 
-  PrepareBuildEnvironment(BuildPath, ArchiveName);
+  PrepareBuildEnvironment(BuildPath, FTempArchiveFileName, ArchiveName);
 
   try
     UnZipper := TUnZipper.Create;
@@ -377,7 +376,7 @@ begin
   BuildPath := GetBuildPath;
   ArchiveName := ConcatPaths([BuildPath, ChangeFileExt(ExtractFileName(FTempArchiveFileName), '.zip')]);
 
-  PrepareBuildEnvironment(BuildPath, ArchiveName);
+  PrepareBuildEnvironment(BuildPath, FTempArchiveFileName, ArchiveName);
 
   RunTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'build', ArchiveName], 'build package');
 
@@ -396,23 +395,6 @@ destructor TbaCustomBuildCommand.Destroy;
 begin
   DeleteFile(FTempArchiveFileName);
   inherited Destroy;
-end;
-
-procedure TbaCustomBuildCommand.PrepareBuildEnvironment(BuildPath: string; ArchiveName: string);
-var
-  PristineEnvironmentPath: String;
-begin
-  PristineEnvironmentPath := GetPristineEnvironmentPath;
-  if not DirectoryExists(PristineEnvironmentPath) then
-    raise Exception.CreateFmt('No pristine FPC-installation available (%s). Please run  %s command first.', [PristineEnvironmentPath, TbaBuildFPCEnvironment.TextName]);
-
-  FDistributor.Log(Format('Create build-environment at (%s), based on pristine FPC-installation at (%s)', [BuildPath, PristineEnvironmentPath]), etInfo, Null, FSendByLisId);
-
-  ForceDirectories(BuildPath);
-  RunTestCommandIndir(PristineEnvironmentPath, 'rsync', ['-rtvul', '--delete', PristineEnvironmentPath, BuildPath], 'sync FPC-installation');
-
-  if not CopyFile(FTempArchiveFileName, ArchiveName) then
-    raise Exception.CreateFmt('Failed to copy archive (%s) to build-environment (%s).', [FTempArchiveFileName, ArchiveName]);
 end;
 
 procedure TbaCustomBuildCommand.FillCommandBasedOnRequest(ARequest: TRequest);
