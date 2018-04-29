@@ -21,6 +21,7 @@ type
   TfprBuildAgentResponse = class(TfprInterfacedCollectionItem, IfprJSONPropertyAttributes)
   private
     FManifest: TJSONData;
+    FManifestXML: string;
     FMessage: string;
     FSourceArchive: string;
     FTimeStamp: string;
@@ -33,6 +34,7 @@ type
     property AType: string read FType write FType;
     property SourceArchive: string read FSourceArchive write FSourceArchive;
     property Manifest: TJSONData read FManifest write FManifest;
+    property ManifestXML: string read FManifestXML write FManifestXML;
   end;
 
   TfprBuildAgentResponseList = specialize TcnocGCollection<tfprBuildAgentResponse>;
