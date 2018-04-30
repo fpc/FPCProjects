@@ -3,7 +3,7 @@ export const environment = {
   identityServerUrl: 'http://fpc.cnoc.nl/identityserver',
   webclientUrl: 'http://fpc.cnoc.nl',
   buildAgentUrl: 'http://fpc.cnoc.nl/buildagent',
-  packageManagerUrl: 'http://fpc.cnoc.nl/packagamanager',
+  packageManagerUrl: 'http://fpc.cnoc.nl/packagemanager',
   buildManagerUrl: 'http://fpc.cnoc.nl/buildmanager',
   repositoryUrl:  'http://fpc.cnoc.nl/repository',
   fppkgRepositoryUrl: 'http://fpc.cnoc.nl/fppkgrepository'
