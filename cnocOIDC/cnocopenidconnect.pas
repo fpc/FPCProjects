@@ -176,10 +176,29 @@ begin
     SetLength(ContentBytes, Length(ContentString));
     Move(ContentString[1], ContentBytes[0], Length(ContentString));
 
-    SignatureBin := DecodeStringBase64(TBaseJWT.Base64URLToBase64(ExtractWord(3,AJWTAsString,['.'])), True);
+    try
+      SignatureBin := DecodeStringBase64(TBaseJWT.Base64URLToBase64(ExtractWord(3,AJWTAsString,['.'])), True);
+    except
+      on E: Exception do
+      begin
+        FLatestError := 'Invalid JWT. ' + E.Message;
+        Result := False;
+        Exit;
+      end;
+    end;
     SetLength(Signature, Length(SignatureBin));
     move(SignatureBin[1], Signature[0], Length(SignatureBin));
-    Result := RSAKey.Verify(ContentBytes, Signature);
+    try
+      Result := RSAKey.Verify(ContentBytes, Signature);
+      if not Result then
+        FLatestError := 'Invalid signature';
+    except
+      on E: Exception do
+      begin
+        FLatestError := 'Problem on signature validation: ' + E.Message;
+        Result := False;
+      end;
+    end;
   finally
     RSAKey.Free;
   end;
@@ -196,7 +215,7 @@ begin
   Result := False;
   if AJWT.Claims.iss <> Issuer then
     begin
-    FLatestError := 'JWT is from the wrong issuer';
+    FLatestError := Format('Issuer of the JWT does not match. Received: %s, expected: %s', [AJWT.Claims.iss, Issuer]);
     Exit;
     end;
 
@@ -273,7 +292,7 @@ begin
 
   if not ValidateSignature(AJWTAsString, JSONJwk) then
     begin
-    FLatestError := 'Failed to verify JWT, invalid signature';
+    FLatestError := 'Failed to validate JWT: ' + FLatestError;
     Exit;
     end;
 
@@ -284,9 +303,11 @@ function TcnocOpenIDConnect.VerifyJWT(AJWTString: string): Boolean;
 var
   JWT: TcnocOIDCIDTokenJWT;
 begin
+  Result := False;
   FLatestError := '';
   if not Assigned(FJWKJsonArray) then
-    RetrieveJWKs;
+    if not RetrieveJWKs then
+      Exit;
 
   JWT := TcnocOIDCIDTokenJWT.Create;
   try
