@@ -381,7 +381,7 @@ begin
        begin
        setlength(s,200);
        ErrErrorString(ErrGetError, s, 200);
-       raise Exception.CreateFmt('Invalid key: %s', [s]);
+       raise Exception.CreateFmt('Failed to get key: %s', [s]);
        end;
    finally
      MemStream.Free;
