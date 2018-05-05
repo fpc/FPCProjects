@@ -565,7 +565,7 @@
             <stringProp name="HTTPSampler.port">8282</stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">repository/rebuild/3.1.1/testing</stringProp>
+            <stringProp name="HTTPSampler.path">repository/3.1.1/testing/rebuild</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
