@@ -376,6 +376,8 @@ begin
   try
     if AnObject is TFPSList then
       JSO := ListToJSon(TFPSList(AnObject))
+    else if AnObject is TCollection then
+      JSO := FStreamer.StreamCollection(TCollection(AnObject))
     else
       JSO := FStreamer.ObjectToJSON(AnObject);
     try
@@ -424,11 +426,11 @@ end;
 constructor TfprWebModule.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FDeStreamer := TfprJSONDeStreamer.Create(Self);
+  FDeStreamer := TfprJSONDeStreamer.Create(nil);
   FDeStreamer.Options := [jdoCaseInsensitive];
   FDeStreamer.OnRestoreProperty := @DoRestoreProperty;
 
-  FStreamer := TJSONStreamer.Create(Self);
+  FStreamer := TJSONStreamer.Create(nil);
   FStreamer.Options := [jsoLowerPropertyNames];
   FStreamer.OnStreamProperty := @FStreamerStreamProperty;
 
