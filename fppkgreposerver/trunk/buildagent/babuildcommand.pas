@@ -158,11 +158,31 @@ var
   FN: string;
   ManifestXML: TXMLDocument;
   ArchiveName: string;
-  Packages, Package, Filename: TDOMNode;
+  Packages, Package, Filename, Version: TDOMNode;
   BuildFilesLocation: string;
   i: Integer;
   SourceFilePath: RawByteString;
   Stream: TStringStream;
+
+  function GetXMLVersionString(): string;
+  var
+    Node: TDOMNode;
+  begin
+    Result := '';
+    Node := Version.Attributes.getNamedItem('major');
+    if Assigned(Node) then
+      Result := Node.NodeValue;
+    Node := Version.Attributes.getNamedItem('minor');
+    if Assigned(Node) then
+      Result := Result + '.' + Node.NodeValue;
+    Node := Version.Attributes.getNamedItem('micro');
+    if Assigned(Node) then
+      Result := Result + '.' + Node.NodeValue;
+    Node := Version.Attributes.getNamedItem('build');
+    if Assigned(Node) then
+      Result := Result + '-' + Node.NodeValue;
+  end;
+
 begin
   Result := inherited DoExecute(AController, ReturnMessage);
   if Result then
@@ -202,8 +222,21 @@ begin
 
       if not FileExists(ArchiveName) then
         begin
-        ReturnMessage := Format('Archive ''%s'' does not exist.', [Filename.TextContent]);
-        Exit;
+        // FPC 304 has the annoying bug that the filename does not match the
+        // source-archive name. Try to cunstruct the name ourselves, and try
+        // that one.
+        Version := Package.FindNode('version');
+        if not Assigned(Version) then
+          begin
+          ReturnMessage := 'Invalid manifest file, no version element.';
+          Exit;
+          end;
+        ArchiveName := ConcatPaths([FZipOutputPath, Package.Attributes.GetNamedItem('name').NodeValue+'-'+GetXMLVersionString+'.source.zip']);
+        if not FileExists(ArchiveName) then
+          begin
+          ReturnMessage := Format('Archive ''%s'' does not exist.', [ArchiveName]);
+          Exit;
+          end;
         end;
 
       BuildFilesLocation := TDCSGlobalSettings.GetInstance.GetSettingAsString('BuildFilesLocation');
