@@ -70,6 +70,7 @@ begin
   GlobalSettings.AddSetting('buildmanagerurl', 'Connections', 'BuildManagerURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AgentName', 'Agent', 'Name', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AgentURL', 'Agent', 'URL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('HTTPPort','HTTP','Port','HTTPPort', #0, dcsPHasParameter);
 
   GlobalSettings.AddSettingTemplate('TestEnv-', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
@@ -145,7 +146,20 @@ begin
     else
       TCPServerThread := nil;
 
-    HTTPRestServer := TDCSHTTPRestServer.create(FDistributor, 8080);
+    CommandStr := GlobalSettings.GetSettingAsString('HTTPPort');
+    if CommandStr<>'' then
+      begin
+      if not TryStrToInt(CommandStr, Port) then
+        begin
+        writeln('Invalid port number '''+CommandStr+'''');
+        Terminate;
+        Exit;
+        end;
+      end
+    else
+      Port := 8080;
+
+    HTTPRestServer := TDCSHTTPRestServer.create(FDistributor, Port);
     HTTPRestServer.Flags := HTTPRestServer.Flags + [dcsRestServerFlagAllowDifferentOutputFormat, dcsRestServerFlagAllowDifferentChunkedSetting];
     if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
       HTTPRestServer.AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
