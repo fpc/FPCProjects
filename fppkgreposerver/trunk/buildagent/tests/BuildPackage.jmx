@@ -406,7 +406,7 @@
           <hashTree>
             <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor" enabled="true">
               <stringProp name="JSONPostProcessor.referenceNames">SourceArchive;Manifest</stringProp>
-              <stringProp name="JSONPostProcessor.jsonPathExprs">$[1].sourcearchive;$[1].manifest</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$[1].sourcearchive;$[1].manifestxml</stringProp>
               <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
               <stringProp name="JSONPostProcessor.defaultValues">&apos;&apos;;&apos;&apos;</stringProp>
             </JSONPostProcessor>
