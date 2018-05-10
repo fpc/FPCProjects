@@ -48,6 +48,28 @@ type
 
   TDCSSettingList = specialize TFPGObjectList<TDCSSetting>;
 
+  { TDCSSettingTemplate }
+
+  TDCSSettingTemplate = class
+  private
+    FSectionPrefix: string;
+    FValues: TStringList;
+  public
+    constructor Create(ASectionPrefix: string);
+    destructor Destroy; override;
+    property SectionPrefix: string read FSectionPrefix write FSectionPrefix;
+    property Values: TStringList read FValues;
+  end;
+
+  TDCSCustomSettingTemplateList = specialize TFPGObjectList<TDCSSettingTemplate>;
+
+  { TDCSSettingTemplateList }
+
+  TDCSSettingTemplateList = class(TDCSCustomSettingTemplateList)
+  public
+    function FindSettingTemplate(ASectionPrefix: string): TDCSSettingTemplate;
+  end;
+
   { TDCSGlobalSettings }
 
   TDCSGlobalSettings = class
@@ -56,7 +78,8 @@ type
   private
     FMonitor: TLazMonitor;
     FSettingList: TDCSSettingList;
-    FSettingTemplateList: TDCSSettingList;
+    FDefinedSettingTemplateList: TDCSSettingList;
+    FSettingTemplateList: TDCSSettingTemplateList;
     function GetSettingFromList(AList: TDCSSettingList; ASettingName: string): TDCSSetting;
     function GetSetting(ASettingName: string): TDCSSetting;
     function GetSettingTemplate(ASettingNamePrefix: string): TDCSSetting;
@@ -84,11 +107,47 @@ type
     procedure SetSettingAsBooleanByKey(ASection, AKey: string; AValue: Boolean);
     procedure SetSettingAsStringByKey(ASection, AKey: string; AValue: String);
 
+    procedure FillSectionList(SectionList: TStrings);
+
+    property SettingTemplateList: TDCSSettingTemplateList read FSettingTemplateList;
 
     class function GetInstance: TDCSGlobalSettings;
   end;
 
 implementation
+
+{ TDCSSettingTemplateList }
+
+function TDCSSettingTemplateList.FindSettingTemplate(ASectionPrefix: string): TDCSSettingTemplate;
+var
+  i: Integer;
+begin
+  Result := nil;
+  for i := 0 to Count -1 do
+    begin
+    if Items[i].SectionPrefix = ASectionPrefix then
+      begin
+      Result := Items[i];
+      break;
+      end;
+    end;
+end;
+
+{ TDCSSettingTemplate }
+
+constructor TDCSSettingTemplate.Create(ASectionPrefix: string);
+begin
+  FSectionPrefix := ASectionPrefix;
+  FValues := TStringList.Create;
+  FValues.Sorted := True;
+  FValues.Duplicates := dupIgnore;
+end;
+
+destructor TDCSSettingTemplate.Destroy;
+begin
+  FValues.Free;
+  inherited Destroy;
+end;
 
 
 constructor TDCSSetting.Create(ASettingName, ASection, AKey, AParameterName: string;
@@ -160,7 +219,7 @@ end;
 
 function TDCSGlobalSettings.GetSettingTemplate(ASettingNamePrefix: string): TDCSSetting;
 begin
-  Result := GetSettingFromList(FSettingTemplateList, ASettingNamePrefix);
+  Result := GetSettingFromList(FDefinedSettingTemplateList, ASettingNamePrefix);
 end;
 
 function TDCSGlobalSettings.GetSettingByKey(ASection, AKey: string): TDCSSetting;
@@ -185,12 +244,17 @@ var
   i: Integer;
   Setting: TDCSSetting;
   SettingName: String;
+  SettingTemplate: TDCSSettingTemplate;
 begin
-  for i := 0 to FSettingTemplateList.Count -1 do
+  for i := 0 to FDefinedSettingTemplateList.Count -1 do
     begin
-    Setting := FSettingTemplateList.Items[i];
+    Setting := FDefinedSettingTemplateList.Items[i];
     if Setting.Section = ASectionPrefix then
       begin
+      SettingTemplate := FSettingTemplateList.FindSettingTemplate(ASectionPrefix);
+      if Assigned(SettingTemplate) then
+        SettingTemplate.Values.Add(ASectionSuffix);
+
       SettingName := Setting.SettingName+ASectionSuffix;
       Setting := TDCSSetting.Create(SettingName, ASectionPrefix+ASectionSuffix, Setting.Key, '', #0, dcsPHasParameter, Setting.DefaultValue);
       FSettingList.Add(Setting);
@@ -202,14 +266,15 @@ constructor TDCSGlobalSettings.Create;
 begin
   FMonitor := TLazMonitor.create;
   FSettingList := TDCSSettingList.Create(True);
-  FSettingTemplateList := TDCSSettingList.Create(True);
+  FSettingTemplateList := TDCSSettingTemplateList.Create(True);
+  FDefinedSettingTemplateList := TDCSSettingList.Create(True);
 end;
 
 destructor TDCSGlobalSettings.Destroy;
 begin
   FMonitor.Free;
   FSettingList.Free;
-  FSettingTemplateList.Free;
+  FDefinedSettingTemplateList.Free;
   inherited Destroy;
 end;
 
@@ -223,6 +288,8 @@ procedure TDCSGlobalSettings.AddSetting(ASettingName, ASection, AKey, AParameter
 var
   Setting: TDCSSetting;
 begin
+  if (AParameter <> dcsPOptionalParameter) and (ADefaultValue<>'') then
+    raise Exception.Create('A default value only makes sense for optional parameters.');
   FMonitor.Acquire;
   try
     Setting := GetSetting(ASettingName);
@@ -264,9 +331,9 @@ begin
               SetSettingAsStringByKey(Section, Key, Value)
             else
               begin
-              for k := 0 to FSettingTemplateList.Count-1 do
+              for k := 0 to FDefinedSettingTemplateList.Count-1 do
                 begin
-                Setting := FSettingTemplateList.Items[k];
+                Setting := FDefinedSettingTemplateList.Items[k];
                 if SameText(Setting.Section, copy(Section, 1, Length(Setting.Section))) then
                   begin
                   AddSettingsForTemplate(Setting.Section, copy(Section, Length(Setting.Section) +1, MaxSIntValue));
@@ -374,7 +441,12 @@ begin
     if Assigned(Setting) then
       raise Exception.CreateFmt('Setting-template with settingnameprefix %s is already defined.',[ASettingNamePrefix]);
     Setting := TDCSSetting.Create(ASettingNamePrefix, ASectionPrefix, AKey, '', #0, dcsPHasParameter, ADefaultValue);
-    FSettingTemplateList.Add(Setting);
+    FDefinedSettingTemplateList.Add(Setting);
+
+    if not Assigned(FSettingTemplateList.FindSettingTemplate(ASectionPrefix)) then
+      begin
+      FSettingTemplateList.Add(TDCSSettingTemplate.Create(ASectionPrefix));
+      end;
   finally
     FMonitor.Release;
   end;
@@ -498,6 +570,17 @@ begin
   finally
     FMonitor.Release;
   end;
+end;
+
+procedure TDCSGlobalSettings.FillSectionList(SectionList: TStrings);
+var
+  i: Integer;
+begin
+  for i := 0 to FSettingList.Count -1 do
+    begin
+    if SectionList.IndexOf(FSettingList[i].Section) = -1 then
+      SectionList.Add(FSettingList[i].Section);
+    end;
 end;
 
 class function TDCSGlobalSettings.GetInstance: TDCSGlobalSettings;
