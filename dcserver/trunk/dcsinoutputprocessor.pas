@@ -1,6 +1,7 @@
 unit dcsInOutputProcessor;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
@@ -54,6 +55,10 @@ type
     class destructor Destroy;
     class function GetInOutputProcessorByName(ATextName: string): TDCSInOutputProcessorClass;
     class procedure RegisterCommandClass(ATextName: string; AnInOutputProcessor: TDCSInOutputProcessorClass);
+  end;
+
+  IDCSJSonResultEvent = interface['{3C8A53DA-082A-4955-804A-84CC9C1FCBDE}']
+    procedure AfterEventToJSon(Self: TDCSJSonInOutputProcessor; AnEvent: TDCSEvent; JSonEvent: TJSONObject);
   end;
 
 
@@ -217,9 +222,13 @@ end;
 function TDCSJSonInOutputProcessor.EventToText(AnEvent: TDCSEvent): string;
 var
   JSonEvent: TJSONObject;
+  JsonResultEvent: IDCSJSonResultEvent;
 begin
   JSonEvent := EventToJSOn(AnEvent);
   try
+    if Supports(AnEvent, IDCSJSonResultEvent, JsonResultEvent) then
+      JsonResultEvent.AfterEventToJSon(Self, AnEvent, JSonEvent);
+
     Result := JSonEvent.AsJSON;
   finally
     JSonEvent.Free;
