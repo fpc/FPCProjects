@@ -132,23 +132,26 @@ begin
     end;
   RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create fppkg.cfg');
 
-  SetLength(MakeParams, 12);
+  SetLength(MakeParams, 14);
   MakeParams[1] := ConcatPaths([PristineEnvironmentPath, 'user', 'config', 'default']);
   MakeParams[3] := 'GlobalPath='+ConcatPaths([BuildPath, 'lib','fpc']);
   MakeParams[5] := 'fpcbin='+ConcatPaths([BuildPath, 'bin','fpc']);
   MakeParams[8] := '-p';
   MakeParams[9] := '-d';
   MakeParams[10] := 'LocalRepository='+ConcatPaths([BuildPath, 'user'])+PathDelim;
+  // The GlobalPrefix is used by fpc 3.0.4, obsolete since then
+  MakeParams[11] := '-d';
+  MakeParams[12] := 'GlobalPrefix='+BuildPath;
   Template := TDCSGlobalSettings.GetInstance.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'FppkgDefaultTemplate');
   if Template<>'' then
     begin
-    SetLength(MakeParams, 13);
-    MakeParams[11] := '-t';
-    MakeParams[12] := Template;
+    SetLength(MakeParams, 15);
+    MakeParams[13] := '-t';
+    MakeParams[14] := Template;
     end
   else
     begin
-    MakeParams[11] := '-4';
+    MakeParams[13] := '-4';
     end;
   RunTestCommandIndir(PristineEnvironmentPath, ConcatPaths([PristineEnvironmentPath,'bin', 'fpcmkcfg']), MakeParams, 'create default fppkg compiler file');
 
