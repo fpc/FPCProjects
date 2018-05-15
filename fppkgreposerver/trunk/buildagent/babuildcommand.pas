@@ -277,7 +277,7 @@ end;
 
 function TbaCustomManifestCommand.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
 var
-  BuildPath: String;
+  BuildPath, s: String;
   ArchiveName: RawByteString;
   UnZipper: TUnZipper;
   ManifestXML: TXMLDocument;
@@ -308,6 +308,13 @@ begin
   end;
 
   RunTestCommandIndir(FZipOutputPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'archive'], 'create source-archive for package');
+
+  if GetAbsoluteFilenamesBug then
+    begin
+    // Fppkg in fpc 3.0.4 has a bug which includes absolute filenames in source-
+    // archives. These can not be used. Call fpmake directly instead.
+    RunTestCommandIndir(FZipOutputPath, ConcatPaths([FZipOutputPath, 'fpmake']), ['--compiler='+ConcatPaths([BuildPath, 'bin', 'fpc']), 'archive'], 'call fpmake directly to create source-archive for package');
+    end;
 
   ReturnMessage := '';
   Result := true;

@@ -77,6 +77,7 @@ begin
   GlobalSettings.AddSettingTemplate('TestEnv-', 'StartCompiler', 'TestEnvStartCompiler-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'AdditionalPackages', 'TestEnvAdditionalPackages-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv-', 'AbsoluteFilenamesBug', 'TestEnvAbsoluteFilenamesBug-', '');
 
   GlobalSettings.AddSettingTemplate('TestEnv-', 'FpcCfgTemplate', 'TestEnvFpcCfgTemplate-', '');
   GlobalSettings.AddSettingTemplate('TestEnv-', 'FppkgCfgTemplate', 'TestEnvFppkgCfgTemplate-', '');

@@ -33,6 +33,7 @@ type
     function GetFppkgExecutable: string;
     function GetBuildPath: string;
     function GetFPCEnvironmentKey: string;
+    function GetAbsoluteFilenamesBug: boolean;
     function RunTestCommandIndir(const Curdir: string; const Exename: string;
       const Commands: array of string; TaskDescription: string; ExpectedExitStatus: Integer = 0): string;
 
@@ -173,6 +174,14 @@ begin
     raise Exception.Create('OSTarget, CPUTarget and FPCVersion are mandatory parameters');
 
   Result := 'TestEnv-' + FCPUTarget + '-' + FOSTarget + '-' + FPCVersion;
+end;
+
+function TbaCustomCommand.GetAbsoluteFilenamesBug: boolean;
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  Result := GlobalSettings.GetSettingAsBooleanByKey(GetFPCEnvironmentKey, 'AbsoluteFilenamesBug');
 end;
 
 end.
