@@ -70,6 +70,7 @@ begin
   GlobalSettings.AddSetting('buildmanagerurl', 'Connections', 'BuildManagerURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AgentName', 'Agent', 'Name', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AgentURL', 'Agent', 'URL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AgentFPCVersion', 'Agent', 'FPCVersion', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('HTTPPort','HTTP','Port','HTTPPort', #0, dcsPHasParameter);
 
   GlobalSettings.AddSettingTemplate('TestEnv-', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');

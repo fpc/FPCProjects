@@ -36,6 +36,7 @@ var
   BuildManagerURL: string;
   AgentName: string;
   AgentURL: string;
+  FPCVersion: string;
   HttpClient: TFPHTTPClient;
   SectionList: TStringList;
   i: Integer;
@@ -45,6 +46,9 @@ begin
   BuildManagerURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('buildmanagerurl');
   AgentName := TDCSGlobalSettings.GetInstance.GetSettingAsString('AgentName');
   AgentURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('AgentURL');
+  // ToDo: Filter list of FPC-versions from configured environments, and use
+  // them to register
+  FPCVersion := TDCSGlobalSettings.GetInstance.GetSettingAsString('AgentFPCVersion');
 
   if BuildManagerURL = '' then
     ReturnMessage := 'No buildmanager configured'
@@ -52,6 +56,8 @@ begin
     ReturnMessage := 'No agentname configured'
   else if AgentURL = '' then
     ReturnMessage := 'No agent-url configured'
+  else if FPCVersion = '' then
+    ReturnMessage := 'No FPC-version configured'
   else
     begin
     SectionList := TStringList.Create;
@@ -63,7 +69,7 @@ begin
           begin
           HttpClient := TFPHTTPClient.Create(nil);
           try
-            SS := TStringStream.Create(Format('{"name":"%s","url":"%s"}', [AgentName+'-'+copy(SectionList[i],9), AgentURL]));
+            SS := TStringStream.Create(Format('{"name":"%s","url":"%s","fpcversion":"%s"}', [AgentName+'-'+copy(SectionList[i],9), AgentURL, FPCVersion]));
             try
               HttpClient.RequestBody := SS;
               ReturnMessage := HttpClient.Get(BuildManagerURL+'/agent/register');
