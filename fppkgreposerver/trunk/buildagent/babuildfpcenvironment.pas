@@ -168,6 +168,7 @@ begin
       RunTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'install', AddPackages[i]], 'install additional package');
       end;
     CopyTree(ConcatPaths([BuildPath, 'user', 'lib']), ConcatPaths([PristineEnvironmentPath, 'user', 'lib']));
+    CopyTree(ConcatPaths([BuildPath, 'user', 'build']), ConcatPaths([PristineEnvironmentPath, 'user', 'lib']));
     end;
 
   ReturnMessage := 'Re-created pristine FPC-installation';
