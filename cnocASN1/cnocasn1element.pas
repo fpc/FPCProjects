@@ -968,8 +968,7 @@ begin
   else
     begin
     SetLength(FBinaryValue, ALength);
-    for i := 0 to ALength -1 do
-      AContentStream.ReadBuffer(FBinaryValue[0], ALength);
+    AContentStream.ReadBuffer(FBinaryValue[0], ALength);
     FUsedFormat := sfBytes;
     end;
 end;
