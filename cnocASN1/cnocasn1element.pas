@@ -72,6 +72,8 @@ type
     procedure StreamASN1Content(
       AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); virtual;
 
+    procedure Assign(ASource: TcnocASN1CustomElement); virtual;
+
     property ActualTagNr: Integer read GetActualTagNr;
     property ActualClass: TcnocASN1Class read GetActualClass;
     property Encoding: TcnocASN1Encoding read FEncoding;
@@ -90,6 +92,7 @@ type
     FItems: TcnocASN1ElementList;
     function GetItems: TcnocASN1ElementList;
     procedure SetItems(AValue: TcnocASN1ElementList);
+  protected
     function GetActualTagNr: Integer; override;
     function GetActualClass: TcnocASN1Class; override;
   public
@@ -103,6 +106,9 @@ type
       AFormat: TcnocASN1Format): Boolean; override;
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property Content: TBytes read FContent write FContent;
     property Items: TcnocASN1ElementList read GetItems write SetItems;
     property TagNr: Integer read FTagNr write FTagNr;
@@ -157,6 +163,9 @@ type
       AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format): Boolean; override;
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property AsInt64: Int64 read GetValue write SetValue;
     property AsBCD: tBCD read GetBCDValue write SetBCDValue;
     property AsBinarySigned: TBytes read GetAsBinarySigned write SetAsBinarySigned;
@@ -213,6 +222,9 @@ type
       AFormat: TcnocASN1Format): Boolean; override;
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property Values: TBoundArray read FValues write FValues;
   end;
 
@@ -241,6 +253,9 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property AsUTF32String: UCS4String read FValue write FValue;
   end;
 
@@ -255,6 +270,9 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property AsUTF8String: UTF8String read FValue write FValue;
   end;
 
@@ -269,6 +287,9 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     //property AsDateTime: TDateTime read GetAsDateTime write SetAsDateTime;
     property AsUTF8String: UTF8String read FValue write FValue;
   end;
@@ -284,6 +305,9 @@ type
     procedure ParseASN1Content(
       AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding; ALength: Integer;
       ADecoder: TcnocASN1BERDecoder; AContentStream: TStream; AFormat: TcnocASN1Format); override;
+
+    procedure Assign(ASource: TcnocASN1CustomElement); override;
+
     property AsUTF8String: UTF8String read FValue write FValue;
   end;
 
@@ -319,6 +343,15 @@ begin
     FValue := FValue + intToBin(B, 8);
     end;
   FValue := copy(FValue, 1, length(FValue) - Padding);
+end;
+
+procedure TcnocASN1BITStringElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1BITStringElement then
+    FValue := TcnocASN1BITStringElement(ASource).FValue
+  else
+    raise Exception.Create('Unsupported type for assignment');
 end;
 
 { TcnocASN1UTCTimeElement }
@@ -387,7 +420,7 @@ begin
     begin
     raise Exception.Create('Constructed encoding of UTCTime is not supported.');
     end;
-  FValue := Format('%s-%s-%s %s:%s', [YearStr, MonStr, HourStr, HourStr, MinStr]);
+  FValue := Format('%s-%s-%s %s:%s', [YearStr, MonStr, DayStr, HourStr, MinStr]);
   if SecStr<>'' then
     FValue := FValue + ':' + SecStr;
 
@@ -395,6 +428,15 @@ begin
     FValue := FValue + OffStr
   else
     FValue := FValue + OffStr + HourOffStr + '''' + MinOffStr;
+end;
+
+procedure TcnocASN1UTCTimeElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1UTCTimeElement then
+    FValue := TcnocASN1UTCTimeElement(ASource).FValue
+  else
+    raise Exception.Create('Unsupported type for assignment');
 end;
 
 { TcnocASN1UTF8StringElement }
@@ -419,6 +461,15 @@ begin
   AContentStream.Read(FValue[1], ALength);
 end;
 
+procedure TcnocASN1UTF8StringElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1UTF8StringElement then
+    FValue := TcnocASN1UTF8StringElement(ASource).FValue
+  else
+    raise Exception.Create('Unsupported type for assignment');
+end;
+
 { TcnocASN1UniversalStringElement }
 
 class function TcnocASN1UniversalStringElement.GetTagNr: Int64;
@@ -439,6 +490,15 @@ begin
   Assert(ALength>-1);
   SetLength(FValue, ALength);
   AContentStream.Read(FValue[0], ALength);
+end;
+
+procedure TcnocASN1UniversalStringElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1UniversalStringElement then
+    FValue := TcnocASN1UniversalStringElement(ASource).FValue
+  else
+    raise Exception.Create('Unsupported type for assignment');
 end;
 
 { TcnocASN1NullElement }
@@ -538,6 +598,15 @@ begin
     AnEncoder.Write128BaseInteger(AContentStream, FValues[i]);
 end;
 
+procedure TcnocASN1ObjectIdentifierElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1ObjectIdentifierElement then
+    FValues := TcnocASN1ObjectIdentifierElement(ASource).FValues
+  else
+    raise Exception.Create('Unsupported type for assignment');
+end;
+
 { TcnocASN1SetElement }
 
 procedure TcnocASN1SetElement.SetItems(AValue: TcnocASN1ElementList);
@@ -595,8 +664,6 @@ end;
 procedure TcnocASN1SetElement.ParseASN1Content(AClass: TcnocASN1Class; ATag: Integer;
   AnEncoding: TcnocASN1Encoding; ALength: Integer; ADecoder: TcnocASN1BERDecoder;
   AContentStream: TStream; AFormat: TcnocASN1Format);
-var
-  Element: TObject;
 begin
   inherited;
   if ALength > -1 then
@@ -683,11 +750,18 @@ function TcnocASN1CustomElement.GetASN1HeaderInfo(out AClass: TcnocASN1Class; ou
   AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format): Boolean;
 begin
   Raise Exception.Create('Streaming ' + ClassName + ' elements is not implemented');
+  Result := True;
 end;
 
 procedure TcnocASN1CustomElement.StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
 begin
   Raise Exception.Create('Streaming ' + ClassName + ' elements is not implemented');
+end;
+
+procedure TcnocASN1CustomElement.Assign(ASource: TcnocASN1CustomElement);
+begin
+  FEncoding := ASource.FEncoding;
+  FContentLength := ASource.ContentLength;
 end;
 
 { TcnocASN1GenericElement }
@@ -760,6 +834,23 @@ begin
     AContentStream.WriteBuffer(FContent[0], Length(FContent));
   if Items.Count > 0 then
     AnEncoder.SaveToStream(AContentStream, AFormat, ContentLength, Items)
+end;
+
+procedure TcnocASN1GenericElement.Assign(ASource: TcnocASN1CustomElement);
+var
+  GenSource: TcnocASN1GenericElement;
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1GenericElement then
+    begin
+    GenSource := TcnocASN1GenericElement(ASource);
+    FContent := GenSource.FContent;
+    FClass := GenSource.FClass;
+    FTagNr := GenSource.FTagNr;
+    //FItems.Assign(GenSource.FItems);
+    end
+  else
+    raise Exception.Create('Unsupported type for assignment');
 end;
 
 { TcnocASN1IntegerElement }
@@ -845,11 +936,30 @@ begin
 end;
 
 function TcnocASN1IntegerElement.GetBCDValue: tBCD;
+
+  function PowerBCD(Base, Exponent: Integer): tBCD;
+  var
+    i: Integer;
+  begin
+    result := 1;
+    for i := 0 to Exponent -1 do
+      begin
+      result := Result * Base;
+      end;
+  end;
+
+var
+  i: Integer;
 begin
   case FUsedFormat of
     sfBCD: Result := FBCDValue;
     sfInt: Result := IntegerToBCD(FValue);
-    sfBytes: raise Exception.Create('Value nog accessible as BCD');
+    sfBytes:
+      begin
+      Result := 0;
+      for i := 0 to high(FBinaryValue) do
+        Result := Result + (tBCD(FBinaryValue[high(FBinaryValue) - i]) * (PowerBCD(256, i)));
+      end;
   end;
 end;
 
@@ -949,7 +1059,7 @@ begin
       FValue := -FValue -1;
     FUsedFormat := sfInt;
     end
-  else if ALength <= 32 then // Arbritary
+  else if ALength <= 24 then // Arbitrary, but 200 bit RSA-keys do not work with 26
     begin
     FBCDValue := 0;
     for i := 0 to ALength -1 do
@@ -1014,6 +1124,34 @@ begin
       AContentStream.WriteBuffer(FBinaryValue[0], Length(FBinaryValue));
       end;
   end;
+end;
+
+procedure TcnocASN1IntegerElement.Assign(ASource: TcnocASN1CustomElement);
+var
+  IntSource: TcnocASN1IntegerElement;
+begin
+  inherited Assign(ASource);
+  if ASource is TcnocASN1IntegerElement then
+    begin
+    IntSource := TcnocASN1IntegerElement(ASource);
+    FUsedFormat := IntSource.FUsedFormat;
+    case FUsedFormat of
+      sfInt:
+        begin
+        FValue := IntSource.FValue;
+        end;
+      sfBCD:
+        begin
+        FBCDValue := IntSource.FBCDValue;
+        end;
+      sfBytes:
+        begin
+        FBinaryValue := IntSource.FBinaryValue;
+        end;
+    end
+    end
+  else
+    raise Exception.Create('Unsupported type for assignment');
 end;
 
 end.
