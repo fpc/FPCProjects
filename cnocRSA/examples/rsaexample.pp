@@ -22,6 +22,8 @@ type
     procedure DoRun; override;
     procedure Verify();
     procedure Sign();
+    procedure GenerateKey(PEMFormat: Boolean; Bits, Exp: Integer);
+    procedure SaveKey(RSAKey: TcnocRSAPublicKey; PEMFormat: Boolean);
     procedure ComposePublicKey(PEMFormat: Boolean);
     procedure ComposePrivateKey(PEMFormat: Boolean);
     function ObtainPublicKey: TcnocRSAPublicKey;
@@ -81,7 +83,9 @@ begin
     'composepublicderkey' : ComposePublicKey(False);
     'composeprivatepemkey': ComposePrivateKey(True);
     'composeprivatederkey': ComposePrivateKey(False);
-    'sign': Sign;
+    'generatepemkey'      : GenerateKey(True, 1024, 65535);
+    'generatederkey'      : GenerateKey(False, 1024, 65535);
+    'sign'                : Sign;
   else
     writeln('Unknown command '''+ Command +'''. Try ''help''.');
   end;
@@ -105,7 +109,7 @@ begin
   end;
 end;
 
-procedure TRSAEncryptionExample.Sign;
+procedure TRSAEncryptionExample.Sign();
 var
   RSAKey: TcnocRSAPrivateKey;
   Signature: TBytes;
@@ -127,24 +131,43 @@ begin
   end;
 end;
 
+procedure TRSAEncryptionExample.GenerateKey(PEMFormat: Boolean; Bits, Exp: Integer);
+var
+  RSAKey: TcnocRSAPrivateKey;
+begin
+  RSAKey := TcnocRSAPrivateKey.Create;
+  try
+    RSAKey.Generate(Bits, Exp);
+    SaveKey(RSAKey, PEMFormat);
+  finally
+    RSAKey.free;
+  end;
+end;
+
+procedure TRSAEncryptionExample.SaveKey(RSAKey: TcnocRSAPublicKey; PEMFormat: Boolean);
+var
+  FS: TFileStream;
+begin
+  if not HasOption('o', 'output') then
+    raise Exception.Create('Missing obligatory ''output'' parameter');
+  FS := TFileStream.Create(GetOptionValue('o', 'output'), fmCreate);
+  try
+    if PEMFormat then
+      RSAKey.SaveToPEMStream(FS)
+    else
+      RSAKey.SaveToDERStream(FS);
+  finally
+    FS.Free;
+  end;
+end;
+
 procedure TRSAEncryptionExample.ComposePublicKey(PEMFormat: Boolean);
 var
   RSAKey: TcnocRSAPublicKey;
-  FS: TFileStream;
 begin
   RSAKey := ObtainPublicKey;
   try
-    if not HasOption('o', 'output') then
-      raise Exception.Create('Missing obligatory ''output'' parameter');
-    FS := TFileStream.Create(GetOptionValue('o', 'output'), fmCreate);
-    try
-      if PEMFormat then
-        RSAKey.SaveToPEMStream(FS)
-      else
-        RSAKey.SaveToDERStream(FS);
-    finally
-      FS.Free;
-    end;
+    SaveKey(RSAKey, PEMFormat);
   finally
     RSAKey.Free;
   end;
@@ -153,21 +176,10 @@ end;
 procedure TRSAEncryptionExample.ComposePrivateKey(PEMFormat: Boolean);
 var
   RSAKey: TcnocRSAPrivateKey;
-  FS: TFileStream;
 begin
   RSAKey := ObtainPrivateKey;
   try
-    if not HasOption('o', 'output') then
-      raise Exception.Create('Missing obligatory ''output'' parameter');
-    FS := TFileStream.Create(GetOptionValue('o', 'output'), fmCreate);
-    try
-      if PEMFormat then
-        RSAKey.SaveToPEMStream(FS)
-      else
-        RSAKey.SaveToDERStream(FS);
-    finally
-      FS.Free;
-    end;
+    SaveKey(RSAKey, PEMFormat);
   finally
     RSAKey.Free;
   end;
@@ -299,8 +311,10 @@ begin
   writeln('  verify                Verify RSA-signature');
   writeln('  composepublicderkey   Compose a public key (DER-format)');
   writeln('  composepublicpemkey   Compose a public key (PEM-format)');
-  writeln('  composeprivatederkey   Compose a private key (DER-format)');
-  writeln('  composeprivatepemkey   Compose a private key (PEM-format)');
+  writeln('  composeprivatederkey  Compose a private key (DER-format)');
+  writeln('  composeprivatepemkey  Compose a private key (PEM-format)');
+  writeln('  generatepemkey        Generate a new key (PEM-format)');
+  writeln('  generatederkey        Generate a new key (PEM-format)');
   writeln('');
   writeln('Possible options:');
   writeln('  -h                    Write this help and exit');

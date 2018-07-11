@@ -7,14 +7,16 @@ interface
 uses
   sysutils,
   classes,
-  strutils,
   ctypes,
   base64,
   fpjwt,
   cnocASN1,
   cnocASN1Encoder,
+  cnocASN1TagFactory,
+  cnocASN1Decoder,
   cnocASN1Element,
-  openssl;
+  openssl,
+  FmtBCD;
 
 type
 
@@ -42,6 +44,8 @@ type
     FObjIdentifierSequence: TcnocASN1SequenceElement;
     FBitStr: TcnocASN1GenericElement;
     procedure CreateASN1Structures(AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format);
+    function Gete: TcnocRSABignum;
+    function Getn: TcnocRSABignum;
   protected
     function GetASN1HeaderInfo(
       out AClass: TcnocASN1Class; out ATag: Integer; out AnEncoding: TcnocASN1Encoding; out ALength: QWord;
@@ -50,22 +54,25 @@ type
       AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder; AFormat: TcnocASN1Format); virtual;
     function GetPEMDescription: string; virtual;
     function GetOpenSSLKey: PEVP_PKEY; virtual;
+    procedure RaiseOpenSSLError(Msg: string);
   public
-    constructor Create; virtual;
     destructor Destroy; override;
 
     procedure SaveToDERStream(AStream: TStream); virtual;
     procedure SaveToPEMStream(AStream: TStream); virtual;
 
+    procedure LoadFromDERStream(AStream: TStream); virtual;
+    procedure Assign(ASource: TcnocRSAPublicKey); virtual;
+
     function Verify(Content, Signature: TBytes): Boolean;
 
-    property n    : TcnocRSABignum read Fn write Fn;       // public modulus
-    property e    : TcnocRSABignum read Fe write Fe;       // public exponent
+    property n    : TcnocRSABignum read Getn;       // public modulus
+    property e    : TcnocRSABignum read Gete;       // public exponent
   end;
 
   { TcnocRSAPrivateKey }
 
-  TcnocRSAPrivateKey = class(TcnocRSAPublicKey)
+  TcnocRSAPrivateKey = class(TcnocRSAPublicKey, IcnocASN1DecodableClass)
   private
     FVer: TcnocASN1IntegerElement;
     Fd: TcnocRSABignum;
@@ -74,27 +81,40 @@ type
     Fiqmp: TcnocRSABignum;
     Fp: TcnocRSABignum;
     Fq: TcnocRSABignum;
+
+    function Getd: TcnocRSABignum;
+    function Getdmp1: TcnocRSABignum;
+    function Getdmq1: TcnocRSABignum;
+    function Getiqmp: TcnocRSABignum;
+    function Getp: TcnocRSABignum;
+    function Getq: TcnocRSABignum;
+    function GetVer: TcnocASN1IntegerElement;
   protected
     function GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
       AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format): Boolean; override;
     procedure StreamASN1Content(AContentStream: TStream; AnEncoder: TcnocASN1BEREncoder;
       AFormat: TcnocASN1Format); override;
+    procedure ParseASN1Content(AClass: TcnocASN1Class; ATag: Integer; AnEncoding: TcnocASN1Encoding;
+      ALength: Integer; ADecoder: TcnocASN1BERDecoder; AContentStream: TStream;
+      AFormat: TcnocASN1Format);
     function GetPEMDescription: string; override;
     function GetOpenSSLKey: PEVP_PKEY; override;
   public
-    constructor Create; override;
     destructor Destroy; override;
 
-    function Sign(Content: TBytes): TBytes;
+    procedure Assign(ASource: TcnocRSAPublicKey); override;
 
-    property Ver  : TcnocASN1IntegerElement read FVer write FVer; // Version
-    property d    : TcnocRSABignum read Fd write Fd;       // private exponent
-    property p    : TcnocRSABignum read Fp write Fp;       // secret prime factor
-    property q    : TcnocRSABignum read Fq write Fq;       // secret prime factor
-    property dmp1 : TcnocRSABignum read Fdmp1 write Fdmp1; // d mod (p-1)
-    property dmq1 : TcnocRSABignum read Fdmq1 write Fdmq1; // d mod (q-1)
-    property iqmp : TcnocRSABignum read Fiqmp write Fiqmp; // q^-1 mod p
+    function Sign(Content: TBytes): TBytes;
+    procedure Generate(Bits: cint; Exp: PtrInt);
+
+    property Ver  : TcnocASN1IntegerElement read GetVer;     // Version
+    property d    : TcnocRSABignum read Getd;                // private exponent
+    property p    : TcnocRSABignum read Getp;                // secret prime factor
+    property q    : TcnocRSABignum read Getq;                // secret prime factor
+    property dmp1 : TcnocRSABignum read Getdmp1;             // d mod (p-1)
+    property dmq1 : TcnocRSABignum read Getdmq1;             // d mod (q-1)
+    property iqmp : TcnocRSABignum read Getiqmp;             // q^-1 mod p
   end;
 
   { TcnocLineWrapStream }
@@ -125,7 +145,6 @@ end;
 Constructor TcnocLineWrapStream.Create(ASource: TStream);
 begin
   inherited Create(ASource);
-  //  FLineWidth := 64;
   FLineWidth := 64;
 end;
 
@@ -167,6 +186,73 @@ end;
 
 { TcnocRSAPrivateKey }
 
+function TcnocRSAPrivateKey.Getd: TcnocRSABignum;
+begin
+  if not Assigned(Fd) then
+    begin
+    Fd := TcnocRSABignum.Create;
+    Fd.AsInt64 := -1;
+    end;
+  Result := Fd;
+end;
+
+function TcnocRSAPrivateKey.Getdmp1: TcnocRSABignum;
+begin
+  if not Assigned(Fdmp1) then
+    begin
+    Fdmp1 := TcnocRSABignum.Create;
+    Fdmp1.AsInt64 := -1;
+    end;
+  Result := Fdmp1;
+end;
+
+function TcnocRSAPrivateKey.Getdmq1: TcnocRSABignum;
+begin
+  if not Assigned(Fdmq1) then
+    begin
+    Fdmq1 := TcnocRSABignum.Create;
+    Fdmq1.AsInt64 := -1;
+    end;
+  Result := Fdmq1;
+end;
+
+function TcnocRSAPrivateKey.Getiqmp: TcnocRSABignum;
+begin
+  if not Assigned(Fiqmp) then
+    begin
+    Fiqmp := TcnocRSABignum.Create;
+    Fiqmp.AsInt64 := -1;
+    end;
+  Result := Fiqmp;
+end;
+
+function TcnocRSAPrivateKey.Getp: TcnocRSABignum;
+begin
+  if not Assigned(Fp) then
+    begin
+    Fp := TcnocRSABignum.Create;
+    Fp.AsInt64 := -1;
+    end;
+  Result := Fp;
+end;
+
+function TcnocRSAPrivateKey.Getq: TcnocRSABignum;
+begin
+  if not Assigned(Fq) then
+    begin
+    Fq := TcnocRSABignum.Create;
+    Fq.AsInt64 := -1;
+    end;
+  Result := Fq;
+end;
+
+function TcnocRSAPrivateKey.GetVer: TcnocASN1IntegerElement;
+begin
+  if not Assigned(FVer) then
+    FVer := TcnocASN1IntegerElement.Create;
+  Result := FVer;
+end;
+
 function TcnocRSAPrivateKey.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
   AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
   AFormat: TcnocASN1Format): Boolean;
@@ -184,6 +270,7 @@ begin
     AnEncoder.GetElementLength(dmp1, AFormat, True) +
     AnEncoder.GetElementLength(dmq1, AFormat, True) +
     AnEncoder.GetElementLength(iqmp, AFormat, True);
+  Result := True;
 end;
 
 procedure TcnocRSAPrivateKey.StreamASN1Content(AContentStream: TStream;
@@ -198,6 +285,29 @@ begin
   AnEncoder.SaveObjectToStream(AContentStream, AFormat, dmp1);
   AnEncoder.SaveObjectToStream(AContentStream, AFormat, dmq1);
   AnEncoder.SaveObjectToStream(AContentStream, AFormat, iqmp);
+end;
+
+procedure TcnocRSAPrivateKey.ParseASN1Content(AClass: TcnocASN1Class; ATag: Integer;
+  AnEncoding: TcnocASN1Encoding; ALength: Integer; ADecoder: TcnocASN1BERDecoder;
+  AContentStream: TStream; AFormat: TcnocASN1Format);
+var
+  Items: TcnocASN1ElementList;
+begin
+  Items := TcnocASN1ElementList.Create(True);
+  try
+    ADecoder.LoadFromStream(AContentStream, AFormat, ALength, Items);
+    Ver.Assign(Items[0] as TcnocASN1CustomElement);
+    n.Assign(Items[1] as TcnocASN1CustomElement);
+    e.Assign(Items[2] as TcnocASN1CustomElement);
+    d.Assign(Items[3] as TcnocASN1CustomElement);
+    p.Assign(Items[4] as TcnocASN1CustomElement);
+    q.Assign(Items[5] as TcnocASN1CustomElement);
+    dmp1.Assign(Items[6] as TcnocASN1CustomElement);
+    dmq1.Assign(Items[7] as TcnocASN1CustomElement);
+    iqmp.Assign(Items[8] as TcnocASN1CustomElement);
+  finally
+    Items.Free;
+  end;
 end;
 
 function TcnocRSAPrivateKey.GetPEMDescription: string;
@@ -217,33 +327,10 @@ begin
      ptr := MemStream.Memory;
      Result := d2i_AutoPrivateKey(nil, @ptr, MemStream.Size);
      if not assigned(Result) then
-       begin
-       setlength(s,200);
-       ErrErrorString(ErrGetError, s, 200);
-       raise Exception.CreateFmt('Invalid key: %s', [s]);
-       end;
+       RaiseOpenSSLError('Invalid key:');
    finally
      MemStream.Free;
    end;
-end;
-
-constructor TcnocRSAPrivateKey.Create;
-begin
-  inherited Create;
-  FVer := TcnocASN1IntegerElement.Create;
-  Fd := TcnocRSABignum.Create;
-  Fdmp1 := TcnocRSABignum.Create;
-  Fdmq1 := TcnocRSABignum.Create;
-  Fiqmp := TcnocRSABignum.Create;
-  Fp := TcnocRSABignum.Create;
-  Fq := TcnocRSABignum.Create;
-
-  Fd.AsInt64 := -1;
-  Fdmp1.AsInt64 := -1;
-  Fdmq1.AsInt64 := -1;
-  Fiqmp.AsInt64 := -1;
-  Fp.AsInt64 := -1;
-  Fq.AsInt64 := -1;
 end;
 
 destructor TcnocRSAPrivateKey.Destroy;
@@ -256,6 +343,26 @@ begin
   Fq.Free;
   FVer.Free;
   inherited Destroy;
+end;
+
+procedure TcnocRSAPrivateKey.Assign(ASource: TcnocRSAPublicKey);
+var
+  PKSource: TcnocRSAPrivateKey;
+begin
+  if ASource is TcnocRSAPrivateKey then
+    begin
+    PKSource := TcnocRSAPrivateKey(ASource);
+    inherited Assign(PKSource);
+    Ver.Assign(PKSource.Ver);
+    d.Assign(PKSource.d);
+    p.Assign(PKSource.p);
+    q.Assign(PKSource.q);
+    dmp1.Assign(PKSource.dmp1);
+    dmq1.Assign(PKSource.dmq1);
+    iqmp.Assign(PKSource.iqmp);
+    end
+  else
+    raise Exception.Create('Can not assign a public key to a private key.');
 end;
 
 function TcnocRSAPrivateKey.Sign(Content: TBytes): TBytes;
@@ -343,6 +450,26 @@ begin
   end;
 end;
 
+function TcnocRSAPublicKey.Gete: TcnocRSABignum;
+begin
+  if not Assigned(Fe) then
+    begin
+    Fe := TcnocRSABignum.Create;
+    Fe.AsInt64 := -1;
+    end;
+  Result := Fe;
+end;
+
+function TcnocRSAPublicKey.Getn: TcnocRSABignum;
+begin
+  if not Assigned(Fn) then
+    begin
+    Fn := TcnocRSABignum.Create;
+    Fn.AsInt64 := -1;
+    end;
+  Result := Fn;
+end;
+
 function TcnocRSAPublicKey.GetASN1HeaderInfo(out AClass: TcnocASN1Class; out ATag: Integer; out
   AnEncoding: TcnocASN1Encoding; out ALength: QWord; AnEncoder: TcnocASN1BEREncoder;
   AFormat: TcnocASN1Format): Boolean;
@@ -366,6 +493,15 @@ begin
   Result := 'PUBLIC KEY';
 end;
 
+procedure TcnocRSAPublicKey.RaiseOpenSSLError(Msg: string);
+var
+  ErrBuf: string;
+begin
+  SetLength(ErrBuf, 200);
+  ErrErrorString(ErrGetError, ErrBuf, Length(ErrBuf));
+  raise Exception.Create(Msg + ' ' + ErrBuf);
+end;
+
 function TcnocRSAPublicKey.GetOpenSSLKey: PEVP_PKEY;
 var
   MemStream: TMemoryStream;
@@ -378,23 +514,10 @@ begin
      ptr := MemStream.Memory;
      Result := d2i_PubKey(nil, @ptr, MemStream.Size);
      if not assigned(Result) then
-       begin
-       setlength(s,200);
-       ErrErrorString(ErrGetError, s, 200);
-       raise Exception.CreateFmt('Failed to get key: %s', [s]);
-       end;
+       RaiseOpenSSLError('Failed to get key:');
    finally
      MemStream.Free;
    end;
-end;
-
-constructor TcnocRSAPublicKey.Create;
-begin
-  Fn := TcnocRSABignum.Create;
-  Fe := TcnocRSABignum.Create;
-
-  Fn.AsInt64 := -1;
-  Fe.AsInt64 := -1;
 end;
 
 destructor TcnocRSAPublicKey.Destroy;
@@ -404,6 +527,59 @@ begin
   FObjIdentifierSequence.Free;
   FBitStr.Free;
   inherited Destroy;
+end;
+
+procedure TcnocRSAPrivateKey.Generate(Bits: cint; Exp: PtrInt);
+var
+  Rsa: PRSA;
+  i: Integer;
+  RsaDER: TBytes;
+  ExpBigNum: PBIGNUM;
+  pt: Pointer;
+  DERStream: TBytesStream;
+begin
+  if RAND_status <> 1 then
+    raise Exception.Create('OpenSSL did not obtain enough random data.');
+  Rsa := RSA_new;
+  try
+    if not Assigned(Rsa) then
+      RaiseOpenSSLError('OpenSSL');
+
+    ExpBigNum := BN_new;
+    try
+      if not Assigned(ExpBigNum) then
+        RaiseOpenSSLError('OpenSSL');
+
+      if BN_set_word(ExpBigNum, Exp) <> 1 then
+        RaiseOpenSSLError('OpenSSL');
+
+      if cint(RSA_generate_key_ex(Rsa, Bits, ExpBigNum, nil)) <> 1 then
+        RaiseOpenSSLError('OpenSSL');
+    finally
+      BN_free(ExpBigNum);
+    end;
+
+    // Store in DER-format
+    pt := nil;
+    i := i2d_RSAPrivateKey(Rsa, @pbyte(pt));
+    if i < 1 then
+      RaiseOpenSSLError('OpenSSL');
+    SetLength(RsaDER, i);
+
+    pt := @RsaDER[0];
+    if i2d_RSAPrivateKey(Rsa, @pbyte(pt)) < i then
+      RaiseOpenSSLError('OpenSSL');
+
+    // Fill this class with the data from the stored DER-data
+    DERStream := TBytesStream.Create(RsaDER);
+    try
+      LoadFromDERStream(DERStream);
+    finally
+      DERStream.Free;
+    end;
+  finally
+    RSA_free(Rsa);
+  end;
 end;
 
 procedure TcnocRSAPublicKey.SaveToDERStream(AStream: TStream);
@@ -441,6 +617,37 @@ begin
 
   s := sLineBreak + '-----END ' + GetPEMDescription + '-----' + sLineBreak;
   AStream.WriteBuffer(s[1], Length(s));
+end;
+
+procedure TcnocRSAPublicKey.LoadFromDERStream(AStream: TStream);
+var
+  ASN1Decoder: TcnocASN1BERDecoder;
+  Key: TcnocRSAPublicKey;
+begin
+  ASN1Decoder := TcnocASN1BERDecoder.Create;
+  try
+    ASN1Decoder.TagFactory := TcnocASN1TagFactory.Create;
+    try
+      ASN1Decoder.TagFactory.RegisterASN1Type(cacUniversal, 16, ClassType);
+      ASN1Decoder.TagFactory.RegisterASN1Type(TcnocASN1IntegerElement.GetClass, TcnocASN1IntegerElement.GetTagNr, TcnocASN1IntegerElement);
+      Key := ASN1Decoder.LoadElementFromStream(AStream, cafDER) as TcnocRSAPublicKey;
+      try
+        Assign(Key);
+      finally
+        Key.Free;
+      end;
+    finally
+      ASN1Decoder.TagFactory.Free;
+    end;
+  finally
+    ASN1Decoder.Free;
+  end;
+end;
+
+procedure TcnocRSAPublicKey.Assign(ASource: TcnocRSAPublicKey);
+begin
+  n.Assign(ASource.n);
+  e.Assign(ASource.e);
 end;
 
 function TcnocRSAPublicKey.Verify(Content, Signature: TBytes): Boolean;
