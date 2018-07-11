@@ -138,7 +138,7 @@ begin
         WriteHighTagNumber(AStream, TagNr);
         end;
 
-      if (length=-1) or (length=High(length)) then
+      if (length=High(length)) then
         begin
         Assert(Encoding = caeConstructed);
         AStream.WriteByte(%10000000);
