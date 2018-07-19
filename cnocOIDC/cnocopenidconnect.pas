@@ -57,6 +57,8 @@ type
     property RevocationEndpoint: string read FRevocationEndpoint write FRevocationEndpoint;
     property IntrospectionEndpoint: string read FIntrospectionEndpoint write FIntrospectionEndpoint;
     property Issuer: string read FIssuer write FIssuer;
+    // ToDo: this property should not be here, especially not writable.
+    property JWKJsonArray: TJSONArray read FJWKJsonArray write FJWKJsonArray;
   end;
 
 implementation
@@ -195,7 +197,7 @@ begin
     except
       on E: Exception do
       begin
-        FLatestError := 'Problem on signature validation: ' + E.Message;
+        FLatestError := 'Problem during signature validation: ' + E.Message;
         Result := False;
       end;
     end;

@@ -16,6 +16,7 @@ type
   TcnocOIDCIDTokenClaim = class(TClaims)
   private
     Facr: string;
+    Fat_hash: string;
     Fauth_time: Int64;
     Fazp: string;
     Fclient_id: string;
@@ -25,6 +26,7 @@ type
     property client_id: string read Fclient_id write Fclient_id;
     property auth_time: Int64 read Fauth_time write Fauth_time;
     property nonce: string read Fnonce write Fnonce;
+    property at_hash: string read Fat_hash write Fat_hash;
     property acr: string read Facr write Facr;
     property azp: string read Fazp write Fazp;
 
