@@ -929,7 +929,7 @@ begin
       l := CalculateAmountOfOctets;
       ValueLE := NtoBE(FValue);
       SetLength(Result, l);
-      move(ValueLE, Result[0], l);
+      move(pbyte(@ValueLE)[SizeOf(ValueLE)-l], Result[0], l);
       end;
     sfBytes: Result := FBinaryValue;
   end;
