@@ -19,9 +19,11 @@ begin
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('cnocRSA');
     P.Dependencies.Add('fcl-web');
+    P.Dependencies.Add('dcpcrypt');
 
     T:=P.Targets.AddUnit('cnocopenidconnect.pas');
     T:=P.Targets.AddUnit('cnocoidcidtoken.pas');
+    T:=P.Targets.AddUnit('cnocopenidconnectprovider.pas');
 
     P.Sources.AddDoc('readme.md');
     P.Sources.AddDoc('COPYING.txt');
