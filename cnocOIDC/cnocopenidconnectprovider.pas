@@ -1,24 +1,27 @@
 unit cnocOpenIDConnectProvider;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
 uses
   Classes,
   SysUtils,
+  contnrs,
   DateUtils,
   fgl,
   FmtBCD,
   md5,
-  sha1,
   dcpsha256,
   base64,
+  Math,
   HTTPDefs,
   fphttpserver,
   fpjson,
   fpjsonrtti,
   fpTemplate,
+  URIParser,
   fpjwt,
   cnocRSA,
   cnocOIDCIDToken;
@@ -58,6 +61,14 @@ type
 
   TcnocOpenIDConnectJWKCollection = TCollection;
 
+  TcnocOpenIDSession = class
+  public
+    Subject: string;
+    AuthenticationTime: TDateTime;
+    ExpirationTime: TDateTime;
+  end;
+  TcnocOpenIDSessionMap = specialize TFPGMapObject<string, TcnocOpenIDSession>;
+
   { TcnocOpenIDConnectConfiguration }
 
   TcnocOpenIDConnectConfiguration = class
@@ -83,10 +94,12 @@ type
 
   TcnocOpenIDConnectProvider = class
   private
+    FSessionExpiration: Integer;
   type
     TcnocRSAPrivateKeyMap = specialize TFPGMapObject<string, TcnocRSAPrivateKey>;
   class var{threadvar -- Lazarus can not handle this}
     FReturnUrl: string;
+    FFailureMessage: string;
   var
     FBaseURL: string;
     FConfiguration: TcnocOpenIDConnectConfiguration;
@@ -94,12 +107,16 @@ type
     FLoginTemplate: TFPCustomTemplate;
     FPRotocol: string;
     FKeyList: TcnocRSAPrivateKeyMap;
+    FContentProviderList: TFPObjectList;
+    FAuthenticatedSessionMap: TcnocOpenIDSessionMap;
 
     Procedure GetLoginTemplateParams(Sender: TObject; Const ParamName: String; Out AValue: String);
     procedure SetBaseURL(AValue: string);
     procedure InitDefaultTemplates;
     procedure AddCorsHeaders(ARequest: TRequest; AResponse: TResponse);
     function SHA256Hash(const AString: string): ansistring;
+
+    function SetupAuthenticatedSession(Subject: string): string;
 
     function VerifyJWT(const AJWTAsString: string; out AJWT: TcnocOIDCIDTokenJWT): Boolean;
     function ObtainJWKJsonArray: TJSONArray;
@@ -116,11 +133,22 @@ type
 
     procedure GenerateNewKey(Bits: Integer = 2048; Exp: Integer = 65537);
 
+    procedure AddContentProvider(AnObject: TObject);
+    procedure RemoveContentProvider(AnObject: TObject);
+
     property Configuration: TcnocOpenIDConnectConfiguration read FConfiguration;
     property BaseURL: string read FBaseURL;
     property Protocol: string read FPRotocol write FProtocol;
     property LoginTemplate: TFPCustomTemplate read FLoginTemplate;
+    property SessionExpiration: Integer read FSessionExpiration write FSessionExpiration;
+  end;
 
+  IcnocOpenIDConnectLoginCheck = Interface['{D40636C3-BB4B-4F2F-82FE-FEB5567A7BF4}']
+    procedure IsValidLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; const ARequest: TRequest; var Handled: Boolean; var Subject: string; out FailureMessage: string);
+  end;
+
+  IcnocOpenIDConnectUsedEndpointJSON = Interface['{9F1F9D1A-9A02-4E67-A795-298C83F6E798}']
+    function ObtainUserInfoEndpoint(const Provider: TcnocOpenIDConnectProvider; const Subject: string): TJSONObject;
   end;
 
 const
@@ -209,6 +237,8 @@ Procedure TcnocOpenIDConnectProvider.GetLoginTemplateParams(Sender: TObject; Con
 begin
   if SameText(ParamName, 'returnurl') then
     AValue := FReturnUrl
+  else if SameText(ParamName, 'failuremessage') then
+    AValue := FFailureMessage
   else
     AValue := '';
 
@@ -223,7 +253,7 @@ begin
     '<body><form action="./login" method="post">' +
 
     '<input type="hidden" id="ReturnUrl" name="ReturnUrl" value="{returnurl}" />' +
-
+    '<p>{failuremessage}</p>' +
     '<label for="Username">Username</label>' +
     '<input class="form-control" placeholder="Username" autofocus type="text" data-val="true" data-val-required="The Username field is required." id="Username" name="Username" value="">' +
 
@@ -273,6 +303,29 @@ begin
   end;
   SetLength(Result, length(Buf));
   move(Buf[0], Result[1], length(buf));
+end;
+
+function TcnocOpenIDConnectProvider.SetupAuthenticatedSession(Subject: string): string;
+var
+  Session: TcnocOpenIDSession;
+  CookieStr: string;
+  i: Integer;
+begin
+  Session := TcnocOpenIDSession.Create;
+  try
+    CookieStr := '';
+    for i := 0 to 15 do
+      CookieStr := CookieStr + IntToHex(Random(MaxInt), 8);
+    Session.AuthenticationTime := LocalTimeToUniversal(Now);
+    Session.ExpirationTime := IncSecond(Session.AuthenticationTime, FSessionExpiration);
+    Session.Subject := Subject;
+    FAuthenticatedSessionMap.Add(CookieStr, Session);
+    Session := nil;
+    Result := CookieStr;
+  finally
+    Session.Free
+  end;
+
 end;
 
 function TcnocOpenIDConnectProvider.VerifyJWT(const AJWTAsString: string; out AJWT: TcnocOIDCIDTokenJWT): Boolean;
@@ -334,16 +387,24 @@ begin
   FJSONStreamer.Options := FJSONStreamer.Options + [jsoLowerPropertyNames];
   FConfiguration := TcnocOpenIDConnectConfiguration.Create;
   FConfiguration.BaseURL := ABaseURL;
-  FProtocol := 'http://';
+  FProtocol := 'https://';
   FKeyList := TcnocRSAPrivateKeyMap.Create(True);
+  FSessionExpiration := 3600;
 
   FLoginTemplate := TFPCustomTemplate.Create;
   FLoginTemplate.OnGetParam := @GetLoginTemplateParams;
+  FContentProviderList := TFPObjectList.Create(False);
+  FAuthenticatedSessionMap := TcnocOpenIDSessionMap.Create(True);
+  FAuthenticatedSessionMap.Sorted := True;
   InitDefaultTemplates;
+  if RandSeed=0 then
+    Randomize;
 end;
 
 destructor TcnocOpenIDConnectProvider.Destroy;
 begin
+  FContentProviderList.Free;
+  FAuthenticatedSessionMap.Free;
   FLoginTemplate.Free;
   FJSONStreamer.Free;
   FKeyList.Free;
@@ -422,21 +483,42 @@ var
   id_token: ansistring;
   state: string;
   expires_in: integer;
-
   AccesJwt: TcnocOIDCIDTokenJWT;
   IdJwt: TcnocOIDCIDTokenJWT;
   CurrDateTime: TDateTime;
   OIDCClaim: TcnocOIDCIDTokenClaim;
   Key: TcnocRSAPrivateKey;
-  KeyIndex: Integer;
-  Hash: string;
+  KeyIndex, SessionIdx: Integer;
+  Hash, AuthCookie: string;
+  AuthSession: TcnocOpenIDSession;
 begin
+  Handled := true;
+
+  AuthCookie := ARequest.CookieFields.Values['Authentication'];
+  if not FAuthenticatedSessionMap.Find(AuthCookie, SessionIdx) then
+    begin
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end
+  else
+    AuthSession := FAuthenticatedSessionMap.Data[SessionIdx];
+
+  if CompareDateTime(LocalTimeToUniversal(Now), AuthSession.ExpirationTime) = GreaterThanValue then
+    begin
+    FAuthenticatedSessionMap.Delete(SessionIdx);
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end;
+
   // See Openid-Connect-Core 1.0 specs, section 3.1.3.3
   AResponse.Pragma := 'no-cache';
   AResponse.CacheControl := 'no-store';
 
   CurrDateTime := LocalTimeToUniversal(Now);
-  expires_in := 3600;
+
+  expires_in := SecondsBetween(CurrDateTime, AuthSession.ExpirationTime);
 
   if FKeyList.Count = 0 then
     raise Exception.Create('No key available to sign the tokens.');
@@ -451,12 +533,12 @@ begin
 
     OIDCClaim := AccesJwt.Claims as TcnocOIDCIDTokenClaim;
     OIDCClaim.nbf := DateTimeToUnix(CurrDateTime);
-    OIDCClaim.exp := DateTimeToUnix(IncSecond(CurrDateTime, expires_in));
+    OIDCClaim.exp := DateTimeToUnix(AuthSession.ExpirationTime);
     OIDCClaim.iss := Configuration.Issuer;
-    OIDCClaim.client_id := 'FPPKGWebClient';
-    OIDCClaim.auth_time := OIDCClaim.iat; // ToDo: when a user authenticated earlier, return the time of the authentication
+    OIDCClaim.client_id := ARequest.QueryFields.Values['client_id'];
+    OIDCClaim.auth_time := DateTimeToUnix(AuthSession.AuthenticationTime); // ToDo: when a user authenticated earlier, return the time of the authentication
     OIDCClaim.aud := Configuration.Authorization_Endpoint; // ToDo: resources endpoint
-    OIDCClaim.sub := '2';
+    OIDCClaim.sub := AuthSession.Subject;
     // todo: role, idp, scope, amr?
 
     SignJWT(AccesJwt, Key);
@@ -472,21 +554,18 @@ begin
     IdJwt.JOSE.typ := 'JWT';
 
     OIDCClaim := IdJwt.Claims as TcnocOIDCIDTokenClaim;
-    OIDCClaim.aud := 'FPPKGWebClient';
+    OIDCClaim.aud := ARequest.QueryFields.Values['client_id'];
     OIDCClaim.nonce := ARequest.QueryFields.Values['nonce'];
     OIDCClaim.iss := Configuration.Issuer;
     OIDCClaim.nbf := DateTimeToUnix(CurrDateTime);
     OIDCClaim.iat := OIDCClaim.nbf;
     OIDCClaim.auth_time := OIDCClaim.iat; // ToDo: when a user authenticated earlier, return the time of the authentication
-    OIDCClaim.exp := DateTimeToUnix(IncSecond(CurrDateTime, expires_in));
+    OIDCClaim.exp := DateTimeToUnix(AuthSession.ExpirationTime);
+    OIDCClaim.sub := AuthSession.Subject;
 
     Hash := SHA256Hash(access_token);
-    writeln(Hash);
     Hash := LeftStr(Hash, Length(Hash) div 2);
-    writeln(hash);
     OIDCClaim.at_hash := TBaseJWT.Base64ToBase64URL(EncodeStringBase64(Hash));
-    // ToDo: Add optional at_hash
-    OIDCClaim.sub := '2';
 
     SignJWT(IdJwt, Key);
 
@@ -507,7 +586,6 @@ begin
   AResponse.CodeText := GetStatusCode(AResponse.Code);
   AResponse.Expires := '-1';
 
-  Handled := true;
 end;
 
 procedure TcnocOpenIDConnectProvider.HandleUserInfoEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
@@ -515,6 +593,9 @@ var
   AuthorizationToken, s: String;
   JWT: TcnocOIDCIDTokenJWT;
   AllowRequest: Boolean;
+  UserJson: TJSONObject;
+  i: Integer;
+  LoginCheckIntf: IcnocOpenIDConnectUsedEndpointJSON;
 begin
   Handled := True;
   AllowRequest := False;
@@ -525,7 +606,22 @@ begin
     s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
     AllowRequest := VerifyJWT(s, JWT);
     try
-      AResponse.Content := '{"sub":"2", "name":"Joost van der Sluis"}';
+      for i := 0 to FContentProviderList.Count -1 do
+        begin
+        if Supports(FContentProviderList.Items[i], IcnocOpenIDConnectUsedEndpointJSON, LoginCheckIntf) then
+          begin
+          UserJson := LoginCheckIntf.ObtainUserInfoEndpoint(Self, JWT.Claims.sub);
+          try
+            if Assigned(UserJson) then
+              begin
+              AResponse.Content := UserJson.AsJSON;
+              Break;
+              end;
+          finally
+            UserJson.Free;
+          end;
+          end;
+        end;
       AResponse.Code := 200;
     finally
       JWT.Free;
@@ -541,9 +637,39 @@ begin
 end;
 
 procedure TcnocOpenIDConnectProvider.HandleAccount(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+
+  procedure SendLoginForm(FailedMessage: string);
+  begin
+    FFailureMessage := FailedMessage;
+    FReturnUrl := ARequest.QueryFields.Values['returnurl'];
+    if FReturnUrl='' then
+      FReturnUrl := ARequest.ContentFields.Values['returnurl'];
+    AResponse.Contents.Text := FLoginTemplate.GetContent;
+    FReturnUrl := '';
+    FFailureMessage := FailedMessage;
+
+    AResponse.Code := 200;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    AResponse.ContentType := 'text/html';
+    AResponse.CustomHeaders.Values['X-Content-Type-Security-Policy'] := 'default-src ''self''';
+    AResponse.CustomHeaders.Values['X-Content-Type-Options'] := 'nosniff';
+    AResponse.CustomHeaders.Values['X-Frame-Options'] := 'SAMEORIGIN';
+    AResponse.Pragma := 'no-cache';
+    AResponse.CacheControl := 'no-cache';
+  end;
+
 var
   Command: string;
   ReturnUrl: string;
+  UserName, Password: string;
+  i: Integer;
+  LoginCheckIntf: IcnocOpenIDConnectLoginCheck;
+  LoginHandled: Boolean;
+  Subject: string;
+  Err: string;
+  FailureMessage: string;
+  Cookie: TCookie;
+  URI: TURI;
 begin
   Command := ARequest.GetNextPathInfo;
   if Command = 'login' then
@@ -551,26 +677,49 @@ begin
     if ARequest.Method='POST' then
       begin
       ReturnUrl := ARequest.ContentFields.Values['returnUrl'];
-      //No checks whatsoever...
-      AResponse.Code := 302;
-      AResponse.CodeText := GetStatusCode(AResponse.Code);
-      AResponse.Location := ReturnUrl;
+
+      UserName := ARequest.ContentFields.Values['Username'];
+      Password := ARequest.ContentFields.Values['Password'];
+      Subject := '';
+      LoginHandled := False;
+      FailureMessage := '';;
+
+      for i := 0 to FContentProviderList.Count -1 do
+        begin
+        if Supports(FContentProviderList.Items[i], IcnocOpenIDConnectLoginCheck, LoginCheckIntf) then
+          begin
+          LoginCheckIntf.IsValidLogin(Self, UserName, Password, ARequest, LoginHandled, Subject, Err);
+          FailureMessage := FailureMessage + Err;
+          end;
+        end;
+
+      if LoginHandled and (Subject<>'') then
+        begin
+        Cookie := AResponse.Cookies.Add;
+        Cookie.Expires := IncSecond(LocalTimeToUniversal(Now), FSessionExpiration);
+        Cookie.HttpOnly := True;
+        URI := ParseURI(IncludeHTTPPathDelimiter(FConfiguration.Authorization_Endpoint)+'login');
+        Cookie.Path := IncludeHTTPPathDelimiter(URI.Path);
+        Cookie.Name := 'Authentication';
+        Cookie.Value := SetupAuthenticatedSession(Subject);
+
+        AResponse.Code := 302;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        AResponse.Location := ReturnUrl;
+        end
+      else if LoginHandled then
+        begin
+        SendLoginForm(FailureMessage);
+        end
+      else
+        begin
+        SendLoginForm('No login method available');
+        end;
       Handled := True;
       end
     else if ARequest.Method='GET' then
       begin
-      FReturnUrl := ARequest.QueryFields.Values['returnurl'];
-      AResponse.Contents.Text := FLoginTemplate.GetContent;
-      FReturnUrl := '';
-
-      AResponse.Code := 200;
-      AResponse.CodeText := GetStatusCode(AResponse.Code);
-      AResponse.ContentType := 'text/html';
-      AResponse.CustomHeaders.Values['X-Content-Type-Security-Policy'] := 'default-src ''self''';
-      AResponse.CustomHeaders.Values['X-Content-Type-Options'] := 'nosniff';
-      AResponse.CustomHeaders.Values['X-Frame-Options'] := 'SAMEORIGIN';
-      AResponse.Pragma := 'no-cache';
-      AResponse.CacheControl := 'no-cache';
+      SendLoginForm('');
       Handled := True;
       end;
     end;
@@ -606,16 +755,20 @@ begin
   end;
 end;
 
+procedure TcnocOpenIDConnectProvider.AddContentProvider(AnObject: TObject);
+begin
+  FContentProviderList.Add(AnObject);
+end;
+
+procedure TcnocOpenIDConnectProvider.RemoveContentProvider(AnObject: TObject);
+begin
+  FContentProviderList.Remove(AnObject);
+end;
+
 procedure TcnocOpenIDConnectProvider.HandleWellKnown(Sender: TObject; ARequest: TRequest;
   AResponse: TResponse; Var Handled: Boolean);
 var
   JSONObj: TJSONObject;
-  JWKCollection: TcnocOpenIDConnectJWKCollection;
-  JWK: TcnocOpenIDConnectJWK;
-  RsaKey: TcnocRSAPrivateKey;
-  i: Integer;
-  k: tBCD;
-  p: integer;
 begin
   if ARequest.GetNextPathInfo = 'openid-configuration' then
     begin
