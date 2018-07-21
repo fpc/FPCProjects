@@ -95,6 +95,7 @@ type
   TcnocOpenIDConnectProvider = class
   private
     FSessionExpiration: Integer;
+    FTokenExpiration: Integer;
   type
     TcnocRSAPrivateKeyMap = specialize TFPGMapObject<string, TcnocRSAPrivateKey>;
   class var{threadvar -- Lazarus can not handle this}
@@ -141,6 +142,7 @@ type
     property Protocol: string read FPRotocol write FProtocol;
     property LoginTemplate: TFPCustomTemplate read FLoginTemplate;
     property SessionExpiration: Integer read FSessionExpiration write FSessionExpiration;
+    property TokenExpiration: Integer read FTokenExpiration write FTokenExpiration;
   end;
 
   IcnocOpenIDConnectLoginCheck = Interface['{D40636C3-BB4B-4F2F-82FE-FEB5567A7BF4}']
@@ -267,8 +269,6 @@ begin
 
     '<div class="form-group"><button class="btn btn-primary">Login</button></div>' +
 
-    '<input name="__RequestVerificationToken" type="hidden" value="CfDJ8BxWIAoDCbZAmrVonItyJbPgwfI61GVqcimBYdDtO2VjlOAT7JFvCGEWxQ--iiRK-8b60iZq8-HwzmdmlVp3LE-kZBJKtrE7SEaPmjunQIv2NTDn_m2slhUuyIxUkWX6rrzJEzDkzwq2M2KNEz_NYi0" />' +
-
     '</form></body>' +
     '</html>';
 end;
@@ -389,7 +389,8 @@ begin
   FConfiguration.BaseURL := ABaseURL;
   FProtocol := 'https://';
   FKeyList := TcnocRSAPrivateKeyMap.Create(True);
-  FSessionExpiration := 3600;
+  FSessionExpiration := SecsPerDay * 30;
+  FTokenExpiration := 3600;
 
   FLoginTemplate := TFPCustomTemplate.Create;
   FLoginTemplate.OnGetParam := @GetLoginTemplateParams;
@@ -518,8 +519,6 @@ begin
 
   CurrDateTime := LocalTimeToUniversal(Now);
 
-  expires_in := SecondsBetween(CurrDateTime, AuthSession.ExpirationTime);
-
   if FKeyList.Count = 0 then
     raise Exception.Create('No key available to sign the tokens.');
   KeyIndex := FKeyList.Count -1;
@@ -533,10 +532,10 @@ begin
 
     OIDCClaim := AccesJwt.Claims as TcnocOIDCIDTokenClaim;
     OIDCClaim.nbf := DateTimeToUnix(CurrDateTime);
-    OIDCClaim.exp := DateTimeToUnix(AuthSession.ExpirationTime);
+    OIDCClaim.exp := DateTimeToUnix(min(IncSecond(CurrDateTime, FTokenExpiration), AuthSession.ExpirationTime));
     OIDCClaim.iss := Configuration.Issuer;
     OIDCClaim.client_id := ARequest.QueryFields.Values['client_id'];
-    OIDCClaim.auth_time := DateTimeToUnix(AuthSession.AuthenticationTime); // ToDo: when a user authenticated earlier, return the time of the authentication
+    OIDCClaim.auth_time := DateTimeToUnix(AuthSession.AuthenticationTime);
     OIDCClaim.aud := Configuration.Authorization_Endpoint; // ToDo: resources endpoint
     OIDCClaim.sub := AuthSession.Subject;
     // todo: role, idp, scope, amr?
@@ -560,7 +559,7 @@ begin
     OIDCClaim.nbf := DateTimeToUnix(CurrDateTime);
     OIDCClaim.iat := OIDCClaim.nbf;
     OIDCClaim.auth_time := OIDCClaim.iat; // ToDo: when a user authenticated earlier, return the time of the authentication
-    OIDCClaim.exp := DateTimeToUnix(AuthSession.ExpirationTime);
+    OIDCClaim.exp := DateTimeToUnix(min(IncSecond(CurrDateTime, FTokenExpiration), AuthSession.ExpirationTime));
     OIDCClaim.sub := AuthSession.Subject;
 
     Hash := SHA256Hash(access_token);
@@ -602,37 +601,42 @@ begin
 
   AuthorizationToken := ARequest.Authorization;
   if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
-  begin
+    begin
     s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
     AllowRequest := VerifyJWT(s, JWT);
-    try
-      for i := 0 to FContentProviderList.Count -1 do
-        begin
-        if Supports(FContentProviderList.Items[i], IcnocOpenIDConnectUsedEndpointJSON, LoginCheckIntf) then
+    if AllowRequest then
+      begin
+      try
+        for i := 0 to FContentProviderList.Count -1 do
           begin
-          UserJson := LoginCheckIntf.ObtainUserInfoEndpoint(Self, JWT.Claims.sub);
-          try
-            if Assigned(UserJson) then
-              begin
-              AResponse.Content := UserJson.AsJSON;
-              Break;
-              end;
-          finally
-            UserJson.Free;
+          if Supports(FContentProviderList.Items[i], IcnocOpenIDConnectUsedEndpointJSON, LoginCheckIntf) then
+            begin
+            UserJson := LoginCheckIntf.ObtainUserInfoEndpoint(Self, JWT.Claims.sub);
+            try
+              if Assigned(UserJson) then
+                begin
+                AResponse.Content := UserJson.AsJSON;
+                Break;
+                end;
+            finally
+              UserJson.Free;
+            end;
+            end;
           end;
-          end;
-        end;
-      AResponse.Code := 200;
-    finally
-      JWT.Free;
+        AResponse.Code := 200;
+      finally
+        JWT.Free;
+      end;
+      AResponse.Pragma := 'no-cache';
+      AResponse.CacheControl := 'no-store, no-cache, max-age=0';
+      end;
     end;
-  end;
 
   if not AllowRequest then
-  begin
+    begin
     AResponse.Code := 403;
     AResponse.Content := 'Access denied';
-  end;
+    end;
   AResponse.CodeText := GetStatusCode(AResponse.Code);
 end;
 
@@ -669,6 +673,7 @@ var
   Err: string;
   FailureMessage: string;
   Cookie: TCookie;
+  RememberLogin: Boolean;
   URI: TURI;
 begin
   Command := ARequest.GetNextPathInfo;
@@ -680,6 +685,7 @@ begin
 
       UserName := ARequest.ContentFields.Values['Username'];
       Password := ARequest.ContentFields.Values['Password'];
+      RememberLogin := StrToBool(ARequest.ContentFields.Values['RememberLogin']);
       Subject := '';
       LoginHandled := False;
       FailureMessage := '';;
@@ -696,7 +702,8 @@ begin
       if LoginHandled and (Subject<>'') then
         begin
         Cookie := AResponse.Cookies.Add;
-        Cookie.Expires := IncSecond(LocalTimeToUniversal(Now), FSessionExpiration);
+        if RememberLogin then
+          Cookie.Expires := IncSecond(LocalTimeToUniversal(Now), FSessionExpiration);
         Cookie.HttpOnly := True;
         URI := ParseURI(IncludeHTTPPathDelimiter(FConfiguration.Authorization_Endpoint)+'login');
         Cookie.Path := IncludeHTTPPathDelimiter(URI.Path);
