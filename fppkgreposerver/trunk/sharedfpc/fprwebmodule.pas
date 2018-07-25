@@ -55,6 +55,7 @@ type
     function ObjectToJSONContentString(AnObject: TObject): string;
     function GetUserRole: string;
     function RequireAuthentication(ARequest: TRequest): Boolean; virtual;
+    function PerformAuthentication(ARequest: TRequest): Boolean; virtual;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -126,46 +127,49 @@ begin
   FreeAndNil(FOIDC);
   FAuthError := '';
 
-  OIDC := TcnocOpenIDConnect.Create;
-  try
-    OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
-      'OpenIDProviderURL');
+  if PerformAuthentication(ARequest) then
+  begin
+    OIDC := TcnocOpenIDConnect.Create;
+    try
+      OIDC.OpenIDProvider := TDCSGlobalSettings.GetInstance.GetSettingAsString(
+        'OpenIDProviderURL');
 
-    AuthorizationToken := ARequest.Authorization;
+      AuthorizationToken := ARequest.Authorization;
 
-    if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
-    begin
-      s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
-      AllowRequest := OIDC.VerifyJWT(s);
-      if not AllowRequest then
-        s := OIDC.GetLatestError
+      if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+      begin
+        s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
+        AllowRequest := OIDC.VerifyJWT(s);
+        if not AllowRequest then
+          s := OIDC.GetLatestError
+        else
+        begin
+          JWT := TcnocOIDCIDTokenJWT.Create;
+          try
+            JWT.AsEncodedString := s;
+            FSubjectId := JWT.Claims.sub;
+            FAccessToken := s;
+            FOIDC := OIDC;
+            OIDC :=nil;
+         finally
+            JWT.Free;
+          end;
+        end;
+      end
       else
       begin
-        JWT := TcnocOIDCIDTokenJWT.Create;
-        try
-          JWT.AsEncodedString := s;
-          FSubjectId := JWT.Claims.sub;
-          FAccessToken := s;
-          FOIDC := OIDC;
-          OIDC :=nil;
-       finally
-          JWT.Free;
-        end;
+        AllowRequest := False;
+        s := 'No authorization information';
       end;
-    end
-    else
-    begin
-      AllowRequest := False;
-      s := 'No authorization information';
-    end;
 
-    if not AllowRequest then
-    begin
-      FAuthError := Format('Authentication failed (%s).', [s]);
-    end;
+      if not AllowRequest then
+      begin
+        FAuthError := Format('Authentication failed (%s).', [s]);
+      end;
 
-  finally
-    FreeAndNil(OIDC);
+    finally
+      FreeAndNil(OIDC);
+    end;
   end;
 end;
 
@@ -411,6 +415,11 @@ end;
 function TfprWebModule.RequireAuthentication(ARequest: TRequest): Boolean;
 begin
   Result := True;
+end;
+
+function TfprWebModule.PerformAuthentication(ARequest: TRequest): Boolean;
+begin
+  Result := RequireAuthentication(ARequest);
 end;
 
 procedure TfprWebModule.JSONContentStringToObject(AContentString: string; AnObject: TObject);
