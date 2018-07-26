@@ -24,6 +24,7 @@ uses
   jsonparser,
   fprPackageUtils,
   fprBuildAgentResponse,
+  fprFPCVersion,
   fphttpserver,
   fprWebModule;
 
@@ -34,16 +35,19 @@ type
   TprPackageWM = class(TfprWebModule)
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
+    function GetFPCVersionCollection: TfprFPCVersionCollection;
     procedure SetGitUserAndEmail(ARepoPath: string);
     function GetPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
-    function CheckUploadedSourceArchive(APackageName: string; AFile: TUploadedFile; out ErrorStr: string): Boolean;
-    function AddSourcesToGITRepository(APackageName: string; AFile: TUploadedFile): string;
+    function CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
+    function AddSourcesToGITRepository(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile): string;
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
-    function TagPackage(PackageName, TagMessage: string; GITTag: string = ''): string;
+    function CheckIfGitBranchExists(const curdir, BranchName: string): Boolean;
+    function CheckIfGitHasUnstagedChanges(const curdir: string): Boolean;
+    function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag: string = ''): string;
     procedure DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
     procedure CloneGITPackage(APackageName, TmpPath: string);
-
+    function GetVersionFromPathInfo(APathInfo: string): TfprFPCVersion;
   public
     constructor Create(AOwner: TComponent); override;
 
@@ -67,7 +71,9 @@ var
   Command: string;
   RevHash: string;
   PackageTag, TagMessage: string;
+  FPCVersion: TfprFPCVersion;
   s: string;
+  IsNew: Boolean;
 begin
   Handled := True;
   PackageName := ARequest.GetNextPathInfo;
@@ -106,7 +112,9 @@ begin
       if TagMessage = '' then
         raise Exception.Create('Missing message');
 
-      PackageTag := TagPackage(PackageName, TagMessage);
+      FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
+
+      PackageTag := TagPackage(PackageName, TagMessage, FPCVersion);
 
       AResponse.Content := '{"tag": "'+PackageTag+'"}';
       AResponse.Code := 200;
@@ -116,20 +124,25 @@ begin
       if (PackageObject.Get('ownerid', '') <> FSubjectId) and (GetUserRole<>'admin') then
         raise Exception.Create('You have not enough rights to upload sources for this package');
 
-      if PackageObject.Get('packagestate', '') = 'new' then
-        AddGITRepositoryForNewPackage(PackageName);
-
       if ARequest.Files.Count <> 1 then
         raise Exception.Create('Missing package in request');
 
-      if not CheckUploadedSourceArchive(PackageName, ARequest.Files.First, s) then
+      s := Command;
+      FPCVersion := GetVersionFromPathInfo(Command);
+
+      if not CheckUploadedSourceArchive(PackageName, FPCVersion, ARequest.Files.First, s) then
         begin
         raise Exception.Create('Validity check on source failed: ' + s);
         end;
-      RevHash := AddSourcesToGITRepository(PackageName, ARequest.Files.First);
 
-      if PackageObject.Get('packagestate', '') = 'new' then
-        TagPackage(PackageName, 'Initial version', '0.0.0.0');
+      IsNew := PackageObject.Get('packagestate', '') = 'new';
+      if IsNew then
+        AddGITRepositoryForNewPackage(PackageName);
+
+      RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
+
+      if IsNew then
+        TagPackage(PackageName, 'Initial version', FPCVersion, '0.0.0.0');
 
       AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
       AResponse.Code := 200;
@@ -147,6 +160,16 @@ begin
     end
   else
     raise Exception.Create('Invalid response from PackageManager.');
+end;
+
+function TprPackageWM.GetFPCVersionCollection: TfprFPCVersionCollection;
+begin
+  Result := TfprFPCVersionCollection.Instance;
+  if Result.Count = 0 then
+    begin
+    if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', True, Result) then
+      raise Exception.Create('Failed to get FPC version list');
+    end;
 end;
 
 procedure TprPackageWM.SetGitUserAndEmail(ARepoPath: string);
@@ -198,33 +221,19 @@ begin
     raise Exception.Create('Failed to create temporary path');
 end;
 
-function TprPackageWM.CheckUploadedSourceArchive(APackageName: string; AFile: TUploadedFile; out
-  ErrorStr: string): Boolean;
+function TprPackageWM.CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion;
+  AFile: TUploadedFile; out ErrorStr: string): Boolean;
 var
-  BuildAgentList: TJSONArray;
-  BuildManagerURL, URL: String;
-  I: Integer;
   BuildAgentResponseList: TfprBuildAgentResponseList;
   BuildAgentResponse: TfprBuildAgentResponse;
   s: TJSONUnicodeStringType;
+  URL: string;
 begin
   Result := True;
   try
-    BuildManagerURL := IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('buildmanagerurl'));
-    BuildAgentList := ObtainJSONRestRequest(BuildManagerURL+'agent/list', False) as TJSONArray;
-    try
-      if BuildAgentList.Count = 0 then
-        raise Exception.Create('No buildagents available');
-      I := Random(BuildAgentList.Count);
-      URL := IncludeHTTPPathDelimiter((BuildAgentList.Items[I] as TJSONObject).Get('url', ''));
-      if URL = '' then
-        raise Exception.Create('Failed to find URL for buildagent');
-    finally
-      BuildAgentList.Free;
-    end;
-
+    URL := RetrieveBuildAgentURL(AFPCVersion.Name);
     AFile.Stream.Seek(0, soFromBeginning);
-    URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false';
+    URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion='+AFPCVersion.URLPrefix+'&chunked=false';
     BuildAgentResponseList := TfprBuildAgentResponseList.Create;
     try
       if not JSONObjectRestRequest(URL, True, BuildAgentResponseList, 'POST', AFile.Stream) then
@@ -259,7 +268,7 @@ begin
   end;
 end;
 
-function TprPackageWM.AddSourcesToGITRepository(APackageName: string; AFile: TUploadedFile): string;
+function TprPackageWM.AddSourcesToGITRepository(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile): string;
 var
   TmpPath: string;
   FS: TFileStream;
@@ -267,13 +276,29 @@ var
   ClonePath: string;
   CmdRes: string;
   UnZipper: TUnZipper;
+  BranchIsNew: Boolean;
 begin
+  BranchIsNew := False;
   TmpPath := GetTempFileName;
   ForceDirectories(TmpPath);
   try
     CloneGITPackage(APackageName, TmpPath);
-
     ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
+
+    if not AFPCVersion.IsDefault then
+      begin
+      if not CheckIfGitBranchExists(ClonePath, AFPCVersion.GetBranchName) then
+        begin
+        // Create branch for specific version
+        RunGit(ClonePath, 'create branch ' + AFPCVersion.GetBranchName, ['checkout', '-b' + AFPCVersion.GetBranchName], CmdRes);
+        BranchIsNew := True;
+        end
+      else
+        begin
+        RunGit(ClonePath, 'switch to branch ' + AFPCVersion.Name, ['checkout', AFPCVersion.GetBranchName], CmdRes);
+        end;
+      end;
+
     ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
     AFile.Stream.Seek(0, soFromBeginning);
     FS := TFileStream.Create(ArchiveName, fmCreate);
@@ -292,11 +317,26 @@ begin
       UnZipper.Free;
     end;
 
-    RunGit(ClonePath, 'stage all files', ['add', '--all'], CmdRes);
+    if CheckIfGitHasUnstagedChanges(ClonePath) then
+      begin
+      RunGit(ClonePath, 'stage all files', ['add', '--all'], CmdRes);
 
-    RunGit(ClonePath, 'commit changes', ['commit', '-m ''' + 'Commit new source-zip' + ''''], CmdRes);
+      RunGit(ClonePath, 'commit changes', ['commit', '-m ''' + 'Commit new source-zip' + ''''], CmdRes);
 
-    RunGit(ClonePath, 'push changes', ['push'], Result);
+      if BranchIsNew then
+        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', 'origin', AFPCVersion.GetBranchName], CmdRes)
+      else
+        RunGit(ClonePath, 'push changes', ['push'], Result);
+      end
+    else
+      begin
+      if BranchIsNew then
+        begin
+        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', 'origin', AFPCVersion.GetBranchName], CmdRes)
+        end
+      else
+        raise Exception.Create('This archive does not contain any changes compared to the version within this repository');
+      end;
 
     RunGit(ClonePath, 'get revision', ['rev-parse', 'HEAD'], Result);
     Result := Trim(Result);
@@ -315,7 +355,38 @@ begin
     Raise Exception.Create('Failed to ' + desc + '. ' + outputstring);
 end;
 
-function TprPackageWM.TagPackage(PackageName, TagMessage: string; GITTag: string): string;
+function TprPackageWM.CheckIfGitBranchExists(const curdir, BranchName: string): Boolean;
+var
+  ExitStatus: Integer;
+  outputstring: string;
+begin
+  // This line is to check for local branches. We need to search for remote branches
+  // here.
+  // if RunCommandInDir(curdir, 'git', ['show-ref', '--verify', '--quiet', 'refs/heads/' + BranchName], outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
+  if RunCommandInDir(curdir, 'git', ['ls-remote', '--heads', '--quiet', '--exit-code','origin', BranchName], outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
+    Raise Exception.Create('Failed to execute GIT to check if branch ' + BranchName + ' exists');
+  Result := ExitStatus = 0;
+end;
+
+function TprPackageWM.CheckIfGitHasUnstagedChanges(const curdir: string): Boolean;
+var
+  ExitStatus: Integer;
+  outputstring: string;
+begin
+  if RunCommandInDir(curdir, 'git', ['update-index', '--refresh'], outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
+    Raise Exception.Create('Failed to run GIT update-index');
+  if RunCommandInDir(curdir, 'git', ['diff-files', '--quiet'], outputstring, ExitStatus, []) <> 0 then
+    Raise Exception.Create('Failed to execute GIT to check for unstaged changes');
+  Result := ExitStatus <> 0;
+  if not Result then
+    begin
+    RunGit(curdir, 'check for untracked files', ['ls-files', '--exclude-standard', '--others'], outputstring);
+    Result := outputstring <> '';
+    end;
+end;
+
+function TprPackageWM.TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion;
+  GITTag: string): string;
 var
   TmpPath: string;
   ClonePath: string;
@@ -333,13 +404,15 @@ begin
   ForceDirectories(TmpPath);
   try
     CloneGITPackage(PackageName, TmpPath);
+    if not FPCVersion.IsDefault then
+      RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', FPCVersion.GetBranchName], CmdRes);
 
     Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
     try
       VersionJSON := TJSONObject.Create();
       try
         if GITTag = '' then
-          GITTag := Package.Version.AsString;
+          GITTag := 'FPC' + FPCVersion.Name + '_v' + Package.Version.AsString;
 
         VersionJSON.Add('tag', GITTag);
         Result := GITTag;
@@ -350,6 +423,7 @@ begin
         VersionJSON.Add('homepageurl', Package.HomepageURL);
         VersionJSON.Add('email', Package.Email);
         VersionJSON.Add('description', Package.Description);
+        VersionJSON.Add('fpcversion', FPCVersion.Name);
 
         VersionNumberJSON := TJSONObject.Create;
         try
@@ -449,6 +523,18 @@ begin
 
   RunGit(TmpPath, 'clone git repository', ['clone', RepoPath, 'pkgclone'], CmdRes );
   SetGitUserAndEmail(RepoPath);
+end;
+
+function TprPackageWM.GetVersionFromPathInfo(APathInfo: string): TfprFPCVersion;
+begin
+  if APathInfo='' then
+    Result := GetFPCVersionCollection.DefaultVersion
+  else
+    begin
+    Result := GetFPCVersionCollection.FindVersion(APathInfo);
+    if not Assigned(Result) then
+      raise Exception.CreateFmt('Unknown FPC-Version [%s]', [APathInfo]);
+    end;
 end;
 
 constructor TprPackageWM.Create(AOwner: TComponent);

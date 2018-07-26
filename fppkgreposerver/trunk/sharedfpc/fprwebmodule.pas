@@ -49,6 +49,7 @@ type
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
     function ObtainJSONRestRequest(AnURL: string; IncludeAccessToken: boolean; Method: string = 'GET';
       Content: TStream = nil): TJSONData;
+    function RetrieveBuildAgentURL(FPCVersion: string): string;
     function JSONObjectRestRequest(AnURL: string; IncludeAccessToken: boolean; AnObject: TObject; Method: string = 'GET';
       Content: TStream = nil): Boolean;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
@@ -356,6 +357,27 @@ begin
   finally
     HTTPClient.Free;
   end;
+end;
+
+function TfprWebModule.RetrieveBuildAgentURL(FPCVersion: string): string;
+var
+  BuildManagerURL, URL: String;
+  BuildAgentList: TJSONArray;
+  I: Integer;
+begin
+  BuildManagerURL := IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('buildmanagerurl'));
+  BuildAgentList := ObtainJSONRestRequest(BuildManagerURL+'agent/list/'+FPCVersion, False) as TJSONArray;
+  try
+    if BuildAgentList.Count = 0 then
+      raise Exception.Create('No buildagents available');
+    I := Random(BuildAgentList.Count);
+    URL := IncludeHTTPPathDelimiter((BuildAgentList.Items[I] as TJSONObject).Get('url', ''));
+    if URL = '' then
+      raise Exception.Create('Failed to find URL for buildagent');
+  finally
+    BuildAgentList.Free;
+  end;
+  Result := URL;
 end;
 
 function TfprWebModule.JSONObjectRestRequest(AnURL: string; IncludeAccessToken: boolean;

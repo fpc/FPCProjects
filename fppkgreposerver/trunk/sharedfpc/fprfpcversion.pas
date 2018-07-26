@@ -19,6 +19,8 @@ type
     FIsDefault: Boolean;
     FName: string;
     FURLPrefix: string;
+  public
+    function GetBranchName: string;
   published
     property Name: string read FName write FName;
     property URLPrefix: string read FURLPrefix write FURLPrefix;
@@ -44,6 +46,13 @@ type
   end;
 
 implementation
+
+{ TfprFPCVersion }
+
+function TfprFPCVersion.GetBranchName: string;
+begin
+  Result := 'FPC' + StringReplace(FName, '.', '_', [rfReplaceAll]);
+end;
 
 { TpmFPCVersionCollection }
 
