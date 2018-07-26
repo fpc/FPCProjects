@@ -36,7 +36,7 @@ type
   private
     function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
   protected
-    procedure RebuildPackage(APackage: TrepPackage; AManifest: TXMLDocument; APackagesNode: TDOMElement;
+    procedure RebuildPackage(APackage: TrepPackage; AFPCVersion: string; AManifest: TXMLDocument; APackagesNode: TDOMElement;
       ARepositoryURL, ABuildAgentURL, ARepoTempPath: string);
   end;
 
@@ -101,8 +101,7 @@ begin
   Handled := True;
 end;
 
-function TrepRepositoryWM.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository
-  ): string;
+function TrepRepositoryWM.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
 var
   i: Integer;
   RepositoryURL: string;
@@ -125,7 +124,7 @@ begin
     raise EHTTPClient.CreateFmtHelp('Path of repository %s is not defined.', [ARepository.Name], 500);
 
   RepositoryURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('repositoryurl');
-  BuildAgentURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('BuildAgentURL');
+  BuildAgentURL := RetrieveBuildAgentURL(AFPCVersion.FPCVersion);
 
   Manifest := TXMLDocument.Create;
   try
@@ -147,7 +146,7 @@ begin
           begin
           Package := MasterRepository.PackageList.Items[i];
           if not Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
-            RebuildPackage(Package, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
+            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
           end;
         end;
 
@@ -155,7 +154,7 @@ begin
         begin
         Package := ARepository.PackageList.Items[i];
 
-        RebuildPackage(Package, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
+        RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
         end;
 
       ManifestStream := TStringStream.Create(nil);
@@ -215,8 +214,9 @@ begin
   end;
 end;
 
-procedure TrepRepositoryWM.RebuildPackage(APackage: TrepPackage; AManifest: TXMLDocument;
-  APackagesNode: TDOMElement; ARepositoryURL, ABuildAgentURL, ARepoTempPath: string);
+procedure TrepRepositoryWM.RebuildPackage(APackage: TrepPackage; AFPCVersion: string;
+  AManifest: TXMLDocument; APackagesNode: TDOMElement; ARepositoryURL, ABuildAgentURL,
+  ARepoTempPath: string);
 var
   HTTPClient: TFPHTTPClient;
   BytesStream: TBytesStream;
@@ -244,7 +244,7 @@ begin
         BytesStream.Seek(0, soFromBeginning);
         HTTPClient.RequestBody := BytesStream;
         try
-          Url := IncludeHTTPPathDelimiter(ABuildAgentURL)+'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false';
+          Url := IncludeHTTPPathDelimiter(ABuildAgentURL)+'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion=' + AFPCVersion + '&chunked=false';
           Resp := HTTPClient.Get(Url);
         except
           on E: Exception do
