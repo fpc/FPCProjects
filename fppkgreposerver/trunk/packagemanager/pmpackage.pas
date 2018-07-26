@@ -7,8 +7,8 @@ interface
 uses
   Classes,
   SysUtils,
-  fgl,
   fprGCollection,
+  fprFPCVersion,
   fpjsonrtti;
 
 type
@@ -20,11 +20,14 @@ type
   private
     FAuthor: string;
     FFilename: string;
+    FFPCVersion: string;
     FTag: string;
+    procedure SetFPCVersion(AValue: string);
   published
     property Tag: string read FTag write FTag;
     property Filename: string read FFilename write FFilename;
     property Author: string read FAuthor write FAuthor;
+    property FPCVersion: string read FFPCVersion write SetFPCVersion;
   end;
 
   TpmGenPackageVersionCollection = specialize TcnocGCollection<TpmPackageVersion>;
@@ -33,7 +36,7 @@ type
 
   TpmPackageVersionCollection = class(TpmGenPackageVersionCollection)
   public
-    function FindVersionByTag(ATag: string): TpmPackageVersion;
+    function FindVersionByTag(AFPCVersion, ATag: string): TpmPackageVersion;
   end;
 
   { TpmPackage }
@@ -89,15 +92,29 @@ const
 
 implementation
 
+{ TpmPackageVersion }
+
+procedure TpmPackageVersion.SetFPCVersion(AValue: string);
+begin
+  if FFPCVersion<>AValue then
+    begin
+    if not Assigned(TfprFPCVersionCollection.Instance.FindVersion(AValue)) then
+      raise Exception.CreateFmt('Unknown FPC-Version [%s]', [AValue]);
+    FFPCVersion := AValue;
+    end;
+end;
+
 { TpmPackageVersionCollection }
 
-function TpmPackageVersionCollection.FindVersionByTag(ATag: string): TpmPackageVersion;
+function TpmPackageVersionCollection.FindVersionByTag(AFPCVersion, ATag: string): TpmPackageVersion;
 var
   i: Integer;
+  DefaultVersion: string;
 begin
+  DefaultVersion := TfprFPCVersionCollection.Instance.DefaultVersion.Name;
   for i := 0 to Count -1 do
     begin
-    if Items[i].Tag = ATag then
+    if (Items[i].Tag = ATag) and ((Items[i].FPCVersion = AFPCVersion) or ((AFPCVersion='') and (Items[i].FPCVersion=DefaultVersion))) then
       begin
       Result := Items[I];
       Exit;

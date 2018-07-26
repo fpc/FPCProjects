@@ -13,6 +13,7 @@ uses
   fphttpserver,
   fprWebModule,
   fprErrorHandling,
+  fprFPCVersion,
   dcsGlobalSettings,
   pmPackage,
   pmPackageJSonStreaming;
@@ -100,7 +101,7 @@ begin
       Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
       if not Assigned(Package) then
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
-      if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.Tag)) then
+      if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.FPCVersion, PackageVersion.Tag)) then
         raise Exception.Create('Package-version already exists');
 
       AResponse.Content := ObjectToJSONContentString(PackageVersion);

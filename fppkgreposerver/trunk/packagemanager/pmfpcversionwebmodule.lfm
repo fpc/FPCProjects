@@ -1,0 +1,12 @@
+object pmFPCVersionWM: TpmFPCVersionWM
+  OnCreate = DataModuleCreate
+  OldCreateOrder = False
+  Actions = <>
+  OnRequest = DataModuleRequest
+  CreateSession = False
+  Height = 1072
+  HorizontalOffset = 1130
+  VerticalOffset = 110
+  Width = 1058
+  PPI = 192
+end
