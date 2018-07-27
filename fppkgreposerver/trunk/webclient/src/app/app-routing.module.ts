@@ -56,6 +56,16 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     component: BuildTaskPageComponent,
   },
+  {
+    path: 'forbidden',
+    component: LoginComponent,
+    children: []
+  },
+  {
+    path: 'unauthorized',
+    component: LoginComponent,
+    children: []
+  },
   { path: 'package/:name',
     canActivate: [AuthGuardService],
     component: PackagePageComponent },
