@@ -8,7 +8,10 @@ uses
   SysUtils,
   Classes,
   fgl,
+  resolve,
+  sockets,
   httpdefs,
+  dcsGlobalSettings,
   fpHTTP,
   fphttpserver,
   fprWebModule;
@@ -18,13 +21,15 @@ type
   { TbmBuildAgent }
 
   TbmBuildAgent = class(TObject)
-
   private
     FName: string;
     FURL: string;
+    FFPCVersion: string;
+    procedure SetURL(AValue: string);
   published
     property Name: string read FName write FName;
-    property URL: string read FURL write FURL;
+    property URL: string read FURL write SetURL;
+    property FPCVersion: string read FFPCVersion write FFPCVersion;
   end;
 
   TbmCustomBuildAgentList = specialize TFPGObjectList<TbmBuildAgent>;
@@ -50,8 +55,11 @@ type
     Procedure RegisteragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     Procedure UnregisterRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse;
       Var Handled: Boolean);
+  private
+    FHostMappingIPAdresses: TStringList;
   protected
     function RequireAuthentication(ARequest: TRequest): Boolean; override;
+    function TranslateBuildagentListToJSONString(MapHosts: boolean; BuildagentList: TbmBuildAgentList): string;
   public
 
   end;
@@ -65,6 +73,14 @@ uses
   fprErrorHandling;
 
 {$R *.lfm}
+
+{ TbmBuildAgent }
+
+procedure TbmBuildAgent.SetURL(AValue: string);
+begin
+  if FURL = AValue then Exit;
+  FURL := IncludeHTTPPathDelimiter(AValue);
+end;
 
 { TbmBuildAgentList }
 
@@ -98,17 +114,72 @@ end;
 { TbmBuildWM }
 
 procedure TbmBuildWM.DataModuleCreate(Sender: TObject);
+var
+  GlobalSettings: TDCSGlobalSettings;
+  s: ansistring;
+  HostResolver: THostResolver;
+  i: Integer;
 begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
+
+  FHostMappingIPAdresses := TStringList.Create;
+
+  s := GlobalSettings.GetSettingAsString('HostNameToEnableMapping');
+  if s <> '' then
+    begin
+    HostResolver := THostResolver.Create(nil);
+    try
+      if not HostResolver.NameLookup(s) then
+        raise Exception.CreateFmt('Could not find hostname %s', [s]);
+      for i := 0 to HostResolver.AddressCount -1 do
+        begin
+        s := HostAddrToStr(HostResolver.Addresses[i]);
+        FHostMappingIPAdresses.Add(HostAddrToStr(HostResolver.Addresses[i]));
+        end;
+    finally
+      HostResolver.Free;
+    end;
+    end;
 end;
 
 procedure TbmBuildWM.DataModuleDestroy(Sender: TObject);
 begin
+  FHostMappingIPAdresses.Free;
 end;
 
 Procedure TbmBuildWM.listRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse;
   Var Handled: Boolean);
+var
+  FPCVersion, ExtHost: string;
+  BuildAgentList: TbmBuildAgentList;
+  i: Integer;
+  MustMap: Boolean;
 begin
-  AResponse.Content := ObjectToJSONContentString(TbmBuildAgentList.Instance);
+  ExtHost := ARequest.RemoteAddr;
+  MustMap := FHostMappingIPAdresses.IndexOf(ExtHost) > -1;
+
+  FPCVersion := ARequest.GetNextPathInfo;
+  if FPCVersion<>'' then
+    begin
+    BuildAgentList := TbmBuildAgentList.Create(False);
+    try
+      for i := 0 to TbmBuildAgentList.Instance.Count -1 do
+        begin
+        if TbmBuildAgentList.Instance.Items[i].FPCVersion = FPCVersion then
+          BuildAgentList.Add(TbmBuildAgentList.Instance.Items[i]);
+        end;
+      AResponse.Content := TranslateBuildagentListToJSONString(MustMap, BuildAgentList);
+    finally
+      BuildAgentList.Free;
+    end;
+    end
+  else
+    begin
+    AResponse.Content := TranslateBuildagentListToJSONString(MustMap, TbmBuildAgentList.Instance);
+    end;
+
   AResponse.Code := 200;
   AResponse.CodeText := GetStatusCode(AResponse.Code);
   Handled := True;
@@ -130,6 +201,11 @@ begin
     if Length(NewAgent.Name) < 4 then
       begin
       raise Exception.CreateFmt('Invalid agent name ''%s''', [NewAgent.Name]);
+      end;
+
+    if NewAgent.FPCVersion = '' then
+      begin
+      raise Exception.Create('Missing FPC-Version for agent');
       end;
 
     AResponse.Content := ObjectToJSONContentString(NewAgent);
@@ -171,6 +247,46 @@ end;
 function TbmBuildWM.RequireAuthentication(ARequest: TRequest): Boolean;
 begin
   Result := False;
+end;
+
+function TbmBuildWM.TranslateBuildagentListToJSONString(MapHosts: boolean; BuildagentList: TbmBuildAgentList): string;
+var
+  ListClone: TbmBuildAgentList;
+  Original, Clone: TbmBuildAgent;
+  i: Integer;
+  GlobalSettings: TDCSGlobalSettings;
+  TranslatedHost: string;
+begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if MapHosts then
+    begin
+    ListClone := TbmBuildAgentList.Create(True);
+    try
+      for i := 0 to BuildagentList.Count -1 do
+        begin
+        Original := BuildagentList.Items[i];
+        Clone := TbmBuildAgent.Create;
+        try
+          Clone.FPCVersion := Original.FPCVersion;
+          Clone.Name := Original.Name;
+          TranslatedHost := GlobalSettings.GetDictionarySettingAsString('HostMap', Original.URL);
+          if TranslatedHost <> '' then
+            Clone.URL := TranslatedHost
+          else
+            Clone.URL := Original.URL;
+          ListClone.Add(Clone);
+          Clone := nil;
+        finally
+          Clone.Free;
+        end;
+        end;
+      Result := ObjectToJSONContentString(ListClone);
+    finally
+      ListClone.Free;
+    end;
+    end
+  else
+    Result := ObjectToJSONContentString(BuildagentList);
 end;
 
 initialization

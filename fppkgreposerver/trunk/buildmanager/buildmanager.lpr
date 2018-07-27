@@ -26,6 +26,9 @@ begin
   GlobalSettings.AddSetting('packagemanagerurl','Connections','PackageManagerURL','',#0, dcsPHasParameter);
   GlobalSettings.AddSetting('repositoryurl','Connections','RepositoryURL','',#0, dcsPHasParameter);
 
+  GlobalSettings.AddSetting('HostNameToEnableMapping', 'HTTP', 'HostNameToEnableMapping', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('HostMap', 'HostMap', '', '', #0, dcsPDictionary);
+
   ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
   try
     GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
