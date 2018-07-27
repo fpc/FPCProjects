@@ -2,6 +2,8 @@ server {
     listen       80;
     server_name  localhost;
 
+    client_max_body_size 10m;
+
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
@@ -21,8 +23,16 @@ server {
         root   /usr/share/nginx/html;
     }
 
-    location /buildagent/ {
-        proxy_pass http://buildagent:8080/;
+    location /buildagent304/ {
+        proxy_read_timeout 600;
+        client_max_body_size 10m;
+        proxy_pass http://buildagent_304:9090/;
+    }
+
+    location /buildagenttrunk/ {
+        proxy_read_timeout 600;
+        client_max_body_size 10m;
+        proxy_pass http://buildagent_trunk:8080/;
     }
 
     location /buildmanager/ {

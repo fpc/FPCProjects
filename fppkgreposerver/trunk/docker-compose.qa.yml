@@ -13,10 +13,15 @@ services:
       ports:
         - "4200:80"
 
-  buildagent:
+  buildagent_trunk:
       build:
         args:
           inifile: buildagent_docker_x86_64_linux_trunk.ini.prod
+
+  buildagent_304:
+      build:
+        args:
+          inifile: buildagent_docker_x86_64_linux_304.ini.prod
 
   repository:
       build:
@@ -31,9 +36,9 @@ services:
   buildmanager:
       build:
         args:
-          inifile: buildmanager_docker.ini.prod
+          inifile: buildmanager_docker.ini.qa
 
   fppkgrepository:
       build:
         args:
-          inifile: fppkgrepository_docker.ini.prod
+          inifile: fppkgrepository_docker.ini.qa

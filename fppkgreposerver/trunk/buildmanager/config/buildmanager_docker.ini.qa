@@ -10,5 +10,5 @@ AllowCorsOrigin=http://localhost:4200
 HostNameToEnableMapping=webclient
 
 [HostMap]
-http://buildagent_trunk:8080/=http://fpc.cnoc.nl/buildagenttrunk/
-http://buildagent_304:9090/=http://fpc.cnoc.nl/buildagent304/
+http://buildagent_trunk:8080/=http://localhost:4200/buildagenttrunk/
+http://buildagent_304:9090/=http://localhost:4200/buildagent304/

@@ -15,9 +15,13 @@ services:
       ports:
         - "4200:80"
 
-  buildagent:
+  buildagent_trunk:
       ports:
         - "8080:8080"
+
+  buildagent_304:
+      ports:
+        - "9090:9090"
 
   repository:
       ports:
