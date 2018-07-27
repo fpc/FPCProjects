@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { BuildAgentService } from '../build-agent.service';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
+import { BuildAgent } from '../build-agent'
 
 export class LogMessage{
   timestamp: string;
@@ -20,6 +21,8 @@ export class PackageuploadComponent implements OnInit {
   buildAgentResponse: any;
   files: FileList = null;
 
+  @Input() buildagent: BuildAgent = null;
+
   constructor(private buildAgentService: BuildAgentService) {}
 
   onChange(files) {
@@ -34,7 +37,7 @@ export class PackageuploadComponent implements OnInit {
       this.errorMsg = 'Please select a file to upload first';
       return
     }
-    this.buildAgentService.buildPackage(this.files[0]).subscribe(
+    this.buildAgentService.buildPackage(this.buildagent, this.files[0]).subscribe(
       (event: HttpEvent<any>) => {
         switch (event.type) {
           case HttpEventType.Sent:

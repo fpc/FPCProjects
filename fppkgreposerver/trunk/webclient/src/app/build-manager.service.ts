@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { BuildTask } from './build-task';
+import { BuildAgent } from './build-agent';
 import { Observable } from 'rxjs/Observable';
 import { environment } from '../environments/environment';
 
@@ -43,5 +44,8 @@ export class BuildManagerService {
       return this.http.get<BuildTask>(url, {headers: this.getHeaders()});
     }
 
-
+    getBuildAgentList(): Observable<BuildAgent[]> {
+      const url = `${this.buildManagerURL}/agent/list`;
+      return this.http.get<BuildAgent[]>(url, {headers: this.getHeaders()});
+    }
 }

@@ -1,10 +1,10 @@
 <div class="card">
     <div class="card-header">
-        Linux, x86_64
+        {{buildagent.name}}
     </div>
     <div class="card-body">
       <h4 class="card-title">Test-build packages</h4>
-      <p class="card-text">Select and upload a FPMake-source package so it will be build on one of the build-machines.</p>
+      <p class="card-text">Select and upload a FPMake-source package so it will be build on one the {{buildagent.name}} build-machines.</p>
 
       <input type="file" #file (change)="onChange(file.files)"/>
 

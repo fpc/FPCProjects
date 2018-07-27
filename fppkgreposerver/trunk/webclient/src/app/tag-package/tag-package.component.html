@@ -13,7 +13,7 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="activeModal.close('Cancel')">Cancel</button>
-        <button type="button" [disabled]="((tagMessage=='')||isBusy)" (click)="tagPackage()" class="btn btn-primary">Tag package<spinner [show]="isBusy" [size]="20"></spinner></button>
+        <button *ngFor="let fpcversion of fpcversionList" type="button" [disabled]="((tagMessage=='')||isBusy)" (click)="tagPackage(fpcversion)" class="btn btn-primary">Tag package {{fpcversion.name}}<spinner [show]="isBusy" [size]="20"></spinner></button>
       </div>
     </div>
   </div>

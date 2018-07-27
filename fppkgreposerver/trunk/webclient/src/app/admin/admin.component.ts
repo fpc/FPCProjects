@@ -1,8 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { BuildAgentService } from '../build-agent.service';
+import { BuildManagerService } from '../build-manager.service';
 import { HttpClient, HttpEvent, HttpEventType, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { FppkgRepositoryService } from '../fppkg-repository.service';
+import { PackageService } from '../package.service';
 import { Repository } from '../repository';
+import { BuildAgent } from '../build-agent';
+import { FPCVersion } from '../fpcversion';
+
+class VersionRepoListCombined {
+  fpcversion: FPCVersion;
+  repoList: Repository[];
+}
 
 @Component({
   selector: 'app-admin',
@@ -13,37 +22,31 @@ export class AdminComponent implements OnInit {
 
   constructor(
     private _buildAgentService: BuildAgentService,
+    private _buildManagerService: BuildManagerService,
+    private _packageService: PackageService,
     private _fppkgRepositoryService: FppkgRepositoryService) { }
 
   isError: boolean = false;
   isBusy: boolean = false;
   errorMsg: string = '';
   buildAgentResponse: any;
-  repositoryList: Repository[];
+  buildagentList: BuildAgent[];
+  versionRepoList: VersionRepoListCombined[] = [];
 
   ngOnInit() {
-    this._fppkgRepositoryService.getRepositoryList('3.1.1')
-      .subscribe(repoList => this.repositoryList = repoList);
+    this._buildManagerService.getBuildAgentList()
+      .subscribe(list => this.buildagentList = list);
+    this._packageService.getFPCVersionList()
+      .subscribe(list => {
+        for (var version of list) {
+          this.addVersion(version);
+        }
+      });
   }
 
-  rebuildRepository(repository: Repository) {
-    this._fppkgRepositoryService.rebuildRepository('3.1.1', repository.name).subscribe(
-      (repositoryManifest) => {
-        this.closeError;
-        this.isBusy = false;
-      },
-      (err: HttpErrorResponse) => {
-        this.isError = true;
-        this.isBusy = false;
-        this.errorMsg = 'Call to the Fppkg repository manager failed. ' + err.message;
-      }
-    )
-
-  }
-
-  rebuildTestEnvironment() {
+  rebuildTestEnvironment(buildagent: BuildAgent) {
     this.buildAgentResponse = null;
-    this._buildAgentService.buildFPCEnvironment().subscribe(
+    this._buildAgentService.buildFPCEnvironment(buildagent).subscribe(
         (event: HttpEvent<any>) => {
           switch (event.type) {
             case HttpEventType.Sent:
@@ -72,6 +75,14 @@ export class AdminComponent implements OnInit {
           this.errorMsg = 'Call to the Build-Agent failed. ' + err.message;
         }
       );
+  }
+
+  private addVersion(version: FPCVersion) {
+    this._fppkgRepositoryService.getRepositoryList(version.urlprefix)
+      .subscribe(repList => {
+        var combi: VersionRepoListCombined = {fpcversion: version, repoList: repList};
+        this.versionRepoList.push(combi)
+      });
   }
 
   private closeError(){

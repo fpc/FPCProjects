@@ -13,7 +13,7 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="activeModal.close('Cancel')">Cancel</button>
-        <button type="button" [disabled]="((!((files)&&(files.length==1)))||isBusy)" (click)="uploadPackage()" class="btn btn-primary">Upload source<spinner [show]="isBusy" [size]="20"></spinner></button>
+        <button *ngFor="let fpcversion of fpcversionList" type="button" [disabled]="((!((files)&&(files.length==1)))||isBusy)" (click)="uploadPackage(fpcversion)" class="btn btn-primary">Upload (fpc {{fpcversion.name}}) <spinner [show]="isBusy" [size]="20"></spinner></button>
       </div>
     </div>
   </div>

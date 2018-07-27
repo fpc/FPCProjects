@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { BuildManagerService } from '../build-manager.service';
+import { BuildAgent } from '../build-agent';
 
 @Component({
   selector: 'app-build-package',
@@ -7,9 +9,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BuildPackageComponent implements OnInit {
 
-  constructor() { }
+  buildagentList : BuildAgent[];
+
+  constructor(
+    private _buildManagerService: BuildManagerService) { }
 
   ngOnInit() {
-  }
+    this._buildManagerService.getBuildAgentList()
+      .subscribe(list => this.buildagentList = list);
+}
 
 }

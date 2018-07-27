@@ -3,6 +3,7 @@ import { Observable } from 'rxjs/Observable';
 import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Package } from './package';
+import { FPCVersion } from './fpcversion';
 import { environment } from '../environments/environment';
 
 @Injectable()
@@ -26,10 +27,14 @@ export class PackageService {
     return authheaders;
   }
 
-
   getPackageList (): Observable<Package[]> {
     const url = `${this.packageManagerURL}/package`;
     return this.http.get<Package[]>(url, {headers: this.getHeaders()});
+  }
+
+  getFPCVersionList (): Observable<FPCVersion[]> {
+    const url = `${this.packageManagerURL}/fpcversion`;
+    return this.http.get<FPCVersion[]>(url, {headers: this.getHeaders()});
   }
 
   getPackage(name: string): Observable<Package> {

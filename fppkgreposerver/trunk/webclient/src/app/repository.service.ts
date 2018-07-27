@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
+import { FPCVersion } from './fpcversion';
 import { environment } from '../environments/environment';
 
 @Injectable()
@@ -24,19 +25,19 @@ export class RepositoryService {
   }
 
 
-  uploadPackage(file, packageName: string): Observable<any> {
+  uploadPackage(file, packageName: string, fpcversion: FPCVersion): Observable<any> {
     let formData = new FormData;
     formData.append('upload', file);
-    const req = new HttpRequest('POST', this.repositoryUrl + `/package/${packageName}`, formData, {
+    const req = new HttpRequest('POST', this.repositoryUrl + `/package/${packageName}/${fpcversion.name}`, formData, {
       headers: this.getHeaders()
     });
 
     return this._http.request(req);
   }
 
-  tagPackage(packageName, tagMessage: string): Observable<any> {
+  tagPackage(packageName, tagMessage: string, fpcversion: FPCVersion): Observable<any> {
 
-    const url = `${this.repositoryUrl}/package/${packageName}/tagpackage`;
+    const url = `${this.repositoryUrl}/package/${packageName}/tagpackage/${fpcversion.name}`;
     return this._http.get<any>(url, {headers: this.getHeaders(), params: {message: tagMessage}});
   }
 

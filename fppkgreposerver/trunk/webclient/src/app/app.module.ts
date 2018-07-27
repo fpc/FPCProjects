@@ -41,6 +41,8 @@ import { UploadPackageComponent } from './upload-package/upload-package.componen
 import { BuildTaskPageComponent } from './build-task-page/build-task-page.component';
 import { BuildTaskComponent } from './build-task/build-task.component';
 import { TagPackageComponent } from './tag-package/tag-package.component';
+import { RebuildRepositoryComponent } from './rebuild-repository/rebuild-repository.component';
+import { PackageVersionComponent } from './package-version/package-version.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +64,9 @@ import { TagPackageComponent } from './tag-package/tag-package.component';
     UploadPackageComponent,
     BuildTaskPageComponent,
     BuildTaskComponent,
-    TagPackageComponent
+    TagPackageComponent,
+    RebuildRepositoryComponent,
+    PackageVersionComponent
   ],
   imports: [
     BrowserModule,
