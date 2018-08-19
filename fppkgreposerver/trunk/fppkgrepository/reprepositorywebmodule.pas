@@ -19,6 +19,7 @@ uses
   fphttpserver,
   dcsGlobalSettings,
   fprWebModule,
+  fprFPCVersion,
   fprBuildAgentResponse,
   fprDeleteTree,
   fprCopyTree,
@@ -34,6 +35,7 @@ type
     procedure DataModuleCreate(Sender: TObject);
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
+    function GetFPCVersionCollection: TfprFPCVersionCollection;
     function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
   protected
     procedure RebuildPackage(APackage: TrepPackage; AFPCVersion: string; AManifest: TXMLDocument; APackagesNode: TDOMElement;
@@ -101,6 +103,16 @@ begin
   Handled := True;
 end;
 
+function TrepRepositoryWM.GetFPCVersionCollection: TfprFPCVersionCollection;
+begin
+  Result := TfprFPCVersionCollection.Instance;
+  if Result.Count = 0 then
+    begin
+    if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', True, Result) then
+      raise Exception.Create('Failed to get FPC version list');
+    end;
+end;
+
 function TrepRepositoryWM.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
 var
   i: Integer;
@@ -118,6 +130,7 @@ var
   RepositoryNode: TDOMElement;
   RepoPath: string;
   MasterRepository: TrepRepository;
+  FPCVersion: TfprFPCVersion;
 begin
   Result := '';
   if Arepository.Path='' then
@@ -166,7 +179,10 @@ begin
         ManifestStream.Free;
       end;
 
-      RepoPath := ConcatPaths([ARepository.Path, ARepository.FPCVersion]);
+      FPCVersion := GetFPCVersionCollection.FindVersion(ARepository.FPCVersion);
+      if not Assigned(FPCVersion) then
+        raise Exception.CreateFmt('FPC-version [%s] of repository [%s] is not known by the packagemanager', [ARepository.FPCVersion, ARepository.Name]);
+      RepoPath := ConcatPaths([ARepository.Path, FPCVersion.URLPrefix]);
       DeleteTree(RepoPath + '_old', False);
       RenameFile(RepoPath, RepoPath + '_old');
 

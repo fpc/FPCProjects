@@ -25,7 +25,7 @@ export class RebuildRepositoryComponent implements OnInit {
   }
 
   rebuildRepository() {
-    this._fppkgRepositoryService.rebuildRepository(this.version.urlprefix, this.repository.name).subscribe(
+    this._fppkgRepositoryService.rebuildRepository(this.version.name, this.repository.name).subscribe(
       (repositoryManifest) => {
         this.closeError;
         this.isBusy = false;

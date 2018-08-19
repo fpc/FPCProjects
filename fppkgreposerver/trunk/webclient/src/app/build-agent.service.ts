@@ -27,15 +27,12 @@ export class BuildAgentService {
       headers = new HttpHeaders();
     }
 
-    return this._packageService.getFPCVersionList().flatMap(versionlist => {
-      let fpcversion = versionlist.find(vers => vers.name==buildagent.fpcversion);
-      const req = new HttpRequest('GET', buildagent.url+`buildfpcenvironment?cputarget=x86_64&ostarget=linux&fpcversion=${fpcversion.urlprefix}&loglevel=error,warning,info,debug&chunked=false`, {
-        requestProgress: true,
-        headers: headers
-      });
-      return this._http.request(req);
-    })
-  }
+    const req = new HttpRequest('GET', buildagent.url+`buildfpcenvironment?cputarget=x86_64&ostarget=linux&fpcversion=${buildagent.fpcversion}&loglevel=error,warning,info,debug&chunked=false`, {
+      requestProgress: true,
+      headers: headers
+    });
+    return this._http.request(req);
+}
 
   buildPackage(buildagent: BuildAgent, file): Observable<any> {
     let headers: HttpHeaders;
@@ -48,8 +45,7 @@ export class BuildAgentService {
     }
 
     return this._packageService.getFPCVersionList().flatMap(versionlist => {
-      let fpcversion = versionlist.find(vers => vers.name==buildagent.fpcversion);
-      const req = new HttpRequest('POST', buildagent.url+`build?cputarget=x86_64&ostarget=linux&fpcversion=${fpcversion.urlprefix}&loglevel=error,warning,info,debug&chunked=false`, file, {
+      const req = new HttpRequest('POST', buildagent.url+`build?cputarget=x86_64&ostarget=linux&fpcversion=${buildagent.fpcversion}&loglevel=error,warning,info,debug&chunked=false`, file, {
         headers: headers
       });
       return this._http.request(req);

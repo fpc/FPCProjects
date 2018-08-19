@@ -293,7 +293,7 @@ function TbmBuildTaskWM.RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TByte
 var
   URL: string;
 begin
-  URL := ConcatPaths([BuildAgent.URL, 'build?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false']);
+  URL := ConcatPaths([BuildAgent.URL, 'build?cputarget=x86_64&ostarget=linux&fpcversion='+BuildAgent.FPCVersion+'&chunked=false']);
   Result := TfprSubBuildTask.Create();
   try
     Result.BuildAgent := BuildAgent.Name;
@@ -331,7 +331,7 @@ begin
     HTTPClient.Free;
   end;
 
-  URL := BuildAgent.URL + 'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion=3.1.1&chunked=false';
+  URL := BuildAgent.URL + 'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion='+BuildAgent.FPCVersion+'&chunked=false';
   Result := TfprSubBuildTask.Create();
   try
     Result.BuildAgent := BuildAgent.Name;

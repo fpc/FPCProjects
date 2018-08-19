@@ -78,7 +78,7 @@ export class AdminComponent implements OnInit {
   }
 
   private addVersion(version: FPCVersion) {
-    this._fppkgRepositoryService.getRepositoryList(version.urlprefix)
+    this._fppkgRepositoryService.getRepositoryList(version.name)
       .subscribe(repList => {
         var combi: VersionRepoListCombined = {fpcversion: version, repoList: repList};
         this.versionRepoList.push(combi)

@@ -233,7 +233,7 @@ begin
   try
     URL := RetrieveBuildAgentURL(AFPCVersion.Name);
     AFile.Stream.Seek(0, soFromBeginning);
-    URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion='+AFPCVersion.URLPrefix+'&chunked=false';
+    URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion='+AFPCVersion.Name+'&chunked=false';
     BuildAgentResponseList := TfprBuildAgentResponseList.Create;
     try
       if not JSONObjectRestRequest(URL, True, BuildAgentResponseList, 'POST', AFile.Stream) then

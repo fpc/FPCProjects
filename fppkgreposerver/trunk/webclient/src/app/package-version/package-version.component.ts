@@ -34,7 +34,7 @@ export class PackageVersionComponent implements OnInit {
         for (var version of versionlist) {
           if (version.isdefault) {
             this.fpcversion = version;
-            this._fppkgRepositoryService.getRepositoryList(version.urlprefix)
+            this._fppkgRepositoryService.getRepositoryList(version.name)
               .subscribe(repoList => this.initRepositoryList(repoList));
           }
         }
@@ -44,11 +44,11 @@ export class PackageVersionComponent implements OnInit {
         for (var version of versionlist) {
           if (version.name == this.packageVersion.fpcversion) {
             this.fpcversion = version;
+            this._fppkgRepositoryService.getRepositoryList(version.name)
+              .subscribe(repoList => this.initRepositoryList(repoList));
           }
         }
       });
-      this._fppkgRepositoryService.getRepositoryList(this.packageVersion.fpcversion)
-        .subscribe(repoList => this.initRepositoryList(repoList));
     }
   }
 
