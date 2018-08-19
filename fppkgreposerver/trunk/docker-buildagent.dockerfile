@@ -1,30 +1,29 @@
-FROM fedora
+FROM fedorabaseimage
 
-ARG inifile=buildagent_docker_x86_64_linux_trunk.ini
-ARG fpcsvn=https://svn.freepascal.org/svn/fpc/trunk
-
-RUN dnf -y update
-RUN dnf -y install make binutils subversion openssl-devel glibc-devel rsync
+RUN dnf -y install make binutils subversion glibc-devel rsync
 RUN dnf clean all
 
-RUN useradd --create-home --shell /bin/bash buildagent
-USER buildagent
-WORKDIR /home/buildagent
+USER locuser
+WORKDIR /home/locuser
 
 RUN mkdir svn
 RUN mkdir bin
 RUN mkdir buildfiles
 RUN mkdir templates
-ENV PATH="/home/buildagent/bin:${PATH}"
-WORKDIR /home/buildagent/svn
+ENV PATH="/home/locuser/bin:${PATH}"
+WORKDIR /home/locuser/svn
+
+ARG inifile=buildagent_docker_x86_64_linux_trunk.ini
+ARG fpcsvn=https://svn.freepascal.org/svn/fpc/trunk
+
 RUN ["sh", "-c", "svn checkout $fpcsvn fpc"]
 
-COPY buildagent/buildagent /home/buildagent
-COPY buildagent/config/$inifile /home/buildagent/buildagent.ini
-COPY buildagent/config/ppcx64_3.0.2 /home/buildagent/bin
-COPY buildagent/config/fppkg.cfg.template /home/buildagent/templates
-COPY buildagent/config/fppkg.cfg.304.template /home/buildagent/templates
+COPY buildagent/buildagent /home/locuser
+COPY buildagent/config/$inifile /home/locuser/buildagent.ini
+COPY buildagent/config/ppcx64_3.0.2 /home/locuser/bin
+COPY buildagent/config/fppkg.cfg.template /home/locuser/templates
+COPY buildagent/config/fppkg.cfg.304.template /home/locuser/templates
 
 EXPOSE 8080
 
-CMD [ "/home/buildagent/buildagent" ]
+CMD [ "/home/locuser/buildagent" ]

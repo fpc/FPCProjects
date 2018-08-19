@@ -3,12 +3,12 @@ OpenIDProviderURL=http://identityserver:5000/identityserver
 
 
 [TestEnv-x86_64-linux-3.0.4]
-FPCSourcePath=/home/buildagent/svn/fpc
-PristineEnvironmentPath=/home/buildagent/buildenv/pristine/x86_64-linux-3_0_4/
-BuildPath=/home/buildagent/buildenv/build/
+FPCSourcePath=/home/locuser/svn/fpc
+PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-3_0_4/
+BuildPath=/home/locuser/buildenv/build/
 StartCompiler=ppcx64_3.0.2
-FppkgCfgTemplate=/home/buildagent/templates/fppkg.cfg.304.template
-AdditionalPackages=lazmkunit,fppkg,fcl-web,fcl-net,fcl-passrc,fcl-js
+FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.304.template
+AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
 AbsoluteFilenamesBug=true
 
 [Connections]
@@ -20,7 +20,7 @@ URL=http://buildagent_304:9090/
 FPCVersion=3.0.4
 
 [BuildFiles]
-Location=/home/buildagent/buildfiles
+Location=/home/locuser/buildfiles
 URL=http://webclient/buildfiles/
 
 [HTTP]
