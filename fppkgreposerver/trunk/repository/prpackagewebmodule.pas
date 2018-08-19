@@ -285,18 +285,15 @@ begin
     CloneGITPackage(APackageName, TmpPath);
     ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
 
-    if not AFPCVersion.IsDefault then
+    if not CheckIfGitBranchExists(ClonePath, AFPCVersion.GetBranchName) then
       begin
-      if not CheckIfGitBranchExists(ClonePath, AFPCVersion.GetBranchName) then
-        begin
-        // Create branch for specific version
-        RunGit(ClonePath, 'create branch ' + AFPCVersion.GetBranchName, ['checkout', '-b' + AFPCVersion.GetBranchName], CmdRes);
-        BranchIsNew := True;
-        end
-      else
-        begin
-        RunGit(ClonePath, 'switch to branch ' + AFPCVersion.Name, ['checkout', AFPCVersion.GetBranchName], CmdRes);
-        end;
+      // Create branch for specific version
+      RunGit(ClonePath, 'create branch ' + AFPCVersion.GetBranchName, ['checkout', '-b' + AFPCVersion.GetBranchName], CmdRes);
+      BranchIsNew := True;
+      end
+    else
+      begin
+      RunGit(ClonePath, 'switch to branch ' + AFPCVersion.Name, ['checkout', AFPCVersion.GetBranchName], CmdRes);
       end;
 
     ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
@@ -404,8 +401,7 @@ begin
   ForceDirectories(TmpPath);
   try
     CloneGITPackage(PackageName, TmpPath);
-    if not FPCVersion.IsDefault then
-      RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', FPCVersion.GetBranchName], CmdRes);
+    RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', FPCVersion.GetBranchName], CmdRes);
 
     Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
     try
