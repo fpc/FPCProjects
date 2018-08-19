@@ -344,10 +344,16 @@ end;
 
 procedure TprPackageWM.RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
 var
-  ExitStatus: Integer;
+  ExitStatus, i: Integer;
+  CommandLine: String;
 begin
   if RunCommandInDir(curdir, 'git', commands, outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
-    Raise Exception.Create('Failed to execute GIT to ' + desc);
+    begin
+    CommandLine := 'git';
+    for i := 0 to length(Commands) -1 do
+      CommandLine := CommandLine + ' ' + Commands[i];
+    raise Exception.CreateFmt('Failed to execute GIT to %s.' +sLineBreak+ 'Current directory: ' +Curdir+ sLineBreak + 'command line: ' + CommandLine, [desc]);
+    end;
   if ExitStatus <> 0 then
     Raise Exception.Create('Failed to ' + desc + '. ' + outputstring);
 end;
