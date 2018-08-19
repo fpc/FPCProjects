@@ -2,7 +2,7 @@
 OpenIDProviderURL=http://identityserver:5000/identityserver
 
 
-[TestEnv-x86_64-linux-3.1.1]
+[TestEnv-x86_64-linux-trunk]
 FPCSourcePath=/home/locuser/svn/fpc
 PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-trunk/
 BuildPath=/home/locuser/buildenv/build/
