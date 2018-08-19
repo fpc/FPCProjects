@@ -41,6 +41,23 @@ begin
 end;
 
 function TbaBuildFPCEnvironment.DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean;
+
+  function RunSaveTestCommandIndir(const Curdir: string; const Exename: string;
+    const Commands: array of string; TaskDescription: string; ExpectedExitStatus: Integer = 0; const TimeoutMS: Int64 = -1): Boolean;
+  var
+    CommandOutput: string;
+    CommandLine: string;
+  begin
+    case TryRunTestCommandIndir(Curdir, Exename, Commands, TaskDescription, CommandOutput, CommandLine, ExpectedExitStatus, TimeoutMS) of
+      barcrFailed: raise Exception.Create('Could not build FPC Environment.' +sLineBreak+ 'Current directory: ' +Curdir+ sLineBreak + 'command line: ' + CommandLine);
+      barcrTimeout: Result := False;
+      barcrWrongExitcode: raise Exception.Create('Failed to build FPC Environment.' +sLineBreak+ 'Current directory: ' +Curdir+ sLineBreak + 'command line: ' + CommandLine + sLineBreak + ' Output: ' + sLineBreak + CommandOutput);
+      barcrSucces: Result := True;
+    else
+      raise Exception.Create('Invalid TestCommand result');
+    end;
+  end;
+
 var
   LocalBasePath: string;
   MakeParams: array of string;
@@ -49,7 +66,8 @@ var
   CompilerBinary: string;
   Template: string;
   AddPackages: TStringArray;
-  i: Integer;
+  i, j: Integer;
+  RetrySucceeded: Boolean;
 begin
   FPCSourcePath := GetFPCSourcePath;
 
@@ -164,8 +182,21 @@ begin
     for i := 0 to High(AddPackages) do
       begin
       FDistributor.Log(Format('Install additional package [%s]',[AddPackages[i]]), etInfo, Null, FSendByLisId);
-
-      RunTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'install', AddPackages[i]], 'install additional package');
+      RetrySucceeded := True;
+      // FPPKG version 3.0.4 can get stuck in an infinitive loop. So kill fppkg after 60 seconds
+      // A work-around is to run 'fppkg fixbroken' when fppkg failes until it succeeds
+      if not RunSaveTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'install', AddPackages[i]], 'install additional package', 0, 60000) then
+        begin
+        RetrySucceeded := False;
+        for j := 0 to 5 do
+          if RunSaveTestCommandIndir(BuildPath, GetFppkgExecutable, ['-C', ConcatPaths([BuildPath, 'etc', 'fppkg.cfg']), 'fixbroken'], 'Fix broken dependencies after installation of additional package', 0, 60000) then
+            begin
+            RetrySucceeded := True;
+            Break;
+            end;
+        if not RetrySucceeded then
+          raise Exception.Create('Failed to install additional package, even after 6 retries of running ''fppkg fixbroken''.');
+        end;
       end;
     CopyTree(ConcatPaths([BuildPath, 'user', 'lib']), ConcatPaths([PristineEnvironmentPath, 'user', 'lib']));
     CopyTree(ConcatPaths([BuildPath, 'user', 'build']), ConcatPaths([PristineEnvironmentPath, 'user', 'lib']));
