@@ -58,7 +58,7 @@ services:
       depends_on:
         - buildmanager
       volumes:
-       - buildfiles:/home/buildagent/buildfiles
+       - buildfiles:/home/locuser/buildfiles
 
   buildagent_304:
       image: 'trunk_buildagent_304:latest'
@@ -73,7 +73,7 @@ services:
       depends_on:
         - buildmanager
       volumes:
-       - buildfiles:/home/buildagent/buildfiles
+       - buildfiles:/home/locuser/buildfiles
 
   fppkgrepository:
       image: 'trunk_fppkgrepository:latest'
