@@ -51,6 +51,14 @@ server {
         proxy_pass http://packagemanager:8088/;
     }
 
+    location /buildfiles/ {
+        root   /usr/share/nginx/html/;
+    }
+
+    location /repo/ {
+        root   /usr/share/nginx/html/;
+    }
+
     location /identityserver/ {
         proxy_pass http://identityserver:5000/identityserver/;
 
