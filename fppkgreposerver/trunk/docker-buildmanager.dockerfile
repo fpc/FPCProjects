@@ -1,18 +1,13 @@
-FROM fedora
+FROM fedorabaseimage
+
+USER locuser
+WORKDIR /home/locuser
 
 ARG inifile=buildmanager_docker.ini
 
-RUN dnf -y update
-RUN dnf -y install openssl-devel
-RUN dnf clean all
-
-RUN useradd --create-home --shell /bin/bash buildmanager
-USER buildmanager
-WORKDIR /home/buildmanager
-
-COPY buildmanager/buildmanager /home/buildmanager
-COPY buildmanager/config/$inifile /home/buildmanager/buildmanager.ini
+COPY buildmanager/buildmanager /home/locuser
+COPY buildmanager/config/$inifile /home/locuser/buildmanager.ini
 
 EXPOSE 8181
 
-CMD [ "/home/buildmanager/buildmanager" ]
+CMD [ "/home/locuser/buildmanager" ]
