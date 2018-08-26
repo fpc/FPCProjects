@@ -1,0 +1,12 @@
+object idIdentityWM: TidIdentityWM
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  OldCreateOrder = False
+  Actions = <>
+  OnRequest = DataModuleRequest
+  CreateSession = False
+  Height = 132
+  HorizontalOffset = 960
+  VerticalOffset = 450
+  Width = 150
+end

@@ -1,5 +1,5 @@
 [OIDC]
-OpenIDProviderURL=http://identityserver:5000/identityserver
+OpenIDProviderURL=http://identityserver:5000
 
 [Connections]
 PackageManagerURL=http://packagemanager:8088

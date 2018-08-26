@@ -1,18 +1,19 @@
-FROM microsoft/dotnet:1.1.5-sdk
+FROM fedorabaseimage
 
-RUN apt-get update
-RUN apt-get -qq update
-RUN apt-get install -y nodejs npm
-RUN update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
-RUN npm install -g bower
+# For mimes.types
+RUN dnf -y install mailcap
+RUN dnf clean all
 
-COPY ./identityserver/FPPKGIdentityServer.csproj /app/
-COPY ./identityserver/NuGet.Config /app/
-WORKDIR /app/
-RUN dotnet restore
-ADD ./identityserver/ /app/
+USER locuser
+WORKDIR /home/locuser
+RUN mkdir /home/locuser/wwwroot
 
-RUN dotnet publish -c Debug -o out
+COPY identityserver/identityserver /home/locuser
+COPY identityserver/wwwroot/bootstrap.css /home/locuser/wwwroot
+COPY identityserver/wwwroot/site.css /home/locuser/wwwroot
+COPY identityserver/logintemplate.html /home/locuser
+COPY identityserver/logouttemplate.html /home/locuser
 
 EXPOSE 5000
-ENTRYPOINT ["dotnet", "out/FPPKGIdentityServer.dll"]
+
+CMD [ "/home/locuser/identityserver", "-e" ]

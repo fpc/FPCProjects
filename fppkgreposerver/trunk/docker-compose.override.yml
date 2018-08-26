@@ -3,7 +3,9 @@ version: '3'
 services:
   identityserver:
       environment:
-        - ASPNETCORE_ENVIRONMENT=Development
+        - HTTP__BaseURL=http://localhost:5000/identityserver
+        - HTTP__AllowCorsOrigin=http://localhost:4200
+        - HTTP__wwwroot=wwwroot
       ports:
         - "5000:5000"
 

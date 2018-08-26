@@ -1,5 +1,5 @@
 [OIDC]
-OpenIDProviderURL=http://identityserver:5000/identityserver
+OpenIDProviderURL=http://identityserver:5000
 
 
 [TestEnv-x86_64-linux-trunk]

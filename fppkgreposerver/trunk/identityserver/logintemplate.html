@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FPPKG Repository - login</title>
+
+        <link rel="stylesheet" href="../css/bootstrap.css" />
+        <link rel="stylesheet" href="../css/site.css" />
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <a class="navbar-brand" href="#">Home</a>
+            <div class="collapse navbar-collapse" id="navbarsMain"></div>
+        </nav>
+
+        <div class="container body-content">
+            <div class="row">
+
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Local Login</h5>
+                        </div>
+                        <div class="panel-heading">
+                            <h5 class="panel-title">{failuremessage}</h5>
+                        </div>
+                        <div class="panel-body">
+                            <form action="" method="post">
+                                <input type="hidden" id="ReturnUrl" name="ReturnUrl" value="{returnurl}" />
+
+                                <fieldset>
+                                    <div class="form-group">
+                                        <label for="Username">Username</label>
+                                        <input class="form-control" placeholder="Username" autofocus type="text" data-val="true" data-val-required="The Username field is required." id="Username" name="Username" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="Password">Password</label>
+                                        <input type="password" class="form-control" placeholder="Password" autocomplete="off" data-val="true" data-val-required="The Password field is required." id="Password" name="Password">
+                                    </div>
+                                    <div class="form-group login-remember">
+                                        <label for="RememberLogin">
+                                            <input data-val="true" data-val-required="The RememberLogin field is required." id="RememberLogin" name="RememberLogin" type="checkbox" value="true">
+                                            <strong>Remember My Login</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary">Login</button>
+                                    </div>
+                                    <input name="__RequestVerificationToken" type="hidden" value="CfDJ8C_UD-FeVqRLuVGSwxv8Om7tpez33_8HhgEZE6q9zgpOKCJ98LyvWX8pwmi5DlcflEbsuP8WfZogDL1zRPkVGn71yZtlsWEzZxaGYVAFl4HIxINMLDBGKt_sgF7-qU16x_qO2dbNnU5uu9EIWrG-LiE" /><input name="RememberLogin" type="hidden" value="false">
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

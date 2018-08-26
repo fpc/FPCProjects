@@ -3,9 +3,8 @@ version: '3'
 services:
   identityserver:
       environment:
-        - ASPNETCORE_ENVIRONMENT=Production
-        - ISSUERURI=http://fpc.cnoc.nl/identityserver
-        - WEBCLIENTURI=http://fpc.cnoc.nl
+        - HTTP__BaseURL=http://fpc.cnoc.nl/identityserver
+        - HTTP__wwwroot=wwwroot
 
   webclient:
       build:

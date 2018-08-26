@@ -3,8 +3,9 @@ version: '3'
 services:
   identityserver:
       environment:
-        - ASPNETCORE_ENVIRONMENT=Staging
-        - ISSUERURI=http://localhost:4200/identityserver
+        - HTTP__BaseURL=http://192.168.1.19:4200/identityserver
+        - HTTP__wwwroot=wwwroot
+        - HTTP__AllowCorsOrigin=http://localhost:4200
 
   webclient:
       build:
