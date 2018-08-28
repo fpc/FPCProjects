@@ -2,14 +2,14 @@ version: '3'
 
 services:
   identityserver:
-      image: 'trunk_identityserver:latest'
+      image: 'fpc.cnoc.nl:5000/identityserver:latest'
       build:
         context: .
         dockerfile: docker-identityserver.dockerfile
       container_name: identityserver
 
   buildmanager:
-      image: 'trunk_buildmanager:latest'
+      image: 'fpc.cnoc.nl:5000/buildmanager:latest'
       build:
         context: .
         dockerfile: docker-buildmanager.dockerfile
@@ -18,7 +18,7 @@ services:
       container_name: buildmanager
 
   webclient:
-      image: 'trunk_webclient:latest'
+      image: 'fpc.cnoc.nl:5000/webclient:latest'
       build:
         context: .
         dockerfile: docker-webclient.dockerfile
@@ -27,30 +27,34 @@ services:
         - buildagent_trunk
         - buildagent_304
         - identityserver
+        - fppkgrepository
+        - repository
+        - packagemanager
+        - buildmanager
       volumes:
         - buildfiles:/usr/share/nginx/html/buildfiles
         - repo:/usr/share/nginx/html/repo
 
   repository:
-      image: 'trunk_repository:latest'
+      image: 'fpc.cnoc.nl:5000/repository:latest'
       build:
         context: .
         dockerfile: docker-repository.dockerfile
       container_name: repository
       volumes:
-        - gitrepos:/home/repository/gitrepos
+        - gitrepos:/home/locuser/gitrepos
 
   packagemanager:
-      image: 'trunk_packagemanager:latest'
+      image: 'fpc.cnoc.nl:5000/packagemanager:latest'
       build:
         context: .
         dockerfile: docker-packagemanager.dockerfile
       container_name: packagemanager
       volumes:
-        - packagedata:/home/packagemanager/data
+        - packagedata:/home/locuser/data
 
   buildagent_trunk:
-      image: 'trunk_buildagent_trunk:latest'
+      image: 'fpc.cnoc.nl:5000/buildagent_trunk:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -61,7 +65,7 @@ services:
        - buildfiles:/home/locuser/buildfiles
 
   buildagent_304:
-      image: 'trunk_buildagent_304:latest'
+      image: 'fpc.cnoc.nl:5000/buildagent_304:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -76,7 +80,7 @@ services:
        - buildfiles:/home/locuser/buildfiles
 
   fppkgrepository:
-      image: 'trunk_fppkgrepository:latest'
+      image: 'fpc.cnoc.nl:5000/fppkgrepository:latest'
       build:
         context: .
         dockerfile: docker-fppkgrepository.dockerfile
@@ -84,8 +88,8 @@ services:
       depends_on:
         - buildmanager
       volumes:
-       - repo:/home/fppkgrepository/repo
-       - packagedata:/home/fppkgrepository/data
+       - repo:/home/locuser/repo
+       - packagedata:/home/locuser/data
 
 volumes:
   gitrepos:

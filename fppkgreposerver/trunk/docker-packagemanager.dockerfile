@@ -1,20 +1,15 @@
-FROM fedora
+FROM fedorabaseimage
 
 ARG inifile=packagemanager_docker.ini
 
-RUN dnf -y update
-RUN dnf -y install openssl-devel
-RUN dnf clean all
-
-RUN useradd --create-home --shell /bin/bash packagemanager
-USER packagemanager
-WORKDIR /home/packagemanager
+USER locuser
+WORKDIR /home/locuser
 
 RUN mkdir data
 
-COPY packagemanager/packagemanager /home/packagemanager
-COPY packagemanager/config/$inifile /home/packagemanager/packagemanager.ini
+COPY packagemanager/packagemanager /home/locuser
+COPY packagemanager/config/$inifile /home/locuser/packagemanager.ini
 
 EXPOSE 8088
 
-CMD [ "/home/packagemanager/packagemanager" ]
+CMD [ "/home/locuser/packagemanager" ]
