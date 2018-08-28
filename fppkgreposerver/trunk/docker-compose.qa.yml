@@ -8,6 +8,8 @@ services:
         - HTTP__AllowCorsOrigin=http://localhost:4200
 
   webclient:
+      environment:
+        - HOST=192.168.1.19
       build:
         args:
           nginxconffile: nginx-default.conf.qa

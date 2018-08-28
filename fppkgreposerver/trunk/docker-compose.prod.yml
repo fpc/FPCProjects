@@ -7,6 +7,8 @@ services:
         - HTTP__wwwroot=wwwroot
 
   webclient:
+      environment:
+        - HOST=fpc.cnoc.nl
       build:
         args:
           nginxconffile: nginx-default.conf.prod

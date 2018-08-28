@@ -14,6 +14,8 @@ services:
         - "8181:8181"
 
   webclient:
+      environment:
+        - HOST=localhost
       ports:
         - "4200:80"
 

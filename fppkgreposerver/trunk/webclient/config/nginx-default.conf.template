@@ -1,3 +1,28 @@
+upstream buildagent304 {
+    server buildagent_304:9090;
+    server ${HOST}:9090 backup;
+}
+
+upstream buildagenttrunk {
+    server buildagent_trunk:8080;
+    server ${HOST}:8080 backup;
+}
+
+upstream buildmanager_upstream {
+    server buildmanager:8181;
+    server ${HOST}:8181 backup;
+}
+
+upstream fppkgrepository_upstream {
+    server fppkgrepository:8282;
+    server ${HOST}:8282 backup;
+}
+
+upstream identityserver_upstream {
+    server identityserver:5000;
+    server ${HOST}:5000 backup;
+}
+
 server {
     listen       80;
     server_name  localhost;
@@ -26,21 +51,21 @@ server {
     location /buildagent304/ {
         proxy_read_timeout 600;
         client_max_body_size 10m;
-        proxy_pass http://buildagent_304:9090/;
+        proxy_pass http://buildagent304/;
     }
 
     location /buildagenttrunk/ {
         proxy_read_timeout 600;
         client_max_body_size 10m;
-        proxy_pass http://buildagent_trunk:8080/;
+        proxy_pass http://buildagenttrunk/;
     }
 
     location /buildmanager/ {
-        proxy_pass http://buildmanager:8181/;
+        proxy_pass http://buildmanager_upstream/;
     }
 
     location /fppkgrepository/ {
-        proxy_pass http://fppkgrepository:8282/;
+        proxy_pass http://fppkgrepository_upstream/;
     }
 
     location /repository/ {
@@ -60,6 +85,6 @@ server {
     }
 
     location /identityserver/ {
-        proxy_pass http://identityserver:5000/;
+        proxy_pass http://identityserver_upstream/;
     }
 }
