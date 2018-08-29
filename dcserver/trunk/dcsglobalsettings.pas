@@ -96,6 +96,7 @@ type
     procedure AddSetting(ASettingName, ASection, AKey, AParameterName: string; AParameterLetter: char;
       AParameter: TDCSSettingParameter; ADefaultValue: string = '');
     procedure LoadSettingsFromIniStream(AStream: TStream);
+    procedure LoadSettingsFromEnvironment();
     function CheckProgramParameters(AnApplication: TCustomApplication; AllErrors: Boolean = False): string;
     procedure EvaluateProgramParameters(AnApplication: TCustomApplication);
 
@@ -289,7 +290,7 @@ begin
     end;
 end;
 
-constructor TDCSGlobalSettings.Create;
+constructor TDCSGlobalSettings.Create();
 begin
   FMonitor := TLazMonitor.create;
   FSettingList := TDCSSettingList.Create(True);
@@ -337,7 +338,6 @@ var
   Section, Key, Value: string;
   i, j, k: Integer;
   Setting: TDCSSetting;
-  SettingName: string;
 begin
   IniFile := TIniFile.Create(AStream);
   try
@@ -382,6 +382,49 @@ begin
   end;
 end;
 
+procedure TDCSGlobalSettings.LoadSettingsFromEnvironment();
+var
+  Setting: TDCSSetting;
+  i,k,p: Integer;
+  Key, Section, Value, s: String;
+begin
+  for i := 0 to GetEnvironmentVariableCount -1 do
+    begin
+    s := GetEnvironmentString(i);
+    p := pos('__', s);
+    if p > 0 then
+      begin
+      Section := Copy(s, 1, p-1);
+      s := Copy(s, p+2, Length(s));
+      p := pos('=', s);
+      if p > 0 then
+        begin
+        Key := copy(s,1,p-1);
+        Value := copy(s, p+1, Length(s));
+
+        Setting := GetSettingByKey(Section, Key);
+        if Assigned(Setting) then
+          begin
+          Setting.SetAsString(Value);
+          end
+        else
+          begin
+          for k := 0 to FDefinedSettingTemplateList.Count-1 do
+            begin
+            Setting := FDefinedSettingTemplateList.Items[k];
+            if SameText(Setting.Section, copy(Section, 1, Length(Setting.Section))) then
+              begin
+              AddSettingsForTemplate(Setting.Section, copy(Section, Length(Setting.Section) +1, MaxSIntValue));
+              SetSettingAsStringByKey(Section, Key, Value);
+              Break;
+              end
+            end;
+          end;
+        end;
+      end;
+    end;
+end;
+
 function TDCSGlobalSettings.CheckProgramParameters(AnApplication: TCustomApplication; AllErrors: Boolean = False): string;
 var
   i: integer;
@@ -389,6 +432,7 @@ var
   ShortOpts: string;
   LongOpts: TStrings;
 begin
+  ShortOpts := '';
   LongOpts := TStringList.Create;
   try
     FMonitor.Acquire;
