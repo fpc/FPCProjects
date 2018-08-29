@@ -94,7 +94,7 @@ var
   Settings: TDCSGlobalSettings;
 begin
   Settings := TDCSGlobalSettings.GetInstance;
-  SettingTemplate := Settings.SettingTemplateList.FindSettingTemplate('FPCVersion-');
+  SettingTemplate := Settings.SettingTemplateList.FindSettingTemplate('FPCVersion_');
   for i := 0 to SettingTemplate.Values.Count -1 do
     begin
     FPCVersion := TfprFPCVersion.Create(Self);

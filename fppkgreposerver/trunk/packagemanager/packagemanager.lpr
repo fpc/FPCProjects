@@ -19,22 +19,31 @@ var
   ConfigFileStream: TFileStream;
   GlobalSettings: TDCSGlobalSettings;
   PackageListFile: String;
-  SettingTemplate: TDCSSettingTemplate;
+  ConfigFileName: string;
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('PackageListFile', 'Storage', 'PackageListFile', '', #0, dcsPHasParameter);
 
-  GlobalSettings.AddSettingTemplate('FPCVersion-', 'Name', 'FPCVersionName-', '');
-  GlobalSettings.AddSettingTemplate('FPCVersion-', 'IsDefault', 'FPCVersionIsDefault-', 'false');
-  GlobalSettings.AddSettingTemplate('FPCVersion-', 'URLPrefix', 'FPCVersionURLPrefix-', '');
+  GlobalSettings.AddSettingTemplate('FPCVersion_', 'Name', 'FPCVersionName-', '');
+  GlobalSettings.AddSettingTemplate('FPCVersion_', 'IsDefault', 'FPCVersionIsDefault-', 'false');
+  GlobalSettings.AddSettingTemplate('FPCVersion_', 'URLPrefix', 'FPCVersionURLPrefix-', '');
 
-  ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
-  try
-    GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
-  finally
-    ConfigFileStream.Free;
+  if Application.HasOption('e') then
+  begin
+    GlobalSettings.LoadSettingsFromEnvironment();
+  end;
+
+  ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
+  if FileExists(ConfigFileName) then
+  begin
+    ConfigFileStream := TFileStream.Create(ConfigFileName, fmOpenRead);
+    try
+      GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
+    finally
+      ConfigFileStream.Free;
+    end;
   end;
 
   TfprFPCVersionCollection.Instance.LoadFromSettings;

@@ -32,6 +32,15 @@ services:
         - "8089:8089"
 
   packagemanager:
+      environment:
+       - OIDC__OpenIDProviderURL=http://identityserver:5000
+       - HTTP__AllowCorsOrigin=http://localhost:4200
+       - Storage__PackageListFile=/home/locuser/data/packages.json
+       - FPCVersion_trunk__Name=trunk
+       - FPCVersion_trunk__IsDefault=true
+       - FPCVersion_trunk__URLPrefix=3.1.1
+       - FPCVersion_304__Name=3.0.4
+       - FPCVersion_304__URLPrefix=3.0.4
       ports:
         - "8088:8088"
 
