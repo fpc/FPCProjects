@@ -66,28 +66,52 @@ type
     Subject: string;
     AuthenticationTime: TDateTime;
     ExpirationTime: TDateTime;
+    IdToken: string;
   end;
   TcnocOpenIDSessionMap = specialize TFPGMapObject<string, TcnocOpenIDSession>;
+
+  TcnocOpenIDLogoutInfo = class
+  public
+    ExpirationTime: TDateTime;
+    PostLogoutRedirectUri: string;
+    IdToken: string;
+  end;
+  TcnocOpenIDLogoutInfoMap = specialize TFPGMapObject<string, TcnocOpenIDLogoutInfo>;
+
+  TcnocOpenIDRevokedToken = class
+  public
+    ExpirationTime: TDateTime;
+  end;
+  TcnocOpenIDRevokedTokenMap = specialize TFPGMapObject<string, TcnocOpenIDRevokedToken>;
 
   { TcnocOpenIDConnectConfiguration }
 
   TcnocOpenIDConnectConfiguration = class
   private
-    FAuthorization_Endpoint: string;
+    FStringValues: array[0..5] of string;
     FBaseURL: string;
-    FCheck_Session_Iframe: string;
-    FIssuer: string;
-    FJwks_URI: string;
-    FUserinfo_Endpoint: string;
     procedure SetBaseURL(AValue: string);
+
+    function GetFullValue(AIndex: Integer): string;
+    function GetRelValue(AIndex: Integer): string;
+    procedure SetRelValue(AIndex: Integer; AValue: string);
   public
+    constructor Create;
     property BaseURL: string read FBaseURL write SetBaseURL;
+
+    property RelIssuer: string index 0 read GetRelValue write SetRelValue;
+    property RelAuthorization_Endpoint: string index 1 read GetRelValue write SetRelValue;
+    property RelJwks_URI: string index 2 read GetRelValue write SetRelValue;
+    property RelUserinfo_Endpoint: string index 3 read GetRelValue write SetRelValue;
+    property RelCheck_Session_Iframe: string index 4 read GetRelValue write SetRelValue;
+    property RelEnd_Session_Endpoint: string index 5 read GetRelValue write SetRelValue;
   published
-    property Issuer: string read FIssuer write FIssuer;
-    property Authorization_Endpoint: string read FAuthorization_Endpoint write FAuthorization_Endpoint;
-    property Jwks_URI: string read FJwks_URI write FJwks_URI;
-    property Userinfo_Endpoint: string read FUserinfo_Endpoint write FUserinfo_Endpoint;
-    property Check_Session_Iframe: string read FCheck_Session_Iframe write FCheck_Session_Iframe;
+    property Issuer: string index 0 read GetFullValue;
+    property Authorization_Endpoint: string index 1 read GetFullValue;
+    property Jwks_URI: string index 2 read GetFullValue;
+    property Userinfo_Endpoint: string index 3 read GetFullValue;
+    property Check_Session_Iframe: string index 4 read GetFullValue;
+    property End_Session_Endpoint: string index 5 read GetFullValue;
   end;
 
   { TcnocOpenIDConnectProvider }
@@ -100,18 +124,23 @@ type
     TcnocRSAPrivateKeyMap = specialize TFPGMapObject<string, TcnocRSAPrivateKey>;
   class var{threadvar -- Lazarus can not handle this}
     FReturnUrl: string;
+    FRedirectUrl: string;
     FFailureMessage: string;
   var
     FBaseURL: string;
     FConfiguration: TcnocOpenIDConnectConfiguration;
     FJSONStreamer: TJSONStreamer;
     FLoginTemplate: TFPCustomTemplate;
-    FPRotocol: string;
+    FLogoutTemplate: TFPCustomTemplate;
+    FProtocol: string;
     FKeyList: TcnocRSAPrivateKeyMap;
     FContentProviderList: TFPObjectList;
     FAuthenticatedSessionMap: TcnocOpenIDSessionMap;
+    FLogoutInfoMap: TcnocOpenIDLogoutInfoMap;
+    FRevokedTokenMap: TcnocOpenIDRevokedTokenMap;
 
     Procedure GetLoginTemplateParams(Sender: TObject; Const ParamName: String; Out AValue: String);
+    Procedure GetLogoutTemplateParams(Sender: TObject; Const ParamName: String; Out AValue: String);
     procedure SetBaseURL(AValue: string);
     procedure InitDefaultTemplates;
     procedure AddCorsHeaders(ARequest: TRequest; AResponse: TResponse);
@@ -121,6 +150,7 @@ type
 
     function VerifyJWT(const AJWTAsString: string; out AJWT: TcnocOIDCIDTokenJWT): Boolean;
     function ObtainJWKJsonArray: TJSONArray;
+    procedure RevokeToken(Token: string);
   public
     constructor Create(ABaseURL: string);
     destructor Destroy; override;
@@ -128,7 +158,9 @@ type
     procedure HandleWellKnown(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     procedure HandleAuthorizationEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     procedure HandleAuthorizationEndpointLogin(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+    procedure HandleAuthorizationEndpointLogout(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     procedure HandleUserInfoEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+    procedure HandleEndSessionEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     procedure HandleAccount(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
     procedure SignJWT(AJwt: TJWT; AKey: TcnocRSAPrivateKey);
 
@@ -141,6 +173,7 @@ type
     property BaseURL: string read FBaseURL;
     property Protocol: string read FPRotocol write FProtocol;
     property LoginTemplate: TFPCustomTemplate read FLoginTemplate;
+    property LogoutTemplate: TFPCustomTemplate read FLogoutTemplate;
     property SessionExpiration: Integer read FSessionExpiration write FSessionExpiration;
     property TokenExpiration: Integer read FTokenExpiration write FTokenExpiration;
   end;
@@ -220,11 +253,36 @@ procedure TcnocOpenIDConnectConfiguration.SetBaseURL(AValue: string);
 begin
   if FBaseURL = AValue then Exit;
   FBaseURL := IncludeHTTPPathDelimiter(AValue);
-  FAuthorization_Endpoint := FBaseURL + 'connect/authorize';
-  FJwks_URI := FBaseURL + '.well-known/openid-configuration/jwks';
-  FUserinfo_Endpoint := FBaseURL + 'connect/userinfo';
-  FCheck_Session_Iframe := FBaseURL + 'connect/checksession';
-  Fissuer := AValue;
+end;
+
+procedure TcnocOpenIDConnectConfiguration.SetRelValue(AIndex: Integer; AValue: string);
+begin
+  FStringValues[AIndex] := AValue;
+end;
+
+constructor TcnocOpenIDConnectConfiguration.Create;
+begin
+  RelAuthorization_Endpoint := 'connect/authorize';
+  RelJwks_URI := '.well-known/openid-configuration/jwks';
+  RelUserinfo_Endpoint := 'connect/userinfo';
+  RelCheck_Session_Iframe := 'connect/checksession';
+  RelEnd_Session_Endpoint := 'endsession';
+  RelIssuer := '';
+end;
+
+function TcnocOpenIDConnectConfiguration.GetFullValue(AIndex: Integer): string;
+begin
+  if (FStringValues[AIndex] = '') and (RightStr(FBaseURL,1) = '/') then
+    begin
+    Result := Copy(FBaseURL, 1, length(FBaseURL) -1);
+    end
+  else
+    Result := BaseURL + FStringValues[AIndex];
+end;
+
+function TcnocOpenIDConnectConfiguration.GetRelValue(AIndex: Integer): string;
+begin
+  result := FStringValues[AIndex];
 end;
 
 { TcnocOpenIDConnect }
@@ -243,7 +301,14 @@ begin
     AValue := FFailureMessage
   else
     AValue := '';
+end;
 
+Procedure TcnocOpenIDConnectProvider.GetLogoutTemplateParams(Sender: TObject; Const ParamName: String; Out AValue: String);
+begin
+  if SameText(ParamName, 'redirecturl') then
+    AValue := FRedirectUrl
+  else
+    AValue := '';
 end;
 
 procedure TcnocOpenIDConnectProvider.InitDefaultTemplates;
@@ -270,6 +335,13 @@ begin
     '<div class="form-group"><button class="btn btn-primary">Login</button></div>' +
 
     '</form></body>' +
+    '</html>';
+
+  FLogoutTemplate.Template :=
+    '<!DOCTYPE html><html>' +
+
+    '<head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logged out</title></head>' +
+    '<body><h2>Logout</h2><p>You have succesfully logged out. Click <a href="{redirecturl}">here</a> to continue.</body>' +
     '</html>';
 end;
 
@@ -380,6 +452,20 @@ begin
   end;
 end;
 
+procedure TcnocOpenIDConnectProvider.RevokeToken(Token: string);
+var
+  RevokeInfo: TcnocOpenIDRevokedToken;
+begin
+  RevokeInfo := TcnocOpenIDRevokedToken.Create;
+  try
+    RevokeInfo.ExpirationTime := DateTimeToUnix(IncSecond(LocalTimeToUniversal(Now), FTokenExpiration));
+    FRevokedTokenMap.Add(Token, RevokeInfo);
+    RevokeInfo := nil;
+  finally
+    RevokeInfo.Free;
+  end;
+end;
+
 constructor TcnocOpenIDConnectProvider.Create(ABaseURL: string);
 begin
   SetBaseURL(ABaseURL);
@@ -394,9 +480,15 @@ begin
 
   FLoginTemplate := TFPCustomTemplate.Create;
   FLoginTemplate.OnGetParam := @GetLoginTemplateParams;
+  FLogoutTemplate := TFPCustomTemplate.Create;
+  FLogoutTemplate.OnGetParam := @GetLogoutTemplateParams;
   FContentProviderList := TFPObjectList.Create(False);
   FAuthenticatedSessionMap := TcnocOpenIDSessionMap.Create(True);
   FAuthenticatedSessionMap.Sorted := True;
+  FRevokedTokenMap := TcnocOpenIDRevokedTokenMap.Create;
+  FRevokedTokenMap.Sorted := True;
+  FLogoutInfoMap := TcnocOpenIDLogoutInfoMap.Create(True);
+  FLogoutInfoMap.Sorted := True;
   InitDefaultTemplates;
   if RandSeed=0 then
     Randomize;
@@ -406,7 +498,10 @@ destructor TcnocOpenIDConnectProvider.Destroy;
 begin
   FContentProviderList.Free;
   FAuthenticatedSessionMap.Free;
+  FLogoutInfoMap.Free;
+  FRevokedTokenMap.Free;
   FLoginTemplate.Free;
+  FLogoutTemplate.Free;
   FJSONStreamer.Free;
   FKeyList.Free;
   inherited Destroy;
@@ -415,7 +510,7 @@ end;
 procedure TcnocOpenIDConnectProvider.HandleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 var
   Command: String;
-  URL: String;
+  RelPath: String;
 begin
   if ARequest.Method='OPTIONS' then
     begin
@@ -432,13 +527,23 @@ begin
     'account':     HandleAccount(Sender, ARequest, AResponse, Handled);
   else
     begin
-    URL := FPRotocol+ARequest.Host+ARequest.PathInfo;
-    if URL=FConfiguration.Authorization_Endpoint then
+    RelPath := Command;
+    Command := ARequest.GetNextPathInfo;
+    while Command <> '' do
+      begin
+      RelPath := IncludeHTTPPathDelimiter(RelPath) + Command;
+      Command := ARequest.GetNextPathInfo;
+      end;
+    if RelPath=FConfiguration.RelAuthorization_Endpoint then
       HandleAuthorizationEndpoint(Sender, ARequest, AResponse, Handled)
-    else if URL=IncludeHTTPPathDelimiter(FConfiguration.Authorization_Endpoint)+'login' then
+    else if RelPath=IncludeHTTPPathDelimiter(FConfiguration.RelAuthorization_Endpoint)+'login' then
       HandleAuthorizationEndpointLogin(Sender, ARequest, AResponse, Handled)
-    else if URL=FConfiguration.Userinfo_Endpoint then
-      HandleUserInfoEndpoint(Sender, ARequest, AResponse, Handled);
+    else if RelPath=IncludeHTTPPathDelimiter(FConfiguration.RelAuthorization_Endpoint)+'logout' then
+      HandleAuthorizationEndpointLogout(Sender, ARequest, AResponse, Handled)
+    else if RelPath=FConfiguration.RelUserinfo_Endpoint then
+      HandleUserInfoEndpoint(Sender, ARequest, AResponse, Handled)
+    else if RelPath=FConfiguration.RelEnd_Session_Endpoint then
+      HandleEndSessionEndpoint(Sender, ARequest, AResponse, Handled);
     end;
   end;
 
@@ -569,10 +674,10 @@ begin
     SignJWT(IdJwt, Key);
 
     id_token := IdJwt.AsEncodedString;
+    AuthSession.IdToken := id_token;
   finally
     IdJwt.Free;
   end;
-
 
   // See Openid-Connect-Core 1.0 specs, section 3.2.2.5
   // ToDo: only add access_token when response-type <> id_token
@@ -585,6 +690,84 @@ begin
   AResponse.CodeText := GetStatusCode(AResponse.Code);
   AResponse.Expires := '-1';
 
+end;
+
+procedure TcnocOpenIDConnectProvider.HandleAuthorizationEndpointLogout(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+
+  procedure SendLogoutConfirmation(LogoutRedirectURI: string);
+  var
+    Cookie: TCookie;
+    URI: TURI;
+  begin
+    FRedirectUrl := LogoutRedirectURI;
+    AResponse.Contents.Text := FLogoutTemplate.GetContent;
+    FRedirectUrl := '';
+
+    AResponse.Code := 200;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    AResponse.ContentType := 'text/html';
+    AResponse.CustomHeaders.Values['X-Content-Type-Security-Policy'] := 'default-src ''self''';
+    AResponse.CustomHeaders.Values['X-Content-Type-Options'] := 'nosniff';
+    AResponse.CustomHeaders.Values['X-Frame-Options'] := 'SAMEORIGIN';
+    AResponse.Pragma := 'no-cache';
+    AResponse.CacheControl := 'no-cache';
+
+    Cookie := AResponse.Cookies.Add;
+    Cookie.HttpOnly := True;
+    URI := ParseURI(IncludeHTTPPathDelimiter(FConfiguration.Authorization_Endpoint)+'login');
+    Cookie.Path := IncludeHTTPPathDelimiter(URI.Path);
+    Cookie.Name := 'Authentication';
+    Cookie.Value := '';
+    Cookie.Expire;
+  end;
+
+var
+  LogoutId, AuthCookie: String;
+  SessionIdx: Integer;
+  LogoutInfo: TcnocOpenIDLogoutInfo;
+  AuthSession: TcnocOpenIDSession;
+begin
+  Handled := True;
+  LogoutId := ARequest.QueryFields.Values['logoutId'];
+  if not FLogoutInfoMap.Find(LogoutId, SessionIdx) then
+    begin
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end
+  else
+    LogoutInfo := FLogoutInfoMap.Data[SessionIdx];
+
+  if CompareDateTime(LocalTimeToUniversal(Now), LogoutInfo.ExpirationTime) = GreaterThanValue then
+    begin
+    FLogoutInfoMap.Delete(SessionIdx);
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end;
+
+  AuthCookie := ARequest.CookieFields.Values['Authentication'];
+  if not FAuthenticatedSessionMap.Find(AuthCookie, SessionIdx) then
+    begin
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end
+  else
+    AuthSession := FAuthenticatedSessionMap.Data[SessionIdx];
+
+  if LogoutInfo.IdToken <> AuthSession.IdToken then
+    begin
+    AResponse.Code := 403;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Exit;
+    end;
+
+  SendLogoutConfirmation(LogoutInfo.PostLogoutRedirectUri);
+
+  FAuthenticatedSessionMap.Delete(SessionIdx);
+
+  RevokeToken(LogoutInfo.IdToken);
 end;
 
 procedure TcnocOpenIDConnectProvider.HandleUserInfoEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
@@ -604,6 +787,11 @@ begin
     begin
     s := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7);
     AllowRequest := VerifyJWT(s, JWT);
+
+    i := FRevokedTokenMap.Count;
+    if FRevokedTokenMap.Find(s, i) then
+      AllowRequest := False;
+
     if AllowRequest then
       begin
       try
@@ -640,6 +828,34 @@ begin
   AResponse.CodeText := GetStatusCode(AResponse.Code);
 end;
 
+procedure TcnocOpenIDConnectProvider.HandleEndSessionEndpoint(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+var
+  LogoutInfo: TcnocOpenIDLogoutInfo;
+  LogoutId: string;
+  i: Integer;
+begin
+  LogoutId := '';
+  for i := 0 to 8 do
+    LogoutId := LogoutId + IntToHex(Random(MaxInt), 8);
+
+  LogoutInfo := TcnocOpenIDLogoutInfo.Create;
+  try
+    LogoutInfo.IdToken := ARequest.QueryFields.Values['id_token_hint'];
+    LogoutInfo.PostLogoutRedirectUri := ARequest.QueryFields.Values['post_logout_redirect_uri'];
+
+    LogoutInfo.ExpirationTime := IncSecond(LocalTimeToUniversal(Now), 60);
+    FLogoutInfoMap.Add(LogoutId, LogoutInfo);
+    LogoutInfo := nil;
+  finally
+    LogoutInfo.Free;
+  end;
+
+  AResponse.Code := 302;
+  AResponse.CodeText := GetStatusCode(AResponse.Code);
+  AResponse.Location := FBaseURL + IncludeHTTPPathDelimiter(FConfiguration.RelAuthorization_Endpoint) + Format('logout?logoutId=%s', [LogoutId]);
+  Handled := True;
+end;
+
 procedure TcnocOpenIDConnectProvider.HandleAccount(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 
   procedure SendLoginForm(FailedMessage: string);
@@ -650,7 +866,7 @@ procedure TcnocOpenIDConnectProvider.HandleAccount(Sender: TObject; ARequest: TR
       FReturnUrl := ARequest.ContentFields.Values['returnurl'];
     AResponse.Contents.Text := FLoginTemplate.GetContent;
     FReturnUrl := '';
-    FFailureMessage := FailedMessage;
+    FFailureMessage := '';
 
     AResponse.Code := 200;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
