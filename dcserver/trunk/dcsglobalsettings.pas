@@ -16,7 +16,7 @@ type
 
   { TDCSSetting }
   TDCSSettingValueType = (dcsVTString, dcsVTBoolean);
-  TDCSSettingParameter = (dcsPNoParameter, dcsPOptionalParameter, dcsPHasParameter);
+  TDCSSettingParameter = (dcsPNoParameter, dcsPOptionalParameter, dcsPHasParameter, dcsPDictionary);
 
   TDCSSetting = class
   private
@@ -30,10 +30,14 @@ type
     FBooleanValue: Boolean;
     FStringValue: string;
     FDefaultValue: string;
+    FNameValueList: TStringList;
   public
     constructor Create(ASettingName, ASection, AKey, AParameterName: string; AParameterLetter: char; AParameter: TDCSSettingParameter; ADefaultValue: string);
+    destructor Destroy; override;
     procedure SetAsBoolean(AValue: Boolean);
     procedure SetAsString(AValue: String);
+    procedure SetNameValueAsString(AName, AValue: string);
+    function GetNameValueAsString(AName: string): string;
     function GetAsBoolean: Boolean;
     function GetAsString: String;
 
@@ -96,6 +100,8 @@ type
     procedure EvaluateProgramParameters(AnApplication: TCustomApplication);
 
     procedure AddSettingTemplate(ASectionPrefix, AKey, ASettingNamePrefix, ADefaultValue: string);
+
+    function GetDictionarySettingAsString(ASettingName, AName: string): string;
 
     function GetSettingAsBoolean(ASettingName: string): Boolean;
     function GetSettingAsString(ASettingName: string): String;
@@ -163,6 +169,14 @@ begin
   FParameterLetter := AParameterLetter;
   FDefaultValue := ADefaultValue;
   FParameter := AParameter;
+  if FParameter = dcsPDictionary then
+    FNameValueList := TStringList.Create;
+end;
+
+destructor TDCSSetting.Destroy;
+begin
+  FNameValueList.Free;
+  inherited Destroy;
 end;
 
 procedure TDCSSetting.SetAsBoolean(AValue: Boolean);
@@ -175,6 +189,16 @@ procedure TDCSSetting.SetAsString(AValue: String);
 begin
   FStringValue := AValue;
   FValueType := dcsVTString;
+end;
+
+procedure TDCSSetting.SetNameValueAsString(AName, AValue: string);
+begin
+  FNameValueList.Values[AName] := AValue;
+end;
+
+function TDCSSetting.GetNameValueAsString(AName: string): string;
+begin
+  Result := FNameValueList.Values[AName];
 end;
 
 function TDCSSetting.GetAsBoolean: Boolean;
@@ -230,10 +254,13 @@ begin
   for i := 0 to FSettingList.Count-1 do
     begin
     Setting := FSettingList.Items[i];
-    if SameText(Setting.Key, AKey) and SameText(Setting.Section, ASection) then
+    if SameText(Setting.Section, ASection) then
       begin
-      Result := Setting;
-      Exit;
+      if (Setting.FParameter = dcsPDictionary) or SameText(Setting.Key, AKey) then
+        begin
+        Result := Setting;
+        Exit;
+        end;
       end;
     end;
   Result := nil;
@@ -452,6 +479,23 @@ begin
   end;
 end;
 
+function TDCSGlobalSettings.GetDictionarySettingAsString(ASettingName, AName: string): string;
+var
+  Setting: TDCSSetting;
+begin
+  FMonitor.Acquire;
+  try
+    Setting := GetSetting(ASettingName);
+    if not assigned(Setting) then
+      raise Exception.CreateFmt('Parameter %s has not been defined.', [ASettingName]);
+    if Setting.Parameter <> dcsPDictionary then
+      raise Exception.CreateFmt('Parameter %s is not a dictionary parameter.', [ASettingName]);
+    Result := Setting.GetNameValueAsString(AName);
+  finally
+    FMonitor.Release;
+  end;
+end;
+
 function TDCSGlobalSettings.GetSettingAsBoolean(ASettingName: string): Boolean;
 var
   Setting: TDCSSetting;
@@ -566,7 +610,10 @@ begin
     Setting := GetSettingByKey(ASection, AKey);
     if not assigned(Setting) then
       raise Exception.CreateFmt('Parameter [%s]:[%s] has not been defined.', [ASection, AKey]);
-    Setting.SetAsString(AValue);
+    if Setting.Parameter = dcsPDictionary then
+      Setting.SetNameValueAsString(AKey, AValue)
+    else
+      Setting.SetAsString(AValue);
   finally
     FMonitor.Release;
   end;
