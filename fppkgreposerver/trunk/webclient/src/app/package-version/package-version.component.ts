@@ -55,7 +55,7 @@ export class PackageVersionComponent implements OnInit {
   initRepositoryList(repoList: Repository[]) {
     this.repositoryList = repoList;
     for (var repo of repoList) {
-      this._fppkgRepositoryService.getRepPackageList(this.fpcversion.urlprefix , repo)
+      this._fppkgRepositoryService.getRepPackageList(this.fpcversion.name, repo)
         .subscribe(repPackageList => {
           for (var repPackage of repPackageList) {
             if (repPackage.name == this.package.name) {
