@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
@@ -20,8 +20,39 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <FormatVersion Value="1"/>
+        <CommandLineParams Value="-e"/>
       </local>
+      <environment>
+        <UserOverrides Count="7">
+          <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:4200/identityserver"/>
+          <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
+          <Variable2 Name="Connections__PackageManagerURL" Value="http://localhost:4200/packagemanager"/>
+          <Variable3 Name="Connections__BuildManagerURL" Value="http://localhost:4200/buildmanager"/>
+          <Variable4 Name="GIT__RepositoriesPath" Value="/home/locuser/gitrepos"/>
+          <Variable5 Name="GIT__UserName" Value="FPPKG Repository server"/>
+          <Variable6 Name="GIT__Email" Value="noreply@cnoc.nl"/>
+        </UserOverrides>
+      </environment>
+      <FormatVersion Value="2"/>
+      <Modes Count="2">
+        <Mode0 Name="default"/>
+        <Mode1 Name="QA">
+          <local>
+            <CommandLineParams Value="-e"/>
+          </local>
+          <environment>
+            <UserOverrides Count="7">
+              <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:4200/identityserver"/>
+              <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
+              <Variable2 Name="Connections__PackageManagerURL" Value="http://localhost:4200/packagemanager"/>
+              <Variable3 Name="Connections__BuildManagerURL" Value="http://localhost:4200/buildmanager"/>
+              <Variable4 Name="GIT__RepositoriesPath" Value="/home/locuser/gitrepos"/>
+              <Variable5 Name="GIT__UserName" Value="FPPKG Repository server"/>
+              <Variable6 Name="GIT__Email" Value="noreply@cnoc.nl"/>
+            </UserOverrides>
+          </environment>
+        </Mode1>
+      </Modes>
     </RunParams>
     <RequiredPackages Count="3">
       <Item1>

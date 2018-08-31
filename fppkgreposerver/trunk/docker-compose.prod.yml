@@ -23,9 +23,13 @@ services:
           inifile: buildagent_docker_x86_64_linux_304.ini.prod
 
   repository:
-      build:
-        args:
-          inifile: repository_docker.ini.prod
+      environment:
+       - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl/identityserver
+       - Connections__PackageManagerURL=http://packagemanager:8088
+       - Connections__BuildManagerURL=http://buildmanager:8181
+       - GIT__RepositoriesPath=/home/locuser/gitrepos
+       - GIT__UserName=FPPKG Repository server
+       - GIT__Email=noreply@cnoc.nl
 
   packagemanager:
       environment:

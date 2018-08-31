@@ -19,6 +19,7 @@ uses
 var
   GlobalSettings: TDCSGlobalSettings;
   ConfigFileStream: TFileStream;
+  ConfigFileName: String;
 
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
@@ -31,11 +32,22 @@ begin
   GlobalSettings.AddSetting('GITUserName', 'GIT', 'UserName', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('GITEmail', 'GIT', 'Email', '', #0, dcsPHasParameter);
 
-  ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
-  try
-    GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
-  finally
-    ConfigFileStream.Free;;
+  if Application.HasOption('e') then
+  begin
+    GlobalSettings.LoadSettingsFromEnvironment();
+  end
+  else
+  begin
+    ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
+    if FileExists(ConfigFileName) then
+    begin
+      ConfigFileStream := TFileStream.Create(ConfigFileName, fmOpenRead);
+      try
+        GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
+      finally
+        ConfigFileStream.Free;
+      end;
+    end;
   end;
 
   Application.OnShowRequestException := @fprOnShowRequestException;
