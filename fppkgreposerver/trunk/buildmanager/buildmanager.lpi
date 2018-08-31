@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
@@ -19,9 +19,23 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <FormatVersion Value="1"/>
-      </local>
+      <FormatVersion Value="2"/>
+      <Modes Count="2">
+        <Mode0 Name="default"/>
+        <Mode1 Name="QA">
+          <local>
+            <CommandLineParams Value="-e"/>
+          </local>
+          <environment>
+            <UserOverrides Count="4">
+              <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:4200/identityserver"/>
+              <Variable1 Name="Connections__PackageManagerURL" Value="http://localhost:4200/packagemanager"/>
+              <Variable2 Name="Connections__RepositoryURL" Value="http://localhost:4200/repository"/>
+              <Variable3 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
+            </UserOverrides>
+          </environment>
+        </Mode1>
+      </Modes>
     </RunParams>
     <RequiredPackages Count="3">
       <Item1>

@@ -42,9 +42,10 @@ services:
        - FPCVersion_304__URLPrefix=3.0.4
 
   buildmanager:
-      build:
-        args:
-          inifile: buildmanager_docker.ini.prod
+      environment:
+        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl/identityserver
+        - Connections__PackageManagerURL=http://packagemanager:8088
+        - Connections__RepositoryURL=http://repository:8089
 
   fppkgrepository:
       build:

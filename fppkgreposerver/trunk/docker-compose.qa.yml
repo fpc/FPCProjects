@@ -45,9 +45,11 @@ services:
        - FPCVersion_304__URLPrefix=3.0.4
 
   buildmanager:
-      build:
-        args:
-          inifile: buildmanager_docker.ini.qa
+      environment:
+        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - HTTP__AllowCorsOrigin=http://localhost:4200
+        - Connections__PackageManagerURL=http://192.168.1.19:4200/packagemanager
+        - Connections__RepositoryURL=http://192.168.1.19:4200/repository
 
   fppkgrepository:
       build:
