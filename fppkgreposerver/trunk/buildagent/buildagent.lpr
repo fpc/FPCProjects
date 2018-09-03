@@ -44,7 +44,7 @@ type
 
 procedure TFppkgRepoServer.DoRun;
 var
-  ErrorMsg, CommandStr: String;
+  ErrorMsg, CommandStr, configfilename: String;
   ConsoleServer: TDCSConsoleServer;
   Port, SensePorts: Longint;
   TCPServerThread: TDCSTcpServer;
@@ -58,6 +58,7 @@ begin
   GlobalSettings.AddSetting('port','','','port','p', dcsPHasParameter);
   GlobalSettings.AddSetting('tcp','','','tcp','t', dcsPNoParameter);
   GlobalSettings.AddSetting('autoport','','','autoport','a', dcsPOptionalParameter, '5');
+  GlobalSettings.AddSetting('environment','','','environment','e', dcsPNoParameter);
   GlobalSettings.SetSettingAsString('autoport', '1');
 
   GlobalSettings.AddSetting('dbname','','','dbname',#0, dcsPHasParameter);
@@ -73,16 +74,16 @@ begin
   GlobalSettings.AddSetting('AgentFPCVersion', 'Agent', 'FPCVersion', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('HTTPPort','HTTP','Port','HTTPPort', #0, dcsPHasParameter);
 
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'StartCompiler', 'TestEnvStartCompiler-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'BuildPath', 'TestEnvBuildPath-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'AdditionalPackages', 'TestEnvAdditionalPackages-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'AbsoluteFilenamesBug', 'TestEnvAbsoluteFilenamesBug-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'StartCompiler', 'TestEnvStartCompiler-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'BuildPath', 'TestEnvBuildPath-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'AdditionalPackages', 'TestEnvAdditionalPackages-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'AbsoluteFilenamesBug', 'TestEnvAbsoluteFilenamesBug-', '');
 
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'FpcCfgTemplate', 'TestEnvFpcCfgTemplate-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'FppkgCfgTemplate', 'TestEnvFppkgCfgTemplate-', '');
-  GlobalSettings.AddSettingTemplate('TestEnv-', 'FppkgDefaultTemplate', 'TestEnvFppkgDefaultTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'FpcCfgTemplate', 'TestEnvFpcCfgTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'FppkgCfgTemplate', 'TestEnvFppkgCfgTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'FppkgDefaultTemplate', 'TestEnvFppkgDefaultTemplate-', '');
 
   GlobalSettings.AddSetting('BuildFilesLocation', 'BuildFiles', 'Location', '', #0, dcsPHasParameter, '');
   GlobalSettings.AddSetting('BuildFilesURL', 'BuildFiles', 'URL', '', #0, dcsPHasParameter, '');
@@ -105,11 +106,22 @@ begin
     Exit;
     end;
 
-  ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
-  try
-    GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
-  finally
-    ConfigFileStream.Free;;
+  if GlobalSettings.GetSettingAsBoolean('environment') then
+  begin
+    GlobalSettings.LoadSettingsFromEnvironment();
+  end
+  else
+  begin
+    ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
+    if FileExists(ConfigFileName) then
+    begin
+      ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
+      try
+        GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
+      finally
+        ConfigFileStream.Free;;
+      end;
+    end;
   end;
 
   CommandStr := GlobalSettings.GetSettingAsString('port');
@@ -234,7 +246,7 @@ var
   Application: TFppkgRepoServer;
 begin
   Application:=TFppkgRepoServer.Create(nil);
-  Application.Title := 'Fppkg repository agent';
+  application.title := 'Fppkg build agent';
   Application.Run;
   Application.Free;
 end.

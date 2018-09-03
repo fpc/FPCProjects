@@ -8,7 +8,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="Fppkg repository agent"/>
+      <Title Value="Fppkg build agent"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -26,12 +26,35 @@
         <CommandLineParams Value="-t -a"/>
       </local>
       <FormatVersion Value="2"/>
-      <Modes Count="1">
+      <Modes Count="2">
         <Mode0 Name="default">
           <local>
             <CommandLineParams Value="-t -a"/>
           </local>
         </Mode0>
+        <Mode1 Name="QA">
+          <local>
+            <CommandLineParams Value="-t -a -e"/>
+          </local>
+          <environment>
+            <UserOverrides Count="14">
+              <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://192.168.1.19:4200/identityserver"/>
+              <Variable1 Name="OIDC__AllowCorsOrigin" Value="http://localhost:4200"/>
+              <Variable2 Name="TestEnv_x86_64_linux_trunk__FPCSourcePath" Value="/home/joost/svn/fpc-trunk"/>
+              <Variable3 Name="TestEnv_x86_64_linux_trunk__PristineEnvironmentPath" Value="/home/joost/svn/fpcprojects/fppkgreposerver/trunk/buildagent/buildenv/pristine/x86_64-linux-3_1_1/"/>
+              <Variable4 Name="TestEnv_x86_64_linux_trunk__BuildPath" Value="/home/joost/svn/fpcprojects/fppkgreposerver/trunk/buildagent/buildenv/build/"/>
+              <Variable5 Name="TestEnv_x86_64_linux_trunk__StartCompiler" Value="ppcx64_3.0.2"/>
+              <Variable6 Name="TestEnv_x86_64_linux_trunk__FppkgCfgTemplate" Value="/home/joost/svn/fpcprojects/fppkgreposerver/trunk/buildagent/fppkg.cfg.template"/>
+              <Variable7 Name="TestEnv_x86_64_linux_trunk__AdditionalPackages" Value="lazmkunit"/>
+              <Variable8 Name="Connections__BuildManagerURL" Value="http://192.168.1.19:4200/buildmanager"/>
+              <Variable9 Name="Agent__Name" Value="Default"/>
+              <Variable10 Name="Agent__URL" Value="http://192.168.1.19:4200/buildagenttrunk/"/>
+              <Variable11 Name="Agent__FPCVersion" Value="trunk"/>
+              <Variable12 Name="BuildFiles__Location" Value="/var/www/html/joost/buildagent"/>
+              <Variable13 Name="BuildFiles__URL" Value="http://localhost/joost/buildagent/"/>
+            </UserOverrides>
+          </environment>
+        </Mode1>
       </Modes>
     </RunParams>
     <RequiredPackages Count="2">

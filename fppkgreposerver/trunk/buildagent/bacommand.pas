@@ -339,7 +339,7 @@ begin
   if (FOSTarget='') or (FCPUTarget='') or (FPCVersion='') then
     raise Exception.Create('OSTarget, CPUTarget and FPCVersion are mandatory parameters');
 
-  Result := 'TestEnv-' + FCPUTarget + '-' + FOSTarget + '-' + FPCVersion;
+  Result := 'TestEnv_' + FCPUTarget + '_' + FOSTarget + '_' + FPCVersion;
 end;
 
 function TbaCustomCommand.GetAbsoluteFilenamesBug: boolean;

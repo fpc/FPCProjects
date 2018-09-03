@@ -71,8 +71,6 @@ services:
         dockerfile: docker-buildagent.dockerfile
         args:
           - fpcsvn=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
-          - inifile=buildagent_docker_x86_64_linux_304.ini
-
       container_name: buildagent_304
       depends_on:
         - buildmanager
