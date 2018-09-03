@@ -7,4 +7,4 @@ COPY buildmanager/buildmanager /home/locuser
 
 EXPOSE 8181
 
-CMD [ "/home/locuser/buildmanager" ]
+CMD [ "/home/locuser/buildmanager", "-e" ]

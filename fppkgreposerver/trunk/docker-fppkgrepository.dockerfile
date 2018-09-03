@@ -13,4 +13,4 @@ COPY fppkgrepository/config/$inifile /home/locuser/fppkgRepository.ini
 
 EXPOSE 8282
 
-CMD [ "/home/locuser/fppkgRepository" ]
+CMD [ "/home/locuser/fppkgRepository", "-e" ]
