@@ -12,4 +12,4 @@ COPY repository/repository /home/locuser
 
 EXPOSE 8089
 
-CMD [ "/home/locuser/repository" ]
+CMD [ "/home/locuser/repository", "-e" ]
