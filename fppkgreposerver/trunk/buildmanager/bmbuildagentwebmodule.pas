@@ -187,16 +187,12 @@ end;
 
 Procedure TbmBuildWM.RegisteragentRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 var
+  OldAgent: TbmBuildAgent;
   NewAgent: TbmBuildAgent;
 begin
   NewAgent := TbmBuildAgent.Create;
   try
     JSONContentStringToObject(ARequest.Content, NewAgent);
-
-    if Assigned(TbmBuildAgentList.Instance.FindBuildAgentByName(NewAgent.Name)) then
-      begin
-      raise Exception.CreateFmt('Agent with name ''%s'' already registered.', [NewAgent.Name]);
-      end;
 
     if Length(NewAgent.Name) < 4 then
       begin
@@ -212,8 +208,17 @@ begin
     AResponse.Code := 200;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
 
-    TbmBuildAgentList.Instance.Add(NewAgent);
-    NewAgent := nil;
+    OldAgent := TbmBuildAgentList.Instance.FindBuildAgentByName(NewAgent.Name);
+    if Assigned(OldAgent) then
+      begin
+      OldAgent.URL := NewAgent.URL;
+      OldAgent.FFPCVersion := NewAgent.FPCVersion;
+      end
+    else
+      begin
+      TbmBuildAgentList.Instance.Add(NewAgent);
+      NewAgent := nil;
+      end;
   finally
     NewAgent.Free;
   end;
