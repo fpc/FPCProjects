@@ -16,12 +16,6 @@ services:
       environment:
         - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - TestEnv_x86_64_linux_trunk__FPCSourcePath=/home/locuser/svn/fpc
-        - TestEnv_x86_64_linux_trunk__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-trunk/
-        - TestEnv_x86_64_linux_trunk__BuildPath=/home/locuser/buildenv/build/
-        - TestEnv_x86_64_linux_trunk__StartCompiler=ppcx64_3.0.2
-        - TestEnv_x86_64_linux_trunk__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
-        - TestEnv_x86_64_linux_trunk__AdditionalPackages=lazmkunit
         - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
         - Agent__Name=Default
         - Agent__URL=http://buildagent_304:8080/
@@ -34,13 +28,6 @@ services:
         - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
         - HTTP__AllowCorsOrigin=http://localhost:4200
         - HTTP__Port=9090
-        - TestEnv_x86_64_linux_3.0.4__FPCSourcePath=/home/locuser/svn/fpc
-        - TestEnv_x86_64_linux_3.0.4__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-3_0_4/
-        - TestEnv_x86_64_linux_3.0.4__BuildPath=/home/locuser/buildenv/build/
-        - TestEnv_x86_64_linux_3.0.4__StartCompiler=ppcx64_3.0.2
-        - TestEnv_x86_64_linux_3.0.4__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.304.template
-        - TestEnv_x86_64_linux_3.0.4__AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
-        - TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug=true
         - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
         - Agent__Name=Default
         - Agent__URL=http://buildagent_304:9090/

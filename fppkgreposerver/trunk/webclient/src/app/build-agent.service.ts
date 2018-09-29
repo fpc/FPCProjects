@@ -17,7 +17,7 @@ export class BuildAgentService {
     private _packageService: PackageService,
     private _securityService: OidcSecurityService) { }
 
-  buildFPCEnvironment(buildagent: BuildAgent): Observable<any> {
+  private executeBuildAgentCommand(buildagent: BuildAgent, command: string): Observable<any> {
     let headers: HttpHeaders;
     let token = this._securityService.getToken();
     if (token !== '') {
@@ -27,12 +27,20 @@ export class BuildAgentService {
       headers = new HttpHeaders();
     }
 
-    const req = new HttpRequest('GET', buildagent.url+`buildfpcenvironment?cputarget=x86_64&ostarget=linux&fpcversion=${buildagent.fpcversion}&loglevel=error,warning,info,debug&chunked=false`, {
+    const req = new HttpRequest('GET', buildagent.url+`${command}?cputarget=x86_64&ostarget=linux&fpcversion=${buildagent.fpcversion}&loglevel=error,warning,info,debug&chunked=false`, {
       requestProgress: true,
       headers: headers
     });
     return this._http.request(req);
-}
+  }
+
+  buildFPCEnvironment(buildagent: BuildAgent): Observable<any> {
+    return this.executeBuildAgentCommand(buildagent, 'buildfpcenvironment');
+  }
+
+  checkoutFPCCode(buildagent: BuildAgent): Observable<any> {
+    return this.executeBuildAgentCommand(buildagent, 'checkoutfpccode');
+  }
 
   buildPackage(buildagent: BuildAgent, file): Observable<any> {
     let headers: HttpHeaders;

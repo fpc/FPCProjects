@@ -13,10 +13,6 @@ RUN mkdir templates
 ENV PATH="/home/locuser/bin:${PATH}"
 WORKDIR /home/locuser/svn
 
-ARG fpcsvn=https://svn.freepascal.org/svn/fpc/trunk
-
-RUN ["sh", "-c", "svn checkout $fpcsvn fpc"]
-
 COPY buildagent/buildagent /home/locuser
 COPY buildagent/config/ppcx64_3.0.2 /home/locuser/bin
 COPY buildagent/config/fppkg.cfg.template /home/locuser/templates

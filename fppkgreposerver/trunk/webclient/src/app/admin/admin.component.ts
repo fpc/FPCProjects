@@ -77,6 +77,40 @@ export class AdminComponent implements OnInit {
       );
   }
 
+  checkoutFPCCode(buildagent: BuildAgent) {
+    this.buildAgentResponse = null;
+    this._buildAgentService.checkoutFPCCode(buildagent).subscribe(
+        (event: HttpEvent<any>) => {
+          switch (event.type) {
+            case HttpEventType.Sent:
+              this.isBusy = true;
+              break;
+            case HttpEventType.ResponseHeader:
+              console.log('Response header received!');
+              break;
+            case HttpEventType.DownloadProgress:
+              const kbLoaded = Math.round(event.loaded / 1024);
+              console.log(`Download in progress! ${ kbLoaded }Kb loaded`);
+              break;
+            case HttpEventType.UploadProgress:
+              //const kbLoaded = Math.round(event.loaded / 1024);
+              console.log(`Upload in progress!`);
+              break;
+            case HttpEventType.Response:
+              this.closeError();
+              this.isBusy = false;
+              this.buildAgentResponse = event.body;
+          }
+        },
+        (err: HttpErrorResponse) => {
+          this.isError = true;
+          this.isBusy = false;
+          this.errorMsg = 'Call to the Build-Agent failed. ' + err.message;
+        }
+      );
+  }
+
+
   private addVersion(version: FPCVersion) {
     this._fppkgRepositoryService.getRepositoryList(version.name)
       .subscribe(repList => {

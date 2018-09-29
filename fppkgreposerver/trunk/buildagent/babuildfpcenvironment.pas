@@ -31,7 +31,50 @@ type
     property FPCVersion;
   end;
 
+  { TbaCheckoutFPCCode }
+
+  TbaCheckoutFPCCode = class(TbaCustomCommand)
+  public
+    class function TextName: string; override;
+    function DoExecute(AController: TDCSCustomController; out ReturnMessage: string): Boolean; override;
+  protected
+    function GetFPCSVNUrl: string;
+  published
+    property OSTarget;
+    property CPUTarget;
+    property FPCVersion;
+  end;
+
+
 implementation
+
+{ TbaCheckoutFPCCode }
+
+class function tbacheckoutfpccode.textname: string;
+begin
+  result := 'checkoutfpccode';
+end;
+
+function tbacheckoutfpccode.doexecute(acontroller: tdcscustomcontroller; out returnmessage: string): boolean;
+var
+  Output, CmdLine: string;
+begin
+  Result := False;
+  if tryRunTestCommandIndir('', 'svn', ['checkout', GetFPCSVNUrl, GetFPCSourcePath], 'Checkout FPC sources', Output, CmdLine, 0, MSecsPerSec*SecsPerMin*10) <> barcrSucces then
+    begin
+    returnmessage := 'Failed to checkout SVN. SVN-Output: ' + Output;
+    Exit;
+    end;
+  Result := True;
+end;
+
+function tbacheckoutfpccode.getfpcsvnurl: string;
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  Result := GlobalSettings.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'FPCSVNUrl');
+end;
 
 { TbaBuildFPCEnvironment }
 
@@ -216,5 +259,6 @@ end;
 
 initialization
   TDCSThreadCommandFactory.RegisterCommandClass(TbaBuildFPCEnvironment);
+  TDCSThreadCommandFactory.RegisterCommandClass(TbaCheckoutFPCCode);
 end.
 

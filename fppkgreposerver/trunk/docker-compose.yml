@@ -54,7 +54,7 @@ services:
         - packagedata:/home/locuser/data
 
   buildagent_trunk:
-      image: 'fpc.cnoc.nl:5000/buildagent_trunk:latest'
+      image: 'fpc.cnoc.nl:5000/buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -63,19 +63,34 @@ services:
         - buildmanager
       volumes:
        - buildfiles:/home/locuser/buildfiles
+      environment:
+        - TestEnv_x86_64_linux_trunk__FPCSourcePath=/home/locuser/svn/fpc
+        - TestEnv_x86_64_linux_trunk__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-trunk/
+        - TestEnv_x86_64_linux_trunk__BuildPath=/home/locuser/buildenv/build/
+        - TestEnv_x86_64_linux_trunk__StartCompiler=ppcx64_3.0.2
+        - TestEnv_x86_64_linux_trunk__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
+        - TestEnv_x86_64_linux_trunk__AdditionalPackages=lazmkunit
+        - TestEnv_x86_64_linux_trunk__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/trunk
 
   buildagent_304:
-      image: 'fpc.cnoc.nl:5000/buildagent_304:latest'
+      image: 'fpc.cnoc.nl:5000/buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
-        args:
-          - fpcsvn=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
       container_name: buildagent_304
       depends_on:
         - buildmanager
       volumes:
        - buildfiles:/home/locuser/buildfiles
+      environment:
+        - TestEnv_x86_64_linux_3.0.4__FPCSourcePath=/home/locuser/svn/fpc
+        - TestEnv_x86_64_linux_3.0.4__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-3_0_4/
+        - TestEnv_x86_64_linux_3.0.4__BuildPath=/home/locuser/buildenv/build/
+        - TestEnv_x86_64_linux_3.0.4__StartCompiler=ppcx64_3.0.2
+        - TestEnv_x86_64_linux_3.0.4__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.304.template
+        - TestEnv_x86_64_linux_3.0.4__AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
+        - TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug=true
+        - TestEnv_x86_64_linux_3.0.4__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
 
   fppkgrepository:
       image: 'fpc.cnoc.nl:5000/fppkgrepository:latest'

@@ -75,6 +75,7 @@ begin
   GlobalSettings.AddSetting('HTTPPort','HTTP','Port','HTTPPort', #0, dcsPHasParameter);
 
   GlobalSettings.AddSettingTemplate('TestEnv_', 'FPCSourcePath', 'TestEnvFPCSourcePath-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'FPCSVNUrl', 'TestEnvFPCSVNUrl-', '');
   GlobalSettings.AddSettingTemplate('TestEnv_', 'PristineEnvironmentPath', 'TestEnvPristineEnvironmentPath-', '');
   GlobalSettings.AddSettingTemplate('TestEnv_', 'StartCompiler', 'TestEnvStartCompiler-', '');
   GlobalSettings.AddSettingTemplate('TestEnv_', 'BuildPath', 'TestEnvBuildPath-', '');

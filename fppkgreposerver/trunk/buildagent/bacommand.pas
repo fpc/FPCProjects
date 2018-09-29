@@ -28,8 +28,9 @@ type
     FFPCVersion: string;
     FOSTarget: string;
     FAuthorizationToken: string;
-    function GetPathSetting(ASettingKey: string): string;
   protected
+    function GetPathSetting(ASettingKey: string): string;
+
     function GetFPCSourcePath: string;
     function GetStartCompiler: string;
     function GetPristineEnvironmentPath: string;

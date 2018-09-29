@@ -6,6 +6,7 @@
     <h4 class="card-title">Rebuild FPC/test-environment</h4>
     <p class="card-text">Clear the test-environment, rebuild and install FPC and initialize the test-environment of the build-agent.</p>
     <button *ngFor="let buildagent of buildagentList" type="button" [disabled]="isBusy" (click)="rebuildTestEnvironment(buildagent)" class="btn btn-primary">Rebuild {{buildagent.name}} <spinner [show]="isBusy" [size]="20"></spinner></button>
+    <button *ngFor="let buildagent of buildagentList" type="button" [disabled]="isBusy" (click)="checkoutFPCCode(buildagent)" class="btn btn-primary">Checkout FPC code for {{buildagent.name}} <spinner [show]="isBusy" [size]="20"></spinner></button>
     <ngb-alert type="danger" (close)="closeError()" *ngIf="isError">
       Failed to re-build test-environment. {{errorMsg}}
     </ngb-alert>
