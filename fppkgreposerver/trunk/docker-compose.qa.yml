@@ -3,45 +3,45 @@ version: '3'
 services:
   identityserver:
       environment:
-        - HTTP__BaseURL=http://192.168.1.19:4200/identityserver
+        - HTTP__BaseURL=http://172.17.0.1:4200/identityserver
         - HTTP__wwwroot=wwwroot
         - HTTP__AllowCorsOrigin=http://localhost:4200
 
   webclient:
       environment:
-        - HOST=192.168.1.19
+        - HOST=172.17.0.1
       ports:
         - "4200:80"
 
   buildagent_trunk:
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
         - OIDC__AllowCorsOrigin=http://localhost:4200
-        - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
+        - Connections__BuildManagerURL=http://172.17.0.1:4200/buildmanager
         - Agent__Name=Default
-        - Agent__URL=http://192.168.1.19:4200/buildagenttrunk/
+        - Agent__URL=http://172.17.0.1:4200/buildagenttrunk/
         - Agent__FPCVersion=trunk
         - BuildFiles__Location=/home/locuser/buildfiles
-        - BuildFiles__URL=http://192.168.1.19:4200/buildfiles/
+        - BuildFiles__URL=http://172.17.0.1:4200/buildfiles/
 
   buildagent_304:
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
         - OIDC__AllowCorsOrigin=http://localhost:4200
         - HTTP__Port=9090
-        - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
+        - Connections__BuildManagerURL=http://172.17.0.1:4200/buildmanager
         - Agent__Name=Default
-        - Agent__URL=http://192.168.1.19:4200/buildagent304/
+        - Agent__URL=http://172.17.0.1:4200/buildagent304/
         - Agent__FPCVersion=3.0.4
         - BuildFiles__Location=/home/locuser/buildfiles
-        - BuildFiles__URL=http://192.168.1.19:4200/buildfiles/
+        - BuildFiles__URL=http://172.17.0.1:4200/buildfiles/
 
   repository:
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Connections__PackageManagerURL=http://192.168.1.19:4200/packagemanager
-        - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
+        - Connections__PackageManagerURL=http://172.17.0.1:4200/packagemanager
+        - Connections__BuildManagerURL=http://172.17.0.1:4200/buildmanager
         - GIT__RepositoriesPath=/home/locuser/gitrepos
         - GIT__UserName=FPPKG Repository server
         - GIT__Email=noreply@cnoc.nl
@@ -59,12 +59,18 @@ services:
 
   buildmanager:
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Connections__PackageManagerURL=http://192.168.1.19:4200/packagemanager
-        - Connections__RepositoryURL=http://192.168.1.19:4200/repository
+        - Connections__PackageManagerURL=http://172.17.0.1:4200/packagemanager
+        - Connections__RepositoryURL=http://172.17.0.1:4200/repository
 
   fppkgrepository:
-      build:
-        args:
-          inifile: fppkgrepository_docker.ini.qa
+      environment:
+        - OIDC__OpenIDProviderURL=http://identityserver:5000
+        - Connections__PackageManagerURL=http://packagemanager:8088
+        - Connections__RepositoryURL=http://repository:8089
+        - Connections__BuildManagerURL=http://buildmanager:8181
+        - Repository_Trunk_Testing__BaseURL=http://172.17.0.1:4200/repo/testing/
+        - Repository_Trunk_Production__BaseURL=http://172.17.0.1/repo/prod/
+        - Repository_304_Testing__BaseURL=http://172.17.0.1/repo/testing/
+        - Repository_304_Production__BaseURL=http://172.17.0.1/repo/prod/

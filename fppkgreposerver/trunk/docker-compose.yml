@@ -103,6 +103,35 @@ services:
       volumes:
        - repo:/home/locuser/repo
        - packagedata:/home/locuser/data
+      environment:
+       - Repository_Trunk_Testing__Name=Testing
+       - Repository_Trunk_Testing__FPCVersion=trunk
+       - Repository_Trunk_Testing__NeedAdminRights=False
+       - Repository_Trunk_Testing__MasterRepository=Production
+       - Repository_Trunk_Testing__path=/home/locuser/repo/testing
+       - Repository_Trunk_Testing__BaseURL=http://webclient/repo/testing/
+       - Repository_Trunk_Testing__StorageFile=/home/locuser/data/packages-trunk-testing.json
+       - Repository_Trunk_Production__Name=Production
+       - Repository_Trunk_Production__FPCVersion=trunk
+       - Repository_Trunk_Production__NeedAdminRights=True
+       - Repository_Trunk_Production__path=/home/locuser/repo/prod
+       - Repository_Trunk_Production__BaseURL=http://webclient/repo/prod/
+       - Repository_Trunk_Production__StorageFile=/home/locuser/data/packages-trunk-production.json
+       - Repository_304_Testing__Name=Testing-304
+       - Repository_304_Testing__FPCVersion=3.0.4
+       - Repository_304_Testing__NeedAdminRights=False
+       - Repository_304_Testing__MasterRepository=Production-304
+       - Repository_304_Testing__path=/home/locuser/repo/testing
+       - Repository_304_Testing__BaseURL=http://webclient/repo/testing/
+       - Repository_304_Testing__Contact=joost@cnoc.nl
+       - Repository_304_Testing__StorageFile=/home/locuser/data/packages-304-testing.json
+       - Repository_304_Production__Name=Production-304
+       - Repository_304_Production__FPCVersion=3.0.4
+       - Repository_304_Production__NeedAdminRights=True
+       - Repository_304_Production__path=/home/locuser/repo/prod
+       - Repository_304_Production__BaseURL=http://webclient/repo/prod/
+       - Repository_304_Production__Contact=joost@cnoc.nl
+       - Repository_304_Production__StorageFile=/home/locuser/data/packages-304-production.json
 
 volumes:
   gitrepos:

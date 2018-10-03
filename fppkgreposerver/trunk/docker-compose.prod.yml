@@ -61,6 +61,8 @@ services:
         - Connections__RepositoryURL=http://repository:8089
 
   fppkgrepository:
-      build:
-        args:
-          inifile: fppkgrepository_docker.ini.prod
+      environment:
+        - OIDC__OpenIDProviderURL=http://identityserver:5000
+        - Connections__PackageManagerURL=http://packagemanager:8088
+        - Connections__RepositoryURL=http://repository:8089
+        - Connections__BuildManagerURL=http://buildmanager:8181

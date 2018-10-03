@@ -173,7 +173,7 @@ var
 begin
   Settings := TDCSGlobalSettings.GetInstance;
 
-  SettingTemplate := Settings.SettingTemplateList.FindSettingTemplate('Repository-');
+  SettingTemplate := Settings.SettingTemplateList.FindSettingTemplate('Repository_');
   for i := 0 to SettingTemplate.Values.Count -1 do
     begin
     FPCVersionStr := Settings.GetSettingAsString('FPCVersion-'+SettingTemplate.Values[i]);
