@@ -36,6 +36,19 @@ services:
         - BuildFiles__Location=/home/locuser/buildfiles
         - BuildFiles__URL=http://172.17.0.1:4200/buildfiles/
 
+  buildagent_fixes32:
+      environment:
+        - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
+        - OIDC__AllowCorsOrigin=http://localhost:4200
+        - HTTP__Port=9091
+        - Connections__BuildManagerURL=http://172.17.0.1:4200/buildmanager
+        - Agent__Name=Default
+        - Agent__URL=http://172.17.0.1:4200/buildagentfixes32/
+        - Agent__FPCVersion=fixes32
+        - BuildFiles__Location=/home/locuser/buildfiles
+        - BuildFiles__URL=http://172.17.0.1:4200/buildfiles/
+
+
   repository:
       environment:
         - OIDC__OpenIDProviderURL=http://172.17.0.1:4200/identityserver
@@ -53,9 +66,11 @@ services:
         - Storage__PackageListFile=/home/locuser/data/packages.json
         - FPCVersion_trunk__Name=trunk
         - FPCVersion_trunk__IsDefault=true
-        - FPCVersion_trunk__URLPrefix=3.1.1
+        - FPCVersion_trunk__URLPrefix=3.3.1
         - FPCVersion_304__Name=3.0.4
         - FPCVersion_304__URLPrefix=3.0.4
+        - FPCVersion_fixes32__Name=fixes32
+        - FPCVersion_fixes32__URLPrefix=3.1.1
 
   buildmanager:
       environment:
@@ -74,3 +89,5 @@ services:
         - Repository_Trunk_Production__BaseURL=http://172.17.0.1/repo/prod/
         - Repository_304_Testing__BaseURL=http://172.17.0.1/repo/testing/
         - Repository_304_Production__BaseURL=http://172.17.0.1/repo/prod/
+        - Repository_fixes32_Testing__BaseURL=http://172.17.0.1/repo/testing/
+        - Repository_fixes32_Production__BaseURL=http://172.17.0.1/repo/prod/

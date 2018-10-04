@@ -26,6 +26,7 @@ services:
       depends_on:
         - buildagent_trunk
         - buildagent_304
+        - buildagent_fixes32
         - identityserver
         - fppkgrepository
         - repository
@@ -71,6 +72,25 @@ services:
         - TestEnv_x86_64_linux_trunk__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
         - TestEnv_x86_64_linux_trunk__AdditionalPackages=lazmkunit
         - TestEnv_x86_64_linux_trunk__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/trunk
+
+  buildagent_fixes32:
+      image: 'fpc.cnoc.nl:5000/buildagent:latest'
+      build:
+        context: .
+        dockerfile: docker-buildagent.dockerfile
+      container_name: buildagent_fixes32
+      depends_on:
+        - buildmanager
+      volumes:
+       - buildfiles:/home/locuser/buildfiles
+      environment:
+        - TestEnv_x86_64_linux_fixes32__FPCSourcePath=/home/locuser/svn/fpc
+        - TestEnv_x86_64_linux_fixes32__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-fixes32/
+        - TestEnv_x86_64_linux_fixes32__BuildPath=/home/locuser/buildenv/build/
+        - TestEnv_x86_64_linux_fixes32__StartCompiler=ppcx64_3.0.2
+        - TestEnv_x86_64_linux_fixes32__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
+       # - TestEnv_x86_64_linux_fixes32__AdditionalPackages=lazmkunit
+        - TestEnv_x86_64_linux_fixes32__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/branches/fixes_3_2
 
   buildagent_304:
       image: 'fpc.cnoc.nl:5000/buildagent:latest'
@@ -132,6 +152,21 @@ services:
        - Repository_304_Production__BaseURL=http://webclient/repo/prod/
        - Repository_304_Production__Contact=joost@cnoc.nl
        - Repository_304_Production__StorageFile=/home/locuser/data/packages-304-production.json
+       - Repository_fixes32_Testing__Name=Testing-fixes32
+       - Repository_fixes32_Testing__FPCVersion=fixes32
+       - Repository_fixes32_Testing__NeedAdminRights=False
+       - Repository_fixes32_Testing__MasterRepository=Production-fixes32
+       - Repository_fixes32_Testing__path=/home/locuser/repo/testing
+       - Repository_fixes32_Testing__BaseURL=http://webclient/repo/testing/
+       - Repository_fixes32_Testing__Contact=joost@cnoc.nl
+       - Repository_fixes32_Testing__StorageFile=/home/locuser/data/packages-fixes32-testing.json
+       - Repository_fixes32_Production__Name=Production-fixes32
+       - Repository_fixes32_Production__FPCVersion=fixes32
+       - Repository_fixes32_Production__NeedAdminRights=True
+       - Repository_fixes32_Production__path=/home/locuser/repo/prod
+       - Repository_fixes32_Production__BaseURL=http://webclient/repo/prod/
+       - Repository_fixes32_Production__Contact=joost@cnoc.nl
+       - Repository_fixes32_Production__StorageFile=/home/locuser/data/packages-fixes32-production.json
 
 volumes:
   gitrepos:

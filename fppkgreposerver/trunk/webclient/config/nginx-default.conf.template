@@ -8,6 +8,11 @@ upstream buildagenttrunk {
     server ${HOST}:8080 backup;
 }
 
+upstream buildagentfixes32 {
+    server buildagent_fixes32:9091;
+    server ${HOST}:8080 backup;
+}
+
 upstream buildmanager_upstream {
     server buildmanager:8181;
     server ${HOST}:8181 backup;
@@ -58,6 +63,12 @@ server {
         proxy_read_timeout 600;
         client_max_body_size 10m;
         proxy_pass http://buildagenttrunk/;
+    }
+
+    location /buildagentfixes32/ {
+        proxy_read_timeout 600;
+        client_max_body_size 10m;
+        proxy_pass http://buildagentfixes32/;
     }
 
     location /buildmanager/ {
