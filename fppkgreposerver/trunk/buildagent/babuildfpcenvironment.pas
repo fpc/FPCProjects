@@ -108,6 +108,7 @@ var
   CompilerVersion: string;
   CompilerBinary: string;
   Template: string;
+  RemoteMirrors: string;
   AddPackages: TStringArray;
   i, j: Integer;
   RetrySucceeded: Boolean;
@@ -186,6 +187,13 @@ begin
     SetLength(MakeParams, 13);
     MakeParams[11] := '-t';
     MakeParams[12] := Template;
+    RemoteMirrors := TDCSGlobalSettings.GetInstance.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'RemoteMirrors');
+    if RemoteMirrors <> '' then
+      begin
+      SetLength(MakeParams, 15);
+      MakeParams[13] := '-d';
+      MakeParams[14] := 'RemoteMirrors='+RemoteMirrors;
+      end;
     end
   else
     begin

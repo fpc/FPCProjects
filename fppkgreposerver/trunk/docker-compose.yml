@@ -70,6 +70,7 @@ services:
         - TestEnv_x86_64_linux_trunk__BuildPath=/home/locuser/buildenv/build/
         - TestEnv_x86_64_linux_trunk__StartCompiler=ppcx64_3.0.2
         - TestEnv_x86_64_linux_trunk__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
+        - TestEnv_x86_64_linux_trunk__RemoteMirrors=http://webclient/repo/testing/mirrors.xml
         - TestEnv_x86_64_linux_trunk__AdditionalPackages=lazmkunit
         - TestEnv_x86_64_linux_trunk__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/trunk
 
@@ -89,6 +90,7 @@ services:
         - TestEnv_x86_64_linux_fixes32__BuildPath=/home/locuser/buildenv/build/
         - TestEnv_x86_64_linux_fixes32__StartCompiler=ppcx64_3.0.2
         - TestEnv_x86_64_linux_fixes32__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
+        - TestEnv_x86_64_linux_fixes32__RemoteMirrors=http://webclient/repo/testing/mirrors.xml
        # - TestEnv_x86_64_linux_fixes32__AdditionalPackages=lazmkunit
         - TestEnv_x86_64_linux_fixes32__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/branches/fixes_3_2
 
@@ -108,6 +110,7 @@ services:
         - TestEnv_x86_64_linux_3.0.4__BuildPath=/home/locuser/buildenv/build/
         - TestEnv_x86_64_linux_3.0.4__StartCompiler=ppcx64_3.0.2
         - TestEnv_x86_64_linux_3.0.4__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.304.template
+        - TestEnv_x86_64_linux_3.0.4__RemoteMirrors=http://webclient/repo/testing/mirrors.xml
         - TestEnv_x86_64_linux_3.0.4__AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
         - TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug=true
         - TestEnv_x86_64_linux_3.0.4__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4

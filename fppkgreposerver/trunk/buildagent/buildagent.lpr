@@ -85,6 +85,7 @@ begin
   GlobalSettings.AddSettingTemplate('TestEnv_', 'FpcCfgTemplate', 'TestEnvFpcCfgTemplate-', '');
   GlobalSettings.AddSettingTemplate('TestEnv_', 'FppkgCfgTemplate', 'TestEnvFppkgCfgTemplate-', '');
   GlobalSettings.AddSettingTemplate('TestEnv_', 'FppkgDefaultTemplate', 'TestEnvFppkgDefaultTemplate-', '');
+  GlobalSettings.AddSettingTemplate('TestEnv_', 'RemoteMirrors', 'TestEnvRemoteMirrors-', '');
 
   GlobalSettings.AddSetting('BuildFilesLocation', 'BuildFiles', 'Location', '', #0, dcsPHasParameter, '');
   GlobalSettings.AddSetting('BuildFilesURL', 'BuildFiles', 'URL', '', #0, dcsPHasParameter, '');
