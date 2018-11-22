@@ -60,7 +60,7 @@ begin
     FailureMessage := 'Please enter a username'
   else if APassword='' then
     FailureMessage := 'Please enter a password'
-  else if (AUserName='joost') and (APassword='jachtluipaard') then
+  else if (ARequest.ContentFields.Values['Environment']='Mantis') and (AUserName='joost') and (APassword='jachtluipaard') then
     Subject := '2'
   else
     FailureMessage := 'Invalid username or password';
