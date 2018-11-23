@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  identityserver:
+      environment:
+        - HTTP__BaseURL=http://fpc.cnoc.nl:8080/identityserver
+        - HTTP__wwwroot=wwwroot
+
+  webclient:
+      image: 'fpc.cnoc.nl:5000/webclient_testing:latest'
+      environment:
+        - HOST=fpc.cnoc.nl
+      ports:
+        - "8080:80"
+
+  buildagent_trunk:
+      environment:
+        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+        - Connections__BuildManagerURL=http://fpc.cnoc.nl:8080/buildmanager
+        - Agent__Name=Default
+        - Agent__URL=http://fpc.cnoc.nl:8080/buildagenttrunk/
+        - Agent__FPCVersion=trunk
+        - BuildFiles__Location=/home/locuser/buildfiles
+        - BuildFiles__URL=http://fpc.cnoc.nl:8080/buildfiles/
+
+  buildagent_304:
+      environment:
+        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+        - HTTP__Port=9090
+        - Connections__BuildManagerURL=http://fpc.cnoc.nl:8080/buildmanager
+        - Agent__Name=Default
+        - Agent__URL=http://fpc.cnoc.nl:8080/buildagent304/
+        - Agent__FPCVersion=3.0.4
+        - BuildFiles__Location=/home/locuser/buildfiles
+        - BuildFiles__URL=http://fpc.cnoc.nl:8080/buildfiles/
+
+  buildagent_fixes32:
+      environment:
+        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+        - HTTP__Port=9091
+        - Connections__BuildManagerURL=http://fpc.cnoc.nl:8080/buildmanager
+        - Agent__Name=Default
+        - Agent__URL=http://fpc.cnoc.nl:8080/buildagentfixes32/
+        - Agent__FPCVersion=fixes32
+        - BuildFiles__Location=/home/locuser/buildfiles
+        - BuildFiles__URL=http://fpc.cnoc.nl:8080/buildfiles/
+
+  repository:
+      environment:
+       - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+       - Connections__PackageManagerURL=http://packagemanager:8088
+       - Connections__BuildManagerURL=http://buildmanager:8181
+       - GIT__RepositoriesPath=/home/locuser/gitrepos
+       - GIT__UserName=FPPKG Repository server
+       - GIT__Email=noreply@cnoc.nl
+
+  packagemanager:
+      environment:
+       - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+       - Storage__PackageListFile=/home/locuser/data/packages.json
+       - FPCVersion_trunk__Name=trunk
+       - FPCVersion_trunk__IsDefault=true
+       - FPCVersion_trunk__URLPrefix=3.3.1
+       - FPCVersion_304__Name=3.0.4
+       - FPCVersion_304__URLPrefix=3.0.4
+       - FPCVersion_fixes32__Name=fixes32
+       - FPCVersion_fixes32__URLPrefix=3.1.1
+
+  buildmanager:
+      environment:
+        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl:8080/identityserver
+        - Connections__PackageManagerURL=http://packagemanager:8088
+        - Connections__RepositoryURL=http://repository:8089
+
+  fppkgrepository:
+      environment:
+        - OIDC__OpenIDProviderURL=http://identityserver:5000
+        - Connections__PackageManagerURL=http://packagemanager:8088
+        - Connections__RepositoryURL=http://repository:8089
+        - Connections__BuildManagerURL=http://buildmanager:8181
+        - Repository_Trunk_Testing__BaseURL=http://fpc.cnoc.nl:8080/repo/testing/
+        - Repository_Trunk_Production__BaseURL=http://fpc.cnoc.nl:8080/repo/prod/
+        - Repository_304_Testing__BaseURL=http://fpc.cnoc.nl:8080/repo/testing/
+        - Repository_304_Production__BaseURL=http://fpc.cnoc.nl:8080/repo/prod/
+        - Repository_fixes32_Testing__BaseURL=http://fpc.cnoc.nl:8080/repo/testing/
+        - Repository_fixes32_Production__BaseURL=http://fpc.cnoc.nl:8080/repo/prod/
