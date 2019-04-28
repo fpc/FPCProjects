@@ -1,6 +1,6 @@
 FPPKG Repository Server
 ========
-Version 0.1, Joost van der Sluis (CNOC) -- 16 Oct 2017
+Version 0.2, Joost van der Sluis (CNOC) -- 17 Aug 2018
 
 Introduction
 ------------
@@ -11,8 +11,6 @@ The goal of this application is to create a web-based system to manage such
 a central repository. Which may lead to a central database of available
 Free Pascal packages.
 
-At this moment it is only possible to test-build fppkg packages.
-
 The idea is to build the server using separate components, working together.
 Docker is used for the isolation of the build-agens and to ease the
 deployment.
@@ -22,9 +20,9 @@ Components
 
 *   ####[IdentityServer]
     The IdentityServer is an OIDC-resource provider to handle the
-    authentication and authorization. It is written in C#, using the
-    [IdentityServer framework]. At this moment there is no user-database
-    but a hard-coded list of users.
+    authentication and authorization. Originally It was written in C#, using
+    the [IdentityServer framework]. It is being replaced by a [Lazarus]
+    application.
 
 *   ####[BuildAgent]
     A [Lazarus] console application which can handle package-builds. It
@@ -33,6 +31,20 @@ Components
 
 *   ####[WebClient]
     An [Angular-2] web-application which serves as front-end.
+
+*   ####[Packagemanger]
+    A [Lazarus] application which keeps track of all packages which are
+    available.
+
+*   ####[Buildmanager]
+    A [Lazarus] application which keeps a list of all BuildAgents, who
+    register themselves into the buildmanager. It is possible to send
+    requests to build a package to the buildmanager, which will then
+    handle all necessary tasks, and show the result.
+
+*   ####[Repository]
+    A [Lazarus] application which contains git-repositories for all packages
+    ...
 
 [IdentityServer framework]: https://github.com/IdentityServer
 [Lazarus]: http://www.lazarus-ide.org/
