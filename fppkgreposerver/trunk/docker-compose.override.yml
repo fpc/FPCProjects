@@ -18,6 +18,9 @@ services:
       ports:
         - "8181:8181"
 
+  fppkgstack:
+      network_mode: "host"
+
   webclient:
       environment:
         - HOST=localhost

@@ -45,6 +45,13 @@ services:
       volumes:
         - gitrepos:/home/locuser/gitrepos
 
+  fppkgstack:
+      image: 'fpc.cnoc.nl:5000/fppkgstack:latest'
+      build:
+        context: .
+        dockerfile: docker-fppkgstack.dockerfile
+      container_name: fppkgstack
+
   packagemanager:
       image: 'fpc.cnoc.nl:5000/packagemanager:latest'
       build:
