@@ -33,7 +33,8 @@ type
     FBuildTaskList: TfprBuildTaskList;
     Procedure HandleNewBuildRequest(ARequest: TRequest; AResponse: TResponse);
     function RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName, AccessToken: string): TfprSubBuildTask;
-    function RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName: string): TfprSubBuildTask;
+    function RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName,
+      FPCVersion: string): TfprSubBuildTask;
     function GetSourceZip(TaskResponse: string): TBytes;
   public
     procedure SetSubBuildTask(UniqueString, AccessToken: string; Failed: Boolean; Log: string);
@@ -233,6 +234,7 @@ var
   PackageURL: String;
   BuildAgentList: TbmBuildAgentList;
   PackageState: TJSONUnicodeStringType;
+
 begin
   BuildTask := TfprBuildTask.Create;
   try
@@ -270,10 +272,14 @@ begin
         raise Exception.CreateFmt('Package %s can not be build because it''s state is %s', [BuildTask.PackageName, PackageState]);
 
       BuildAgentList := TbmBuildAgentList.Instance;
+
+      if BuildTask.FPCVersion <> '' then
+        BuildAgentList := BuildAgentList.ObtainBuildAgentListForFPCVersion(BuildTask.FPCVersion);
+
       if BuildAgentList.Count = 0 then
         raise Exception.Create('There are no buildagents registered, unable to build package.');
 
-      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, FAccessToken, BuildTask.Tag));
+      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, FAccessToken, BuildTask.Tag, BuildTask.FPCVersion));
 
       BuildTask.State := btsBuilding;
 
@@ -306,7 +312,7 @@ begin
   end;
 end;
 
-function TbmBuildTaskWM.RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName: string): TfprSubBuildTask;
+function TbmBuildTaskWM.RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName, FPCVersion: string): TfprSubBuildTask;
 var
   URL: string;
   SourceZIP: TBytes;
@@ -337,6 +343,7 @@ begin
     Result.BuildAgent := BuildAgent.Name;
     Result.State := btsBuilding; // incorrect, should be waiting
     Result.SourceBuild := True;
+    Result.FPCVersion := FPCVersion;
     Result.URL := URL;
     TbmBuildTaskThread.Create(URL, AccessToken, Result.UniqueString, SourceZIP, Self);
   except
@@ -403,9 +410,9 @@ begin
       TaskFailed := False;
       for j := 0 to FBuildTaskList[i].SubTasks.Count -1 do
         begin
+        SubTask := FBuildTaskList[i].SubTasks[j];
         if FBuildTaskList[i].SubTasks[j].UniqueString = UniqueString then
           begin
-          SubTask := FBuildTaskList[i].SubTasks[j];
           if Failed then
             SubTask.State := btsFailed
           else
@@ -413,18 +420,22 @@ begin
             SubTask.State := btsSuccess;
             if SubTask.SourceBuild then
               begin
-              BuildAgentList := TbmBuildAgentList.Instance;
-              HasAppropiateBuildAgent := False;
-              SourceZip := GetSourceZip(Log);
-              for k := 0 to BuildAgentList.Count -1 do
-                begin
-                FBuildTaskList[i].SubTasks.Add(RequestBuild(BuildAgentList.Items[k], SourceZip, FBuildTaskList[i].PackageName, AccessToken));
-                HasAppropiateBuildAgent := True;
-                end;
-              if HasAppropiateBuildAgent then
-                TaskFinished := False
-              else
-                TaskFailed := True;
+              BuildAgentList := TbmBuildAgentList.Instance.ObtainBuildAgentListForFPCVersion(SubTask.FPCVersion);
+              try
+                HasAppropiateBuildAgent := False;
+                SourceZip := GetSourceZip(Log);
+                for k := 0 to BuildAgentList.Count -1 do
+                  begin
+                  FBuildTaskList[i].SubTasks.Add(RequestBuild(BuildAgentList.Items[k], SourceZip, FBuildTaskList[i].PackageName, AccessToken));
+                  HasAppropiateBuildAgent := True;
+                  end;
+                if HasAppropiateBuildAgent then
+                  TaskFinished := False
+                else
+                  TaskFailed := True;
+              finally
+                BuildAgentList.Free;;
+              end;
               end;
             end;
           SubTask.Log := Log;

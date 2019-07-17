@@ -43,6 +43,7 @@ type
   public
     class function Instance: TbmBuildAgentList;
     function FindBuildAgentByName(AName: string): TbmBuildAgent;
+    function ObtainBuildAgentListForFPCVersion(FPCVersion: string): TbmBuildAgentList;
   end;
 
   { TbmBuildWM }
@@ -109,6 +110,23 @@ begin
       Break;
       end;
     end;
+end;
+
+function TbmBuildAgentList.ObtainBuildAgentListForFPCVersion(FPCVersion: string): TbmBuildAgentList;
+var
+  AList: TbmBuildAgentList;
+  i: Integer;
+begin
+  AList := TbmBuildAgentList.Create(False);
+  try
+    for i := 0 to Count -1 do
+      if (FPCVersion='') or (Items[i].FPCVersion = FPCVersion) then
+        AList.Add(Items[i]);
+    Result := AList;
+    AList := nil;
+  finally
+    AList.Free;
+  end;
 end;
 
 { TbmBuildWM }
