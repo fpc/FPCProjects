@@ -34,12 +34,15 @@ type
     FSourceBuild: Boolean;
     FState: TfprBuildTaskState;
     FURL: string;
+    FFPCVersion: string;
   published
     property BuildAgent: string read FBuildAgent write FBuildAgent;
     property State: TfprBuildTaskState read FState write FState;
     property SourceBuild: Boolean read FSourceBuild write FSourceBuild;
     property URL: string read FURL write FURL;
     property Log: string read FLog write FLog;
+    // Used to limit the build-tasks to build-agents for a specific FPC-version
+    property FPCVersion: string read FFPCVersion write FFPCVersion;
   end;
 
   TfprSubBuildTaskList = specialize TFPGObjectList<TfprSubBuildTask>;
@@ -53,6 +56,7 @@ type
     FState: TfprBuildTaskState;
     FSubBuildTaskList: TfprSubBuildTaskList;
     FTag: string;
+    FFPCVersion: string;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -62,6 +66,7 @@ type
     property Tag: string read FTag write FTag;
     property SubTasks: TfprSubBuildTaskList read FSubBuildTaskList;
     property ErrorMessage: string read FErrorMessage write FErrorMessage;
+    property FPCVersion: string read FFPCVersion write FFPCVersion;
   end;
 
   TfprCustomBuildTaskList = specialize TFPGObjectList<TfprBuildTask>;
