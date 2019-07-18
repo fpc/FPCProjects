@@ -77,7 +77,7 @@ export class PackageVersionComponent implements OnInit {
   }
 
   requestBuild(tag) {
-    this._buildManagerService.startBuildTask(this.package.name, tag)
+    this._buildManagerService.startBuildTask(this.package.name, tag, this.fpcversion.name)
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
   }
 

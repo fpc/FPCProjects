@@ -11,5 +11,6 @@ export class BuildTask {
   state: string;
   tag: string;
   uniquestring: string;
+  fpcversion: string;
   subtasks: Array<SubBuildTask>;
 }

@@ -27,12 +27,13 @@ export class BuildManagerService {
       return authheaders;
     }
 
-    startBuildTask(aPackageName, aTag: string): Observable<BuildTask> {
+    startBuildTask(aPackageName, aTag, aFPCVersion: string): Observable<BuildTask> {
       const url = `${this.buildManagerURL}/buildtask`;
       let newBuildTask: BuildTask = {
         packagename: aPackageName,
         tag: aTag,
         state: 'Unknown',
+        fpcversion: aFPCVersion,
         uniquestring: null,
         subtasks: null
       }
