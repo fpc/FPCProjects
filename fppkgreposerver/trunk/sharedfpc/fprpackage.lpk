@@ -9,7 +9,7 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Files Count="12">
+    <Files Count="14">
       <Item1>
         <Filename Value="fprwebmodule.pas"/>
         <UnitName Value="fprWebModule"/>
@@ -53,23 +53,35 @@
       </Item10>
       <Item11>
         <Filename Value="fprinterfacedcollection.pas"/>
-        <UnitName Value="fprinterfacedcollection"/>
+        <UnitName Value="fprInterfacedCollection"/>
       </Item11>
       <Item12>
         <Filename Value="fprfpcversion.pas"/>
-        <UnitName Value="fprfpcversion"/>
+        <UnitName Value="fprFPCVersion"/>
       </Item12>
+      <Item13>
+        <Filename Value="fprwebhandler.pas"/>
+        <UnitName Value="fprWebHandler"/>
+      </Item13>
+      <Item14>
+        <Filename Value="fprauthenticationhandler.pas"/>
+        <UnitName Value="fprAuthenticationHandler"/>
+      </Item14>
     </Files>
-    <RequiredPkgs Count="3">
+    <RequiredPkgs Count="4">
       <Item1>
-        <PackageName Value="DCServer"/>
+        <PackageName Value="cnocStack"/>
+        <DependencyType Value="FPMake"/>
       </Item1>
       <Item2>
-        <PackageName Value="weblaz"/>
+        <PackageName Value="DCServer"/>
       </Item2>
       <Item3>
-        <PackageName Value="FCL"/>
+        <PackageName Value="weblaz"/>
       </Item3>
+      <Item4>
+        <PackageName Value="FCL"/>
+      </Item4>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
