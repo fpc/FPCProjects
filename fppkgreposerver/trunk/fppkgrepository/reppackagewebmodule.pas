@@ -8,100 +8,130 @@ uses
   SysUtils,
   Classes,
   httpdefs,
+  httproute,
   fpHTTP,
-  fphttpserver,
   fphttpclient,
-  fpWeb,
   fpjson,
+  jsonparser,
   dcsGlobalSettings,
-  fprWebModule,
+  cnocStackMessageTypes,
+  cnocStackJSONHandlerThread,
+  cnocStackHandlerThread,
   fprErrorHandling,
+  fprWebHandler,
+  fprWebModule,
+  fprAuthenticationHandler,
   repPackage;
 
 type
 
-  { TrepPackageWM }
+  { TrepPackageHander }
 
-  TrepPackageWM = class(TfprWebModule)
-    procedure DataModuleCreate(Sender: TObject);
-    procedure DataModuleDestroy(Sender: TObject);
-    Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  TrepPackageHander = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
   protected
-    procedure HandleNewPackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
-    procedure HandleGetPackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
-    procedure HandleUpdatePackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
+    function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; override;
+  private
+    function HandlePackageRequest(FPCVersionStr, RepName, PackageName, Method: string; const JSONContent: TJSONData; AccessToken: string): TJSONData;
+  protected
+    function HandleNewPackageRequest(ARepository: TrepRepository; AJSONContent: TJSONData;
+      AccessToken: string): TJSONData;
+    function HandleGetPackageRequest(APackageName: string; ARepository: TrepRepository): TJSONData;
+    function HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository): TJSONData;
   public
-
+    constructor Create; override;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
   end;
-
-var
-  repPackageWM: TrepPackageWM;
 
 implementation
 
-{$R *.lfm}
+{ TrepPackageHander }
+
+procedure TrepPackageHander.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+begin
+  AResponse := HandlePackageRequest(JSONData.Get('fpcversion',''), JSONData.Get('repository',''), JSONData.get('package', ''), JSONData.get('method', ''), JSONData.FindPath('data'), IncomingMessage^.GetExtAccessKey(0));
+  Handled := Assigned(AResponse);
+end;
 
 { TrepPackageWM }
 
-procedure TrepPackageWM.DataModuleCreate(Sender: TObject);
+constructor TrepPackageHander.Create;
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
+  inherited Create;
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
     AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
-procedure TrepPackageWM.DataModuleDestroy(Sender: TObject);
+function TrepPackageHander.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
+var
+  AuthorizationToken, AccessToken: String;
 begin
+  AuthorizationToken := ARequest.Authorization;
+  if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+    AccessToken := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7)
+  else
+    AccessToken := '';
+
+  Result := HandlePackageRequest(ARequest.RouteParams['fpcversion'], ARequest.RouteParams['repository'], ARequest.RouteParams['package'], ARequest.Method, JSONContent, AccessToken);
 end;
 
-Procedure TrepPackageWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+function TrepPackageHander.HandlePackageRequest(FPCVersionStr, RepName, PackageName, Method: string;
+  const JSONContent: TJSONData; AccessToken: string): TJSONData;
 var
-  FPCVersionStr, RepName: String;
   FPCVersion: TrepFPCVersion;
   Repository: TrepRepository;
 begin
-  FPCVersionStr := ARequest.GetNextPathInfo;
+  Result := nil;
+  Repository := nil;
+  FPCVersion := nil;
 
-  if FPCVersionStr = '' then
-    raise EJsonWebException.CreateHelp('Missing FPC-Version', 404);
+  if FPCVersionStr <> '' then
+    begin
+    FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
+    if not Assigned(FPCVersion) then
+      raise EJsonWebException.CreateFmtHelp('FPC-Version %s is not available', [FPCVersionStr], 404);
 
-  FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
-  if not Assigned(FPCVersion) then
-    raise EJsonWebException.CreateFmtHelp('FPC-Version %s is not available', [FPCVersionStr], 404);
+    if RepName <> '' then
+      begin
+      Repository := FPCVersion.RepositoryList.FindRepository(RepName);
+      if not Assigned(Repository) then
+        raise EJsonWebException.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
+      end;
+    end;
 
-  RepName := ARequest.GetNextPathInfo;
-  if RepName = '' then
-    raise EJsonWebException.CreateHelp('Missing repository name', 404);
-
-  Repository := FPCVersion.RepositoryList.FindRepository(RepName);
-  if not Assigned(Repository) then
-    raise EJsonWebException.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
-
-  if ARequest.Method = 'POST' then
-    HandleNewPackageRequest(Repository, ARequest, AResponse)
-  else if ARequest.Method = 'PUT' then
-    HandleUpdatePackageRequest(Repository, ARequest, AResponse)
+  if Method = 'GET' then
+    Result := HandleGetPackageRequest(PackageName, Repository)
   else
     begin
-    HandleGetPackageRequest(Repository, ARequest, AResponse);
+    if FPCVersionStr = '' then
+      raise EJsonWebException.CreateHelp('Missing FPC-Version', 404);
+    if RepName = '' then
+      raise EJsonWebException.CreateHelp('Missing repository name', 404);
+
+    if Method = 'POST' then
+      Result := HandleNewPackageRequest(Repository, JSONContent, AccessToken)
+    else if Method = 'PUT' then
+      Result := HandleUpdatePackageRequest(PackageName, JSONContent, Repository)
     end;
-  Handled := True;
 end;
 
-procedure TrepPackageWM.HandleNewPackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
+function TrepPackageHander.HandleNewPackageRequest(ARepository: TrepRepository; AJSONContent: TJSONData; AccessToken: string): TJSONData;
 var
   Package: TrepPackage;
   PackageURL: String;
 begin
+  Result := nil;
   if ARepository.NeedAdminRights then
-    if GetUserRole <> 'admin' then
+    if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin' then
       raise EHTTPClient.CreateHelp('Only admins can add packages to this repository.', 403);
 
   Package := TrepPackage.Create(nil);
   try
-    JSONContentStringToObject(ARequest.Content, Package);
+    if AJSONContent.JSONType <> jtObject then
+      raise Exception.Create('Content is not a valid json-object');
+    JSONContentToObject(TJSONObject(AJSONContent), Package);
     if Package.Name = '' then
       raise Exception.Create('Missing package-name');
 
@@ -114,7 +144,7 @@ begin
     PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+Package.Name;
 
     try
-      ObtainJSONRestRequest(PackageURL, True);
+      TfprWebModule.ObtainJSONRestRequest(PackageURL, AccessToken);
     Except
       on E: Exception do
         begin
@@ -129,9 +159,7 @@ begin
         end;
     end;
 
-    AResponse.Content := ObjectToJSONContentString( Package );
-    AResponse.Code := 200;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Result := ObjectToJSON( Package );
 
     Package.Collection := ARepository.PackageList;
     Package := nil;
@@ -142,52 +170,94 @@ begin
     ARepository.SaveToFile;
 end;
 
-procedure TrepPackageWM.HandleGetPackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
-var
-  PackageName: string;
-  Package: TrepPackage;
-begin
-  PackageName := ARequest.GetNextPathInfo;
+function TrepPackageHander.HandleGetPackageRequest(APackageName: string; ARepository: TrepRepository): TJSONData;
 
-  if PackageName='' then
+  function ProcessRepository(ARepo: TrepRepository):TJSONData;
+  var
+    Package: TrepPackage;
+  begin
+    Result := nil;
+    if APackageName='' then
+      begin
+      Result := ObjectToJSON(ARepo.PackageList);
+      end
+    else
+      begin
+      Package := ARepo.PackageList.FindPackage(APackageName);
+      if Assigned(Package) then
+        Result := ObjectToJSON(Package)
+      else if ARepository <> nil then
+        raise EHTTPClient.CreateFmtHelp('Package %s does not exist in this repository', [APackageName], 404);
+      end;
+  end;
+
+var
+  FPCVersion: TrepFPCVersion;
+  Repository: TrepRepository;
+  VersionList: TrepFPCVersionList;
+  JSONData: TJSONData;
+  JSONArr: TJSONArray;
+  i, j, k: integer;
+begin
+  if not Assigned(ARepository) then
     begin
-    AResponse.Content := ObjectToJSONContentString(ARepository.PackageList);
-    AResponse.Code := 200;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    JSONArr := TJSONArray.Create;
+    try
+      VersionList := TrepFPCVersionList.Instance;
+      for i := 0 to VersionList.Count -1 do
+        begin
+        FPCVersion := VersionList.Items[i];
+        for j := 0 to FPCVersion.RepositoryList.Count -1 do
+          begin
+          Repository := FPCVersion.RepositoryList.Items[j];
+          JSONData := ProcessRepository(Repository);
+          if Assigned(JSONData) then
+            begin
+            if JSONData.JSONType = jtArray then
+              begin
+              for k := 0 to TJSONArray(JSONData).Count -1 do
+                begin
+                JSONArr.Add(TJSONArray(JSONData).Items[k]);
+                end;
+              end
+            else
+              begin
+              JSONArr.Add(JSONData.Clone);
+              end;
+            end;
+          end;
+        end;
+      Result := JSONArr;
+      JSONArr := nil;
+    finally
+      JSONArr.Free;
+    end;
     end
   else
-    begin
-    Package := ARepository.PackageList.FindPackage(PackageName);
-    if Assigned(Package) then
-      AResponse.Content := ObjectToJSONContentString(Package)
-    else
-      raise EHTTPClient.CreateFmtHelp('Package %s does not exist in this repository', [PackageName], 404);
-    end;
-  AResponse.Code := 200;
-  AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Result := ProcessRepository(ARepository);
 end;
 
-procedure TrepPackageWM.HandleUpdatePackageRequest(ARepository: TrepRepository; ARequest: TRequest; AResponse: TResponse);
+function TrepPackageHander.HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository): TJSONData;
 var
-  PackageName: String;
   Package, IntPackage: TrepPackage;
 begin
-  PackageName := ARequest.GetNextPathInfo;
-
-  if PackageName='' then
+  Result := nil;
+  if APackageName='' then
     raise EJsonWebException.CreateHelp('Missing package name', 404);
 
-  IntPackage := ARepository.PackageList.FindPackage(PackageName);
+  IntPackage := ARepository.PackageList.FindPackage(APackageName);
   if not Assigned(IntPackage) then
-    raise EJsonWebException.CreateFmtHelp('Package %s is not available in this repository', [PackageName], 404);
+    raise EJsonWebException.CreateFmtHelp('Package %s is not available in this repository', [APackageName], 404);
 
   Package := TrepPackage.Create(nil);
   try
-    JSONContentStringToObject(ARequest.Content, Package);
+    if AJSONContent.JSONType<>jtObject then
+      raise Exception.Create('Content is not a valid json-object');
+    JSONContentToObject(TJSONObject(AJSONContent), Package);
     if Package.Name = '' then
       raise Exception.Create('Missing package-name');
 
-    if Package.Name <> PackageName then
+    if Package.Name <> APackageName then
       raise Exception.Create('Inconsistent package name');
 
     if Package.Tag = '' then
@@ -195,9 +265,7 @@ begin
 
     IntPackage.Tag := Package.Tag;
 
-    AResponse.Content := ObjectToJSONContentString( IntPackage );
-    AResponse.Code := 200;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
+    Result := ObjectToJSON( IntPackage );
   finally
     Package.Free;
   end;
@@ -205,7 +273,5 @@ begin
     ARepository.SaveToFile;
 end;
 
-initialization
-  RegisterHTTPModule('package', TrepPackageWM);
 end.
 

@@ -1,6 +1,7 @@
 unit repRepositoryWebmodule;
 
 {$mode objfpc}{$H+}
+{$interfaces corba}
 
 interface
 
@@ -15,6 +16,7 @@ uses
   LazFileUtils,
   LazUtils,
   fpjson,
+  httproute,
   fphttpclient,
   fphttpserver,
   dcsGlobalSettings,
@@ -25,95 +27,106 @@ uses
   fprCopyTree,
   fprErrorHandling,
   fprGCollection,
-  repPackage;
+  cnocStackJSONHandlerThread,
+  repPackage,
+  cnocStackHandlerThread,
+  fprWebHandler,
+  cnocStackMessageTypes;
 
 type
 
-  { TrepRepositoryWM }
+  { TrepRepositoryHander }
 
-  TrepRepositoryWM = class(TfprWebModule)
-    procedure DataModuleCreate(Sender: TObject);
-    Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  TrepRepositoryHander = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
   private
-    function GetFPCVersionCollection: TfprFPCVersionCollection;
-    function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
+    function ObtainFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
+    function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository; AccessToken: string): TJSONData;
   protected
     procedure RebuildPackage(APackage: TrepPackage; AFPCVersion: string; AManifest: TXMLDocument; APackagesNode: TDOMElement;
-      ARepositoryURL, ABuildAgentURL, ARepoTempPath: string);
+      ARepositoryURL, ABuildAgentURL, ARepoTempPath: string; AccessToken: string);
+    function DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData; override;
+    function HandleRepositoryRequest(const FPCVersionStr, RepName, ExtraParam, AccessToken: string): TJSONData;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
+  public
+    constructor Create; override;
   end;
 
 var
-  repRepositoryWM: TrepRepositoryWM;
+  GStackClient: TcnocStackHandlerThread;
 
 implementation
 
-{$R *.lfm}
+{ TrepRepositoryHander }
 
-{ TrepRepositoryWM }
+procedure TrepRepositoryHander.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage;
+  const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+begin
+  AResponse := HandleRepositoryRequest(JSONData.Get('fpcversion',''), JSONData.Get('repository',''), JSONData.get('package', ''), IncomingMessage^.GetExtAccessKey(0));
+end;
 
-procedure TrepRepositoryWM.DataModuleCreate(Sender: TObject);
+constructor TrepRepositoryHander.Create;
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
+  inherited Create;
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
     AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
-Procedure TrepRepositoryWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+function TrepRepositoryHander.HandleRepositoryRequest(const FPCVersionStr, RepName, ExtraParam, AccessToken: string): TJSONData;
 var
-  FPCVersionStr, RepName: String;
   FPCVersion: TrepFPCVersion;
   Repository: TrepRepository;
 begin
-  if not Handled then
+  if FPCVersionStr = '' then
     begin
-    FPCVersionStr := ARequest.GetNextPathInfo;
-    if FPCVersionStr = '' then
-      begin
-      AResponse.Content := ObjectToJSONContentString( TrepFPCVersionList.Instance );
-      AResponse.Code := 200;
-      AResponse.CodeText := GetStatusCode(AResponse.Code);;
-      end
+    Result := ObjectToJSON(TrepFPCVersionList.Instance);
+    end
+  else
+    begin
+    FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
+    if not Assigned(FPCVersion) then
+      raise EHTTPClient.CreateFmt('FPC-Version %s is not available', [FPCVersionStr]);
+
+    if RepName = '' then
+      Result := ObjectToJSON(FPCVersion.RepositoryList)
     else
       begin
-      FPCVersion := TrepFPCVersionList.Instance.FindFPCVersion(FPCVersionStr);
-      if not Assigned(FPCVersion) then
-        raise EHTTPClient.CreateFmt('FPC-Version %s is not available', [FPCVersionStr]);
+      Repository := FPCVersion.RepositoryList.FindRepository(RepName);
+      if not Assigned(Repository) then
+        raise EHTTPClient.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
 
-      RepName := ARequest.GetNextPathInfo;
-      if RepName = '' then
-        AResponse.Content := ObjectToJSONContentString( FPCVersion.RepositoryList )
+      if ExtraParam = '' then
+        Result := ObjectToJSON(Repository.PackageList)
       else
-        begin
-        Repository := FPCVersion.RepositoryList.FindRepository(RepName);
-        if not Assigned(Repository) then
-          raise EHTTPClient.CreateFmtHelp('Repository %s does not exist', [RepName] , 404);
+        Result := RebuildRepository(FPCVersion, Repository, AccessToken);
 
-        if ARequest.GetNextPathInfo = '' then
-          AResponse.Content := ObjectToJSONContentString( Repository.PackageList )
-        else
-          AResponse.Content := RebuildRepository(FPCVersion, Repository);
-
-        end;
       end;
-    AResponse.Code := 200;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);;
     end;
-  Handled := True;
 end;
 
-function TrepRepositoryWM.GetFPCVersionCollection: TfprFPCVersionCollection;
+function TrepRepositoryHander.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
+var
+  AuthorizationToken, AccessToken: String;
+begin
+  AuthorizationToken := ARequest.Authorization;
+  if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+    AccessToken := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7)
+  else
+    AccessToken := '';
+
+  Result := HandleRepositoryRequest(ARequest.RouteParams['fpcversion'], ARequest.RouteParams['repository'], ARequest.RouteParams['extra'], AccessToken);
+end;
+
+function TrepRepositoryHander.ObtainFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
 begin
   Result := TfprFPCVersionCollection.Instance;
-  if Result.Count = 0 then
-    begin
-    if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', True, Result) then
-      raise Exception.Create('Failed to get FPC version list');
-    end;
+  if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', AccessToken, Result) then
+    raise Exception.Create('Failed to get FPC version list');
 end;
 
-function TrepRepositoryWM.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository): string;
+function TrepRepositoryHander.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository; AccessToken: string): TJSONData;
 var
   i: Integer;
   RepositoryURL: string;
@@ -131,13 +144,14 @@ var
   RepoPath: string;
   MasterRepository: TrepRepository;
   FPCVersion: TfprFPCVersion;
+  VersionCollection: TfprFPCVersionCollection;
 begin
-  Result := '';
+  Result := nil;
   if Arepository.Path='' then
     raise EHTTPClient.CreateFmtHelp('Path of repository %s is not defined.', [ARepository.Name], 500);
 
   RepositoryURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('repositoryurl');
-  BuildAgentURL := RetrieveBuildAgentURL(AFPCVersion.FPCVersion);
+  BuildAgentURL := RetrieveBuildAgentURL(AFPCVersion.FPCVersion, AccessToken);
 
   Manifest := TXMLDocument.Create;
   try
@@ -159,7 +173,7 @@ begin
           begin
           Package := MasterRepository.PackageList.Items[i];
           if not Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
-            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
+            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken);
           end;
         end;
 
@@ -167,19 +181,24 @@ begin
         begin
         Package := ARepository.PackageList.Items[i];
 
-        RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath);
+        RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken);
         end;
 
       ManifestStream := TStringStream.Create(nil);
       try
         WriteXML(Manifest, ManifestStream);
         ManifestStream.SaveToFile(ConcatPaths([RepoTempPath, 'packages.xml']));
-        Result := ManifestStream.DataString;
+        Result := TJSONString.Create(ManifestStream.DataString);
       finally
         ManifestStream.Free;
       end;
 
-      FPCVersion := GetFPCVersionCollection.FindVersion(ARepository.FPCVersion);
+      VersionCollection := ObtainFPCVersionCollection(AccessToken);
+      try
+        FPCVersion := VersionCollection.FindVersion(ARepository.FPCVersion);
+      finally
+        VersionCollection.Free;
+      end;
       if not Assigned(FPCVersion) then
         raise Exception.CreateFmt('FPC-version [%s] of repository [%s] is not known by the packagemanager', [ARepository.FPCVersion, ARepository.Name]);
       RepoPath := ConcatPaths([ARepository.Path, FPCVersion.URLPrefix]);
@@ -230,9 +249,9 @@ begin
   end;
 end;
 
-procedure TrepRepositoryWM.RebuildPackage(APackage: TrepPackage; AFPCVersion: string;
+procedure TrepRepositoryHander.RebuildPackage(APackage: TrepPackage; AFPCVersion: string;
   AManifest: TXMLDocument; APackagesNode: TDOMElement; ARepositoryURL, ABuildAgentURL,
-  ARepoTempPath: string);
+  ARepoTempPath: string; AccessToken: string);
 var
   HTTPClient: TFPHTTPClient;
   BytesStream: TBytesStream;
@@ -247,7 +266,7 @@ begin
   try
     HTTPClient := TFPHTTPClient.Create(nil);
     try
-      HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + FAccessToken;
+      HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
       BytesStream := TBytesStream.Create;
       try
         try
@@ -287,7 +306,7 @@ begin
 
         HTTPClient := TFPHTTPClient.Create(nil);
         try
-          HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + FAccessToken;
+          HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
           FileStream := TFileStream.Create(ConcatPaths([ARepoTempPath, ExtractFileName(BuildResponse.SourceArchive)]), fmCreate);
           try
             HTTPClient.Get(BuildResponse.SourceArchive, FileStream);
@@ -330,7 +349,5 @@ begin
   end;
 end;
 
-initialization
-  RegisterHTTPModule('repository', TrepRepositoryWM);
 end.
 
