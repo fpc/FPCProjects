@@ -61,6 +61,7 @@ type
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
     procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
+    class function ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
   end;
 
 implementation
@@ -324,8 +325,7 @@ begin
     end;
 end;
 
-function TfprWebModule.ObtainJSONRestRequest(AnURL: string;
-  IncludeAccessToken: boolean; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+class function TfprWebModule.ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
 var
   HTTPClient: TFPHTTPClient;
   MemStream: TMemoryStream;
@@ -334,7 +334,7 @@ var
 begin
   HTTPClient := TFPHTTPClient.Create(nil);
   try
-    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + FAccessToken;
+    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
     MemStream := TMemoryStream.Create;
     try
       HTTPClient.RequestBody := Content;
@@ -357,6 +357,15 @@ begin
   finally
     HTTPClient.Free;
   end;
+end;
+
+function TfprWebModule.ObtainJSONRestRequest(AnURL: string;
+  IncludeAccessToken: boolean; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+begin
+  if IncludeAccessToken then
+    Result := ObtainJSONRestRequest(AnURL, FAccessToken, Method, Content)
+  else
+    Result := ObtainJSONRestRequest(AnURL, '', Method, Content);
 end;
 
 function TfprWebModule.RetrieveBuildAgentURL(FPCVersion: string): string;
