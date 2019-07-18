@@ -91,7 +91,7 @@ begin
   GlobalSettings.AddSetting('BuildFilesURL', 'BuildFiles', 'URL', '', #0, dcsPHasParameter, '');
 
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
-  GlobalSettings.AddSetting('AllowCorsOrigin', 'OIDC', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   // quick check parameters
   ErrorMsg := GlobalSettings.CheckProgramParameters(Self);
   if ErrorMsg<>'' then begin
