@@ -334,7 +334,8 @@ var
 begin
   HTTPClient := TFPHTTPClient.Create(nil);
   try
-    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
+    if AccessToken <> '' then
+      HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
     MemStream := TMemoryStream.Create;
     try
       HTTPClient.RequestBody := Content;
