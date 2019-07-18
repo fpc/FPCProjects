@@ -47,7 +47,7 @@ var
   JSonData: TJSONData;
 begin
   Result := '';
-  JSonData := ObtainJSONRestRequest(FOIDCProvider.UserinfoEndpoint, AccessToken);
+  JSonData := TfprWebModule.ObtainJSONRestRequest(FOIDCProvider.UserinfoEndpoint, AccessToken);
   try
     if JSonData.JSONType = jtObject then
       begin

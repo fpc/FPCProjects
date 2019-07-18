@@ -45,8 +45,8 @@ type
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; virtual;
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
-    procedure RespondToJSONMessage(const IncomingMessage: PfpsMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
-    procedure DoRespondToJSONMessage(const IncomingMessage: PfpsMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
+    procedure RespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -377,7 +377,7 @@ begin
   end;
 end;
 
-procedure TfprWebHandler.RespondToJSONMessage(const IncomingMessage: PfpsMessage;
+procedure TfprWebHandler.RespondToJSONMessage(const IncomingMessage: PcnocStackMessage;
   const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
 begin
   try
@@ -392,7 +392,7 @@ begin
   end;
 end;
 
-procedure TfprWebHandler.DoRespondToJSONMessage(const IncomingMessage: PfpsMessage;
+procedure TfprWebHandler.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage;
   const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
 begin
   // Do nothing
