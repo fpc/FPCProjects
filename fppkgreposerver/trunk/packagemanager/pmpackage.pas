@@ -22,12 +22,20 @@ type
     FFilename: string;
     FFPCVersion: string;
     FTag: string;
+    FDescription: String;
+    FEmail: String;
+    FLicense: String;
+    FHomepageurl: String;
     procedure SetFPCVersion(AValue: string);
   published
     property Tag: string read FTag write FTag;
     property Filename: string read FFilename write FFilename;
     property Author: string read FAuthor write FAuthor;
     property FPCVersion: string read FFPCVersion write SetFPCVersion;
+    property Description: string read FDescription write FDescription;
+    property Email: string read FEmail write FEmail;
+    property License: string read FLicense write FLicense;
+    property HomepageURL: string read FHomepageURL write FHomepageURL;
   end;
 
   TpmGenPackageVersionCollection = specialize TcnocGCollection<TpmPackageVersion>;
