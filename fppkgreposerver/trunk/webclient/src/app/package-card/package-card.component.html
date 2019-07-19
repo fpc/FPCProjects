@@ -1,0 +1,18 @@
+<div class="card-body">
+  <strong class="d-inline-block mb-2 text-success">Category</strong>
+  <h4 class="card-title mb-0"><a routerLink="/package/{{package.name}}">{{package.name}}</a></h4>
+
+  <div *ngIf="selectedVersion">
+      <div class="mb-1 text-muted">1.0.3</div>
+      <p *ngIf="selectedVersion.description">{{selectedVersion.description}}</p>
+      <p *ngIf="!selectedVersion.description" class="text-danger">This package does not have a description.</p>
+      <p *ngIf="selectedVersion.license" class="mb-1"><span class="text-muted">License: </span>{{selectedVersion.license}}</p>
+      <p *ngIf="selectedVersion.author" class="mb-1"><span class="text-muted">Author: </span>{{selectedVersion.author}}</p>
+  </div>
+  <div *ngIf="!selectedVersion">
+      <div class="mb-1 text-muted">-</div>
+      <p>This package is not available for FPC-version {{fpcversion.name}}.</p>
+  </div>
+
+</div>
+

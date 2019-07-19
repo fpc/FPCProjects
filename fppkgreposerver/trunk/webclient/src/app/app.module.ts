@@ -43,6 +43,7 @@ import { BuildTaskComponent } from './build-task/build-task.component';
 import { TagPackageComponent } from './tag-package/tag-package.component';
 import { RebuildRepositoryComponent } from './rebuild-repository/rebuild-repository.component';
 import { PackageVersionComponent } from './package-version/package-version.component';
+import { PackageCardComponent } from './package-card/package-card.component';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { PackageVersionComponent } from './package-version/package-version.compo
     BuildTaskComponent,
     TagPackageComponent,
     RebuildRepositoryComponent,
-    PackageVersionComponent
+    PackageVersionComponent,
+    PackageCardComponent
   ],
   imports: [
     BrowserModule,

@@ -10,6 +10,7 @@ import { PackageService } from '../package.service';
 export class PackageListComponent implements OnInit {
 
   @Input() packageList: Package[];
+  @Input() fpcversion: any;
 
   constructor(private packageService: PackageService) { }
 
