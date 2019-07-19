@@ -11,7 +11,11 @@ uses
   fpjsonrtti,
   fpjson,
   typinfo,
+  cnocStackBinaryClient,
+  cnocStackMessageTypes,
+  cnocStackErrorCodes,
   fprErrorHandling,
+  fprGCollection,
   pmPackage;
 
 type
@@ -20,7 +24,10 @@ type
 
   TpmPackageJSonStreaming = class
   private
+    FFilterOutOldVersions: Boolean;
+    FStackClient: TcnocStackBinaryClient;
     function CollectionToJSon(AList: TCollection): TJSONArray;
+    function PackageVersionCollectionToJSonFiltered(APackage: TpmPackage; AVersionCollection: TpmPackageVersionCollection): TJSONArray;
 
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
   public
@@ -29,9 +36,47 @@ type
 
     function PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
     function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
+    property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
+    property FilterOutOldVersions: Boolean read FFilterOutOldVersions write FFilterOutOldVersions;
   end;
 
 implementation
+
+type
+
+  { TpmRepositoryPackage }
+
+  TpmRepositoryPackage = class(TCollectionItem)
+  private
+    FName: string;
+    FTag: string;
+  published
+    property Name: string read FName write FName;
+    property Tag: string read FTag write FTag;
+  end;
+  TpmCustomRepositoryPackageCollection = specialize TcnocGCollection<TpmRepositoryPackage>;
+
+  { TpmRepositoryPackageCollection }
+
+  TpmRepositoryPackageCollection = class(TpmCustomRepositoryPackageCollection)
+  public
+    function FindRepositoryPackageByTag(const Tag: string): TpmRepositoryPackage;
+  end;
+
+{ TpmRepositoryPackageCollection }
+
+function TpmRepositoryPackageCollection.FindRepositoryPackageByTag(const Tag: string): TpmRepositoryPackage;
+var
+  i: Integer;
+begin
+  for i := 0 to Count -1 do
+    if Items[i].Tag = Tag then
+      begin
+      Result := Items[i];
+      Exit
+      end;
+  Result := nil;
+end;
 
 { TpmPackageJSonStreaming }
 
@@ -63,7 +108,12 @@ begin
     begin
     AnObject := GetObjectProp(AObject, Info);
     if AnObject is TpmPackageVersionCollection then
-      Res := CollectionToJSon(TpmPackageVersionCollection(AnObject));
+      begin
+      if AObject is TpmPackage then
+        Res := PackageVersionCollectionToJSonFiltered(TpmPackage(AObject), TpmPackageVersionCollection(AnObject))
+      else
+        Res := PackageVersionCollectionToJSonFiltered(nil, TpmPackageVersionCollection(AnObject));
+      end;
     end;
 end;
 
@@ -126,6 +176,61 @@ begin
     Result := JSONArr.AsJSON;
   finally
     JSONArr.Free;
+  end;
+end;
+
+function TpmPackageJSonStreaming.PackageVersionCollectionToJSonFiltered(APackage: TpmPackage;
+  AVersionCollection: TpmPackageVersionCollection): TJSONArray;
+var
+  Streamer: TJSONStreamer;
+  I: Integer;
+  JSONObject: TJSONObject;
+  ResponseStr: string;
+
+  RepPackageCol: TpmRepositoryPackageCollection;
+
+  StackResult: TcnocStackErrorCodes;
+  DeStreamer: TJSONDeStreamer;
+begin
+  RepPackageCol := nil;
+  Streamer := TJSONStreamer.Create(nil);
+  try
+    Streamer.OnStreamProperty := @StreamerStreamProperty;
+    Streamer.Options := Streamer.Options + [jsoLowerPropertyNames];
+
+    if Assigned(APackage) and Assigned(FStackClient) and (FilterOutOldVersions) then
+      begin
+      JSONObject := TJSONObject.Create(['name', 'package', 'method', 'GET', 'package', APackage.Name]);
+      try
+        StackResult := FStackClient.SendMessage('Repository', JSONObject.AsJSON, ResponseStr);
+        DeStreamer := TJSONDeStreamer.Create(nil);
+        try
+          DeStreamer.Options := [jdoCaseInsensitive];
+          RepPackageCol := TpmRepositoryPackageCollection.Create;
+          DeStreamer.JSONToCollection(ResponseStr, RepPackageCol);
+        finally
+          DeStreamer.Free;
+        end;
+      finally
+        JSONObject.Free;
+      end;
+      end;
+
+    Result:=TJSONArray.Create;
+    try
+      for I:=0 to AVersionCollection.Count-1 do
+        begin
+        if not assigned(RepPackageCol) or Assigned(RepPackageCol.FindRepositoryPackageByTag(AVersionCollection.Items[i].Tag)) then
+          Result.Add(Streamer.ObjectToJSON(AVersionCollection.Items[i]));
+        end;
+    except
+      FreeAndNil(Result);
+      Raise;
+    end;
+
+  finally
+    Streamer.Free;
+    RepPackageCol.Free;
   end;
 end;
 

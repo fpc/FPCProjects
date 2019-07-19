@@ -15,6 +15,7 @@ uses
   fprErrorHandling,
   fprFPCVersion,
   dcsGlobalSettings,
+  cnocStackbinaryclient,
   pmPackage,
   pmPackageJSonStreaming;
 
@@ -26,6 +27,7 @@ type
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     FPackageStreamer: TpmPackageJSonStreaming;
+    FStackClient: TcnocStackBinaryClient;
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
@@ -53,11 +55,13 @@ begin
   if (PackageName = '') and (ARequest.Method = 'GET') then
     begin
     // Return list of all packages
+    FPackageStreamer.FilterOutOldVersions := True;
     AResponse.Content := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance);
     AResponse.Code := 200;
     end
   else
     begin
+    FPackageStreamer.FilterOutOldVersions := False;
     SubObject := ARequest.GetNextPathInfo;
     case SubObject of
       '':
@@ -202,7 +206,12 @@ var
   GlobalSettings: TDCSGlobalSettings;
 begin
   inherited Create(AOwner);
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+
+  FStackClient := TcnocStackBinaryClient.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToInt(GlobalSettings.GetSettingAsString('StackPort')));
+  FStackClient.Connect();
   FPackageStreamer := TpmPackageJSonStreaming.Create;
+  FPackageStreamer.StackClient := FStackClient;
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
@@ -211,6 +220,7 @@ end;
 
 Destructor TpmPackageWM.Destroy;
 begin
+  FStackClient.Free;
   FPackageStreamer.Free;
   inherited Destroy;
 end;

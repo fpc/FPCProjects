@@ -3,6 +3,9 @@ program packagemanager;
 {$mode objfpc}{$H+}
 
 uses
+  {$IFDEF Unix}
+  cthreads,
+  {$ENDIF}
   classes,
   sysutils,
   fphttpapp,
@@ -30,10 +33,8 @@ begin
   GlobalSettings.AddSettingTemplate('FPCVersion_', 'IsDefault', 'FPCVersionIsDefault-', 'false');
   GlobalSettings.AddSettingTemplate('FPCVersion_', 'URLPrefix', 'FPCVersionURLPrefix-', '');
 
-  if Application.HasOption('e') then
-  begin
-    GlobalSettings.LoadSettingsFromEnvironment();
-  end;
+  GlobalSettings.AddSetting('StackHost', 'Stack', 'host', 'stackhost', 's', dcsPHasParameter);
+  GlobalSettings.AddSetting('StackPort', 'Stack', 'port', 'stackport', #0, dcsPHasParameter);
 
   ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
   if FileExists(ConfigFileName) then
@@ -44,6 +45,11 @@ begin
     finally
       ConfigFileStream.Free;
     end;
+  end;
+
+  if Application.HasOption('e') then
+  begin
+    GlobalSettings.LoadSettingsFromEnvironment();
   end;
 
   TfprFPCVersionCollection.Instance.LoadFromSettings;
