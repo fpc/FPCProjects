@@ -23,6 +23,15 @@ services:
         context: .
         dockerfile: docker-webclient.dockerfile
       container_name: webclient
+      environment:
+        - Buildagent_304_HOST=buildagent_304
+        - Buildagent_trunk_HOST=buildagent_trunk
+        - Buildagent_fixes32_HOST=buildagent_fixes32
+        - Buildmanager_HOST=buildmanager
+        - Fppkgrepository_HOST=fppkgrepository
+        - Identityserver_HOST=identityserver
+        - Packagemanager_HOST=packagemanager
+        - Repository_HOST=repository
       depends_on:
         - buildagent_trunk
         - buildagent_304
@@ -60,6 +69,8 @@ services:
       container_name: packagemanager
       volumes:
         - packagedata:/home/locuser/data
+      environment:
+        - Storage__PackageListFile=/home/locuser/data/packages.json
 
   buildagent_trunk:
       image: 'fpc.cnoc.nl:5000/buildagent:latest'
@@ -134,48 +145,17 @@ services:
        - repo:/home/locuser/repo
        - packagedata:/home/locuser/data
       environment:
-       - Repository_Trunk_Testing__Name=Testing
-       - Repository_Trunk_Testing__FPCVersion=trunk
-       - Repository_Trunk_Testing__NeedAdminRights=False
-       - Repository_Trunk_Testing__MasterRepository=Production
        - Repository_Trunk_Testing__path=/home/locuser/repo/testing
-       - Repository_Trunk_Testing__BaseURL=http://webclient/repo/testing/
        - Repository_Trunk_Testing__StorageFile=/home/locuser/data/packages-trunk-testing.json
-       - Repository_Trunk_Production__Name=Production
-       - Repository_Trunk_Production__FPCVersion=trunk
-       - Repository_Trunk_Production__NeedAdminRights=True
        - Repository_Trunk_Production__path=/home/locuser/repo/prod
-       - Repository_Trunk_Production__BaseURL=http://webclient/repo/prod/
        - Repository_Trunk_Production__StorageFile=/home/locuser/data/packages-trunk-production.json
-       - Repository_304_Testing__Name=Testing-304
-       - Repository_304_Testing__FPCVersion=3.0.4
-       - Repository_304_Testing__NeedAdminRights=False
-       - Repository_304_Testing__MasterRepository=Production-304
        - Repository_304_Testing__path=/home/locuser/repo/testing
-       - Repository_304_Testing__BaseURL=http://webclient/repo/testing/
-       - Repository_304_Testing__Contact=joost@cnoc.nl
        - Repository_304_Testing__StorageFile=/home/locuser/data/packages-304-testing.json
-       - Repository_304_Production__Name=Production-304
-       - Repository_304_Production__FPCVersion=3.0.4
-       - Repository_304_Production__NeedAdminRights=True
        - Repository_304_Production__path=/home/locuser/repo/prod
-       - Repository_304_Production__BaseURL=http://webclient/repo/prod/
-       - Repository_304_Production__Contact=joost@cnoc.nl
        - Repository_304_Production__StorageFile=/home/locuser/data/packages-304-production.json
-       - Repository_fixes32_Testing__Name=Testing-fixes32
-       - Repository_fixes32_Testing__FPCVersion=fixes32
-       - Repository_fixes32_Testing__NeedAdminRights=False
-       - Repository_fixes32_Testing__MasterRepository=Production-fixes32
        - Repository_fixes32_Testing__path=/home/locuser/repo/testing
-       - Repository_fixes32_Testing__BaseURL=http://webclient/repo/testing/
-       - Repository_fixes32_Testing__Contact=joost@cnoc.nl
        - Repository_fixes32_Testing__StorageFile=/home/locuser/data/packages-fixes32-testing.json
-       - Repository_fixes32_Production__Name=Production-fixes32
-       - Repository_fixes32_Production__FPCVersion=fixes32
-       - Repository_fixes32_Production__NeedAdminRights=True
        - Repository_fixes32_Production__path=/home/locuser/repo/prod
-       - Repository_fixes32_Production__BaseURL=http://webclient/repo/prod/
-       - Repository_fixes32_Production__Contact=joost@cnoc.nl
        - Repository_fixes32_Production__StorageFile=/home/locuser/data/packages-fixes32-production.json
 
 volumes:

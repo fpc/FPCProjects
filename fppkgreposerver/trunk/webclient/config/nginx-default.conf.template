@@ -1,35 +1,35 @@
 upstream buildagent304 {
-    server buildagent_304:9090;
+    server ${Buildagent_304_HOST}:9090;
     server ${HOST}:9090 backup;
 }
 
 upstream buildagenttrunk {
-    server buildagent_trunk:8080;
+    server ${Buildagent_trunk_HOST}:8080;
     server ${HOST}:8080 backup;
 }
 
 upstream buildagentfixes32 {
-    server buildagent_fixes32:9091;
+    server ${Buildagent_fixes32_HOST}:9091;
     server ${HOST}:8080 backup;
 }
 
 upstream buildmanager_upstream {
-    server buildmanager:8181;
+    server ${Buildmanager_HOST}:8181;
     server ${HOST}:8181 backup;
 }
 
 upstream fppkgrepository_upstream {
-    server fppkgrepository:8282;
+    server ${Fppkgrepository_HOST}:8282;
     server ${HOST}:8282 backup;
 }
 
 upstream identityserver_upstream {
-    server identityserver:5000;
+    server ${Identityserver_HOST}:5000;
     server ${HOST}:5000 backup;
 }
 
 server {
-    listen       80;
+    listen       4200;
     server_name  localhost;
 
     client_max_body_size 10m;
@@ -80,11 +80,11 @@ server {
     }
 
     location /repository/ {
-        proxy_pass http://repository:8089/;
+        proxy_pass http://${Repository_HOST}:8089/;
     }
 
     location /packagemanager/ {
-        proxy_pass http://packagemanager:8088/;
+        proxy_pass http://${Packagemanager_HOST}:8088/;
     }
 
     location /buildfiles/ {

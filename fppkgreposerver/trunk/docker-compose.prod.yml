@@ -56,14 +56,6 @@ services:
   packagemanager:
       environment:
        - OIDC__OpenIDProviderURL=http://fpc.cnoc.nl/identityserver
-       - Storage__PackageListFile=/home/locuser/data/packages.json
-       - FPCVersion_trunk__Name=trunk
-       - FPCVersion_trunk__IsDefault=true
-       - FPCVersion_trunk__URLPrefix=3.3.1
-       - FPCVersion_304__Name=3.0.4
-       - FPCVersion_304__URLPrefix=3.0.4
-       - FPCVersion_fixes32__Name=fixes32
-       - FPCVersion_fixes32__URLPrefix=3.1.1
 
   buildmanager:
       environment:

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
+        <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <Title Value="packagemanager"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
@@ -22,36 +22,12 @@
       <local>
         <CommandLineParams Value="-e"/>
       </local>
-      <environment>
-        <UserOverrides Count="8">
-          <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:5000/identityserver"/>
-          <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
-          <Variable2 Name="Storage__PackageListFile" Value="packages.json"/>
-          <Variable3 Name="FPCVersion_trunk__Name" Value="trunk"/>
-          <Variable4 Name="FPCVersion_trunk__IsDefault" Value="true"/>
-          <Variable5 Name="FPCVersion_trunk__URLPrefix" Value="3.1.1"/>
-          <Variable6 Name="FPCVersion_3_0_4__Name" Value="3.0.4"/>
-          <Variable7 Name="FPCVersion_3_0_4__URLPrefix" Value="3.0.4"/>
-        </UserOverrides>
-      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
             <CommandLineParams Value="-e"/>
           </local>
-          <environment>
-            <UserOverrides Count="8">
-              <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:5000/identityserver"/>
-              <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
-              <Variable2 Name="Storage__PackageListFile" Value="packages.json"/>
-              <Variable3 Name="FPCVersion_trunk__Name" Value="trunk"/>
-              <Variable4 Name="FPCVersion_trunk__IsDefault" Value="true"/>
-              <Variable5 Name="FPCVersion_trunk__URLPrefix" Value="3.1.1"/>
-              <Variable6 Name="FPCVersion_3_0_4__Name" Value="3.0.4"/>
-              <Variable7 Name="FPCVersion_3_0_4__URLPrefix" Value="3.0.4"/>
-            </UserOverrides>
-          </environment>
         </Mode0>
       </Modes>
     </RunParams>

@@ -2,89 +2,90 @@ version: '3'
 
 services:
   identityserver:
+      network_mode: "host"
       environment:
-        - HTTP__BaseURL=http://localhost:5000/identityserver
+        - HTTP__BaseURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
         - HTTP__wwwroot=wwwroot
-      ports:
-        - "5000:5000"
 
   buildmanager:
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://identityserver:5000/identityserver
+        - OIDC__OpenIDProviderURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Connections__PackageManagerURL=http://packagemanager:8088
-        - Connections__RepositoryURL=http://repository:8089
-      ports:
-        - "8181:8181"
+        - Connections__PackageManagerURL=http://localhost:8088
+        - Connections__RepositoryURL=http://localhost:8089
 
   fppkgstack:
       network_mode: "host"
 
   webclient:
+      network_mode: "host"
       environment:
         - HOST=localhost
-      ports:
-        - "4200:80"
+        - Buildagent_304_HOST=localhost
+        - Buildagent_trunk_HOST=localhost
+        - Buildagent_fixes32_HOST=localhost
+        - Buildmanager_HOST=localhost
+        - Fppkgrepository_HOST=localhost
+        - Identityserver_HOST=localhost
+        - Packagemanager_HOST=localhost
+        - Repository_HOST=localhost
 
   buildagent_trunk:
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
+        - Connections__BuildManagerURL=http://localhost:8181
         - Agent__Name=Default
-        - Agent__URL=http://buildagent_304:8080/
+        - Agent__URL=http://localhost:8080/
         - Agent__FPCVersion=trunk
         - BuildFiles__Location=/home/locuser/buildfiles
-        - BuildFiles__URL=http://webclient/buildfiles/
-      ports:
-        - "8080:8080"
+        - BuildFiles__URL=http://localhost:4200/buildfiles/
 
   buildagent_304:
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://192.168.1.19:4200/identityserver
+        - OIDC__OpenIDProviderURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
         - HTTP__Port=9090
-        - Connections__BuildManagerURL=http://192.168.1.19:4200/buildmanager
+        - Connections__BuildManagerURL=http://localhost:8181
         - Agent__Name=Default
-        - Agent__URL=http://buildagent_304:9090/
+        - Agent__URL=http://localhost:9090/
         - Agent__FPCVersion=3.0.4
         - BuildFiles__Location=/home/locuser/buildfiles
-        - BuildFiles__URL=http://webclient/buildfiles/
-      ports:
-        - "9090:9090"
+        - BuildFiles__URL=http://localhost:4200/buildfiles/
 
   repository:
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://identityserver:5000
+        - OIDC__OpenIDProviderURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Connections__PackageManagerURL=http://packagemanager:8088
-        - Connections__BuildManagerURL=http://buildmanager:8181
+        - Connections__PackageManagerURL=http://localhost:8088
+        - Connections__BuildManagerURL=http://localhost:8181
         - GIT__RepositoriesPath=/home/locuser/gitrepos
         - GIT__UserName=FPPKG Repository server
         - GIT__Email=noreply@cnoc.nl
-      ports:
-        - "8089:8089"
 
   packagemanager:
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://identityserver:5000
+        - OIDC__OpenIDProviderURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
-        - Storage__PackageListFile=/home/locuser/data/packages.json
-        - FPCVersion_trunk__Name=trunk
-        - FPCVersion_trunk__IsDefault=true
-        - FPCVersion_trunk__URLPrefix=3.1.1
-        - FPCVersion_304__Name=3.0.4
-        - FPCVersion_304__URLPrefix=3.0.4
-      ports:
-        - "8088:8088"
 
   fppkgrepository:
-      ports:
-        - "8282:8282"
+      network_mode: "host"
       environment:
-        - OIDC__OpenIDProviderURL=http://identityserver:5000
-        - Connections__PackageManagerURL=http://packagemanager:8088
-        - Connections__RepositoryURL=http://repository:8089
-        - Connections__BuildManagerURL=http://buildmanager:8181
+        - OIDC__OpenIDProviderURL=http://localhost:5000
+        - Connections__PackageManagerURL=http://localhost:8088
+        - Connections__RepositoryURL=http://localhost:8089
+        - Connections__BuildManagerURL=http://localhost:8181
         - HTTP__AllowCorsOrigin=http://localhost:4200
+        - Repository_Trunk_Testing__BaseURL=http://localhost:4200/repo/testing/
+        - Repository_Trunk_Production__BaseURL=http://localhost:4200/repo/prod/
+        - Repository_304_Testing__BaseURL=http://localhost:4200/repo/testing/
+        - Repository_304_Production__BaseURL=http://localhost:4200/repo/prod/
+        - Repository_fixes32_Testing__BaseURL=http://localhost:4200/repo/testing/
+        - Repository_fixes32_Production__BaseURL=http://localhost:4200/repo/prod/
+

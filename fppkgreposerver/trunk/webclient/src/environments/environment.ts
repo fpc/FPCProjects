@@ -5,7 +5,7 @@
 
 export const environment = {
   production: false,
-  identityServerUrl: 'http://localhost:5000/identityserver',
+  identityServerUrl: 'http://localhost:5000',
   webclientUrl: 'http://localhost:4200',
   buildAgentUrl: 'http://localhost:8080',
   packageManagerUrl: 'http://localhost:8088',
