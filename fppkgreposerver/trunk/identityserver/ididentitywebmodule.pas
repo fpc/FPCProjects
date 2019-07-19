@@ -8,6 +8,7 @@ uses
   SysUtils,
   Classes,
   httpdefs,
+  fphttpserver,
   fpHTTP,
   fpjson,
   URIParser,
@@ -31,6 +32,7 @@ type
     procedure DataModuleCreate(Sender: TObject);
     procedure DataModuleDestroy(Sender: TObject);
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+    procedure Default404Request(Sender: TObject; ARequest: TRequest; AResponse: TResponse; var Handled: Boolean);
   private
     FProvider: TcnocOpenIDConnectProvider;
     FAuthenticator: TidAuthenicator;
@@ -132,6 +134,13 @@ end;
 function TidIdentityWM.RequireAuthentication(ARequest: TRequest): Boolean;
 begin
   Result := False;
+end;
+
+procedure TidIdentityWM.Default404Request(Sender: TObject; ARequest: TRequest; AResponse: TResponse; var Handled: Boolean);
+begin
+  AResponse.Code := 404;
+  AResponse.CodeText := GetStatusCode(AResponse.Code);
+  Handled := True;
 end;
 
 initialization

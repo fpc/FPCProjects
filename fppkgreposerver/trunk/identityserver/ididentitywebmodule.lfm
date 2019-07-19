@@ -2,11 +2,17 @@ object idIdentityWM: TidIdentityWM
   OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
   OldCreateOrder = False
-  Actions = <>
+  Actions = <  
+    item
+      Name = 'Default404'
+      Default = True
+      OnRequest = Default404Request
+      Template.AllowTagParams = False
+    end>
   OnRequest = DataModuleRequest
   CreateSession = False
-  Height = 132
-  HorizontalOffset = 960
-  VerticalOffset = 450
+  Height = 151
+  HorizontalOffset = 1203
+  VerticalOffset = 129
   Width = 150
 end
