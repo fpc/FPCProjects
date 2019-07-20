@@ -11,11 +11,18 @@
         <button class="dropdown-item" *ngFor="let version of fpcVersionList" ngbDropdownItem  (click)="onSelect(version)" type="button">Fpc {{version.name}}</button>
       </div>
     </div>
+
+    <form class="form">
+      <div class="col-mb-2 col-sm-2">
+      <input type="text" #searchBox (input)="search(searchBox.value)" class="form-control" placeholder="search">
+      </div>
+    </form>
+
   </div>
   <div class="card-body">
     <p class="card-text">A complete list of all packages</p>
     <p class="card-text">
-      <app-package-list [packageList]="packageList" [fpcversion]="selectedVersion"></app-package-list>
+      <app-package-list [packageList]="filteredPackageList" [fpcversion]="selectedVersion"></app-package-list>
     </p>
     <p class="card-text">
       <button type="button" class="btn btn-primary" (click)="open()">
