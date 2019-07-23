@@ -5,9 +5,9 @@
   </p>
   <span *ngIf="(package.packagestate!='acceptance')">
     <span *ngFor="let repository of repositoryList">
-      <button *ngIf="((packageVersion.tag!='0.0.0.0') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
+      <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
       <span *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">Published in {{repository.name}}</span>
-      <button *ngIf="((packageVersion.tag!='0.0.0.0') && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]) && (publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+      <button *ngIf="((packageVersion.tag!='initial') && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]) && (publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
     </span>
   </span>
   <button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>

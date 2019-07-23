@@ -142,7 +142,7 @@ begin
       RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
 
       if IsNew then
-        TagPackage(PackageName, 'Initial version', FPCVersion, '0.0.0.0');
+        TagPackage(PackageName, 'Initial version', FPCVersion, 'initial');
 
       AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
       AResponse.Code := 200;
