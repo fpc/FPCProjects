@@ -107,6 +107,10 @@ begin
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
       if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.FPCVersion, PackageVersion.Tag)) then
         raise Exception.Create('Package-version already exists');
+      if PackageVersion.FPCVersion = '' then
+        raise Exception.Create('The obligatory FPC-version-field is missing');
+      if PackageVersion.Version.Empty then
+        raise Exception.Create('The obligatory version-field is missing');
 
       AResponse.Content := ObjectToJSONContentString(PackageVersion);
 

@@ -7,6 +7,7 @@ interface
 uses
   Classes,
   SysUtils,
+  fpmkunit,
   fprGCollection,
   fprFPCVersion,
   fpjsonrtti;
@@ -26,8 +27,14 @@ type
     FEmail: String;
     FLicense: String;
     FHomepageurl: String;
+    FVersion: TFPVersion;
     procedure SetFPCVersion(AValue: string);
+    procedure SetVersion(AValue: TFPVersion);
+  public
+    constructor Create(ACollection: TCollection); override;
+    destructor Destroy; override;
   published
+    property Version: TFPVersion read FVersion write SetVersion;
     property Tag: string read FTag write FTag;
     property Filename: string read FFilename write FFilename;
     property Author: string read FAuthor write FAuthor;
@@ -110,6 +117,23 @@ begin
       raise Exception.CreateFmt('Unknown FPC-Version [%s]', [AValue]);
     FFPCVersion := AValue;
     end;
+end;
+
+procedure TpmPackageVersion.SetVersion(AValue: TFPVersion);
+begin
+  FVersion.Assign(AValue);
+end;
+
+constructor TpmPackageVersion.Create(ACollection: TCollection);
+begin
+  inherited Create(ACollection);
+  FVersion := TFPVersion.Create;
+end;
+
+destructor TpmPackageVersion.Destroy;
+begin
+  FVersion.Free;
+  inherited Destroy;
 end;
 
 { TpmPackageVersionCollection }
