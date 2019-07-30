@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
+import { shareReplay } from 'rxjs/operators';
 import { Repository } from './repository';
 import { environment } from '../environments/environment';
 import { RepPackage } from './rep-package';
@@ -10,8 +11,11 @@ import { RepPackage } from './rep-package';
 export class FppkgRepositoryService {
 
   private repositoryUrl = environment.fppkgRepositoryUrl;
+  private _getRepositoryListMap: Map<string, Observable<Repository[]>>;
 
-  constructor(private _http: HttpClient, private _securityService: OidcSecurityService) { }
+  constructor(private _http: HttpClient, private _securityService: OidcSecurityService) {
+    this._getRepositoryListMap = new Map<string, Observable<Repository[]>>();
+  }
 
   private getHeaders(): HttpHeaders {
 
@@ -27,8 +31,11 @@ export class FppkgRepositoryService {
   }
 
   getRepositoryList (fpcVersion: string): Observable<Repository[]> {
-    const url = `${this.repositoryUrl}/repository/${fpcVersion}`;
-    return this._http.get<Repository[]>(url, {headers: this.getHeaders()});
+    if (!this._getRepositoryListMap.has(fpcVersion)) {
+      const url = `${this.repositoryUrl}/repository/${fpcVersion}`;
+      this._getRepositoryListMap.set(fpcVersion, this._http.get<Repository[]>(url, {headers: this.getHeaders()}).pipe(shareReplay()));
+    }
+    return this._getRepositoryListMap.get(fpcVersion);
   }
 
   getRepPackageList(fpcVersion: string, repository: Repository): Observable<RepPackage[]> {

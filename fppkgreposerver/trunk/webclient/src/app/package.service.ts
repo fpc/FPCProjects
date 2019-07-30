@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import { shareReplay } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Package } from './package';
@@ -10,10 +11,13 @@ import { environment } from '../environments/environment';
 export class PackageService {
 
   private packageManagerURL = environment.packageManagerUrl;
+  private _getPackageList: Observable<Package[]>;
+  private _getFPCVersionList: Observable<FPCVersion[]>;
 
   constructor(
     private http: HttpClient,
-    private _securityService: OidcSecurityService) { }
+    private _securityService: OidcSecurityService) {
+    }
 
   getHeaders(): HttpHeaders {
     let authheaders: HttpHeaders;
@@ -28,13 +32,17 @@ export class PackageService {
   }
 
   getPackageList (): Observable<Package[]> {
-    const url = `${this.packageManagerURL}/package`;
-    return this.http.get<Package[]>(url, {headers: this.getHeaders()});
+    if (!this._getPackageList) {
+      this._getPackageList = this.http.get<Package[]>(`${this.packageManagerURL}/package`, {headers: this.getHeaders()}).pipe(shareReplay());
+    }
+    return this._getPackageList;
   }
 
   getFPCVersionList (): Observable<FPCVersion[]> {
-    const url = `${this.packageManagerURL}/fpcversion`;
-    return this.http.get<FPCVersion[]>(url, {headers: this.getHeaders()});
+    if (!this._getFPCVersionList) {
+      this._getFPCVersionList = this.http.get<FPCVersion[]>(`${this.packageManagerURL}/fpcversion`, {headers: this.getHeaders()}).pipe(shareReplay());
+    }
+    return this._getFPCVersionList;
   }
 
   getPackage(name: string): Observable<Package> {
