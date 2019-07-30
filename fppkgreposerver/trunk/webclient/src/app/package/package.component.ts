@@ -4,6 +4,8 @@ import { UploadPackageComponent } from '../upload-package/upload-package.compone
 import { TagPackageComponent } from '../tag-package/tag-package.component';
 import { PackageService } from '../package.service';
 import { Package } from '../package';
+import { VersionUtils } from '../version';
+import { FPCVersion } from '../fpcversion';
 
 @Component({
   selector: 'app-package',
@@ -12,8 +14,17 @@ import { Package } from '../package';
 })
 export class PackageComponent implements OnInit {
 
-  @Input() package: Package = null;
+  selectedFPCVersion: FPCVersion = null;
+  packageVersionList: any[] = [];
+  selectedVersion: any = null;
+  private currentPackage: Package = null;
+
+  @Input() set package(selpackage: Package) {
+    this.currentPackage = selpackage;
+    this.filterPackageVersionList();
+  };
   @Output() packageUpdated = new EventEmitter();
+
 
   constructor(
     private _modalService: NgbModal,
@@ -21,16 +32,16 @@ export class PackageComponent implements OnInit {
 
   showUploadSourceDialog() {
     const modalRef = this._modalService.open(UploadPackageComponent);
-    modalRef.componentInstance.package = this.package;
+    modalRef.componentInstance.package = this.currentPackage;
     modalRef.componentInstance.packageSourceUploadedEvent.subscribe(event => this.packageUpdated.emit());
 
-    this._packageService.getPackage(this.package.name)
-      .subscribe(fpcPackage => this.package = fpcPackage);
+    this._packageService.getPackage(this.currentPackage.name)
+      .subscribe(fpcPackage => this.currentPackage = fpcPackage);
   }
 
   showTagDialog() {
     const modalRef = this._modalService.open(TagPackageComponent);
-    modalRef.componentInstance.package = this.package;
+    modalRef.componentInstance.package = this.currentPackage;
 
     modalRef.result.then(modalResult => {
       if (modalResult == 'tagged') {
@@ -40,8 +51,30 @@ export class PackageComponent implements OnInit {
   }
 
   approvePackage() {
-    this._packageService.approvePackage(this.package.name)
+    this._packageService.approvePackage(this.currentPackage.name)
       .subscribe(fpcPackage => this.packageUpdated.emit());
+  }
+
+  selectVersion(version) {
+    this.selectedVersion = version;
+  }
+
+  setFPCVersion(version: FPCVersion): void {
+    this.selectedFPCVersion = version;
+    this.filterPackageVersionList();
+  }
+
+  filterPackageVersionList() {
+    this.packageVersionList = [];
+    if ((this.currentPackage) && this.selectedFPCVersion) {
+      this.packageVersionList = this.currentPackage.packageversionlist.filter(packageVersion => packageVersion.fpcversion===this.selectedFPCVersion.name);
+      this.packageVersionList.sort((packageVersionA, packgageversionB) => VersionUtils.compare(packageVersionA.version, packgageversionB.version));
+      if (this.packageVersionList.length > 0) {
+        this.selectedVersion = this.packageVersionList[0];
+      } else {
+        this.selectedVersion = null;
+      }
+    }
   }
 
   ngOnInit() {

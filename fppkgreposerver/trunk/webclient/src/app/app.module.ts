@@ -44,6 +44,8 @@ import { TagPackageComponent } from './tag-package/tag-package.component';
 import { RebuildRepositoryComponent } from './rebuild-repository/rebuild-repository.component';
 import { PackageVersionComponent } from './package-version/package-version.component';
 import { PackageCardComponent } from './package-card/package-card.component';
+import { FpcVersionSelectBoxComponent } from './fpc-version-select-box/fpc-version-select-box.component';
+import { VersionPipe } from './version.pipe';
 
 @NgModule({
   declarations: [
@@ -68,7 +70,9 @@ import { PackageCardComponent } from './package-card/package-card.component';
     TagPackageComponent,
     RebuildRepositoryComponent,
     PackageVersionComponent,
-    PackageCardComponent
+    PackageCardComponent,
+    FpcVersionSelectBoxComponent,
+    VersionPipe
   ],
   imports: [
     BrowserModule,

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AddPackageComponent } from '../add-package/add-package.component';
-import { PackageService } from '../package.service';;
+import { PackageService } from '../package.service';
 import { Package } from '../package';
 import { FPCVersion } from '../fpcversion';
 
@@ -14,7 +14,6 @@ export class PackagesPageComponent implements OnInit {
 
   packageList: Package[];
   filteredPackageList: Package[];
-  fpcVersionList: FPCVersion[];
   selectedVersion: FPCVersion = null;
 
   constructor(
@@ -24,11 +23,6 @@ export class PackagesPageComponent implements OnInit {
   ngOnInit() {
     this.packageService.getPackageList()
       .subscribe(packageList => { this.packageList = packageList; this.filteredPackageList = packageList } )
-    this.packageService.getFPCVersionList()
-      .subscribe(list => {
-        this.fpcVersionList = list;
-        this.selectedVersion = list[0];
-      });
   }
 
   open() {
@@ -36,7 +30,7 @@ export class PackagesPageComponent implements OnInit {
     modalRef.componentInstance.packageList = this.packageList;
   }
 
-  onSelect(version: FPCVersion): void {
+  setFPCVersion(version: FPCVersion): void {
     this.selectedVersion = version;
   }
 

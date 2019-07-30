@@ -1,21 +1,45 @@
 <app-upload-package id="uploadPackageModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-upload-package>
-<app-tag-package id="tagPackageModal" [package]="package" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-tag-package>
+<app-tag-package id="tagPackageModal" [package]="currentPackage" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-tag-package>
 
-<div class="card" *ngIf="(package)">
+<div class="card" *ngIf="(currentPackage)">
   <div class="card-header">
-    {{package.name}} ({{package.packagestate}})
+    <h5 class="text-primary float-left">{{currentPackage.name}}</h5>
+    <app-fpc-version-select-box class="float-right" (selectVersion)="setFPCVersion($event)" ></app-fpc-version-select-box>
+
   </div>
   <div class="card-body">
-    <h5 class="card-title">Overview</h5>
+    <p class="mb-1 font-italic" *ngIf="currentPackage.packagestate!='published'"><span class="text-muted">State: </span>{{currentPackage.packagestate}}</p>
+    <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
 
-    <div class="my-3 p-3 bg-white rounded box-shadow">
-        <h6 class="border-bottom border-gray pb-2 mb-0">Recent versions</h6>
-        <app-package-version *ngFor="let version of package.packageversionlist" [package]="package" [packageVersion]="version"></app-package-version>
+    <div *ngIf="(!selectedVersion)">
+      <p *ngIf="(selectedFPCVersion)">This package is not available for FPC-version {{selectedFPCVersion.name}}.</p>
     </div>
+
+    <p class="card-text"></p>
+    <p class="card-text"></p>
+
+    <ngb-accordion class="accordion" id="accordionExample">
+      <ngb-panel title="More information about the package" [disabled]="true">
+        <ng-template ngbPanelContent>
+        </ng-template>
+      </ngb-panel>
+      <ngb-panel title="Package versions">
+        <ng-template ngbPanelContent>
+          <ul class="list-group">
+            <button type="button" class="list-group-item list-group-item-action" [class.active]="version==selectedVersion" *ngFor="let version of packageVersionList" (click)="selectVersion(version)">{{version.version | version}}</button>
+          </ul>
+        </ng-template>
+      </ngb-panel>
+      <ngb-panel title="Package dependencies" [disabled]="true">
+        <ng-template ngbPanelContent>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+
 
     <p class="card-text"></p>
     <button class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
     <button class="btn" (click)="showTagDialog(fpcversion)">Add tag</button>
-    <button class="btn" *ngIf="(package.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
+    <button class="btn" *ngIf="(currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
   </div>
 </div>

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { PackageService } from '../package.service';
+import { Packageversion } from '../packageversion';
 import { catchError } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -20,7 +21,8 @@ export class AddPackageComponent implements OnInit {
   newPackage: Package = {
     name: null,
     ownerid: '',
-    packagestate: ''
+    packagestate: '',
+    packageversionlist: []
   };
   errMessage: string = null;
 

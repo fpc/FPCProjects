@@ -3,14 +3,8 @@
 <div class="card">
   <div class="card-header">
     <h5 class="float-left">Package list</h5>
-    <div *ngIf="selectedVersion" ngbDropdown class="dropdown float-right">
-      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" ngbDropdownToggle aria-haspopup="true" aria-expanded="false">
-        FPC {{selectedVersion.name}}
-      </button>
-      <div class="dropdown-menu" ngbDropdownMenu aria-labelledby="dropdownMenu2">
-        <button class="dropdown-item" *ngFor="let version of fpcVersionList" ngbDropdownItem  (click)="onSelect(version)" type="button">Fpc {{version.name}}</button>
-      </div>
-    </div>
+
+    <app-fpc-version-select-box class="float-right" (selectVersion)="setFPCVersion($event)" ></app-fpc-version-select-box>
 
     <form class="form">
       <div class="col-mb-2 col-sm-2">

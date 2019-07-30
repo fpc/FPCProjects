@@ -1,14 +1,18 @@
-<div class="media text-muted pt-3"  >
-  <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-    <strong class="d-block text-gray-dark">FPC version {{packageVersion.fpcversion}} - {{packageVersion.tag}}</strong>
-    {{packageVersion.author}}
-  </p>
-  <span *ngIf="(package.packagestate!='acceptance')">
-    <span *ngFor="let repository of repositoryList">
-      <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
-      <span *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">Published in {{repository.name}}</span>
-      <button *ngIf="((packageVersion.tag!='initial') && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]) && (publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
-    </span>
+<p class="mb-1" *ngIf="packageVersion.description">{{packageVersion.description}}</p>
+<p *ngIf="package.Keywords" class="mb-1"><span class="text-muted">Keywords</span> {{package.keywords}}</p>
+<p *ngIf="package.Category" class="mb-1"><span class="text-muted">Category</span> {{package.Category}}</p>
+<p *ngIf="package.Support" class="mb-1"><span class="text-muted">Support</span> {{package.Support}}</p>
+<p class="mb-1"><span class="text-muted">Version</span> {{packageVersion.version | version}}</p>
+<p *ngIf="!packageVersion.description" class="mb-1 text-danger">This package does not have a description.</p>
+<p *ngIf="packageVersion.license" class="mb-1"><span class="text-muted">License: </span>{{packageVersion.license}}</p>
+<p *ngIf="packageVersion.author" class="mb-1"><span class="text-muted">Author: </span>{{packageVersion.author}}</p>
+<p *ngIf="packageVersion.homepageurl" class="mb-1"><span class="text-muted">Homepageurl: </span><a href="http://{{packageVersion.homepageurl}}" target="_blank">{{packageVersion.homepageurl}}</a></p>
+
+<button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>
+<span *ngIf="(package.packagestate!='acceptance')">
+  <span *ngFor="let repository of repositoryList">
+    <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
+    <span *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">Published in {{repository.name}}</span>
+    <button *ngIf="((packageVersion.tag!='initial') && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]) && (publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
   </span>
-  <button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>
-</div>
+</span>
