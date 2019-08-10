@@ -127,7 +127,7 @@ begin
   try
     if not Assigned(JSONData) then
       begin
-      AResponse.Content := 'Request did not return any data';
+      AResponse.Content := '{"error":{"msg":"Request did not return any data"}}';
       AResponse.Code := 500;
       end
     else
@@ -136,6 +136,7 @@ begin
       AResponse.Code := 200;
       end;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
+    AResponse.ContentType := 'application/json; charset=utf-8';
   finally
     JSONData.Free;
   end;
