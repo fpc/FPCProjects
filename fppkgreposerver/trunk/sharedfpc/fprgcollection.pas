@@ -22,7 +22,34 @@ type
     property Items[Index: Integer]: T read GetItem write SetItem;
   end;
 
+  { TcnocSingleton }
+
+  generic TcnocSingleton<T: TObject> = class
+  private
+    class var FInstance: T;
+    class function GetInstance: T; static;
+  public
+    class destructor Destroy;
+    class property Instance: T read GetInstance;
+  end;
+
+
 implementation
+
+{ TcnocGSingletonCollection }
+
+class destructor TcnocSingleton.Destroy;
+begin
+  FInstance.Free;
+end;
+
+class function TcnocSingleton.GetInstance: T;
+begin
+  if not Assigned(FInstance) then
+    FInstance := T.Create();
+
+  Result := FInstance;
+end;
 
 { TcnocGCollection }
 
