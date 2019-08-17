@@ -37,9 +37,13 @@ interface
 uses
   Classes,
   SysUtils,
+  Math,
   ssockets,
+  sockets,
+  StrUtils,
   cnocStackMessageTypes,
-  TLoggerUnit;
+  TLoggerUnit,
+  TLevelUnit;
 
 type
 
@@ -48,6 +52,8 @@ type
   TcnocStackBinaryReaderThread = class(TThread)
   private
     FStream: TSocketStream;
+
+    FLogSockAddrText: string;
   protected
     FLogger: TLogger;
     procedure HandleReceivedMessage(Message: PcnocStackMessage); virtual; abstract;
@@ -57,7 +63,76 @@ type
     procedure Execute; override;
   end;
 
+function SockAddToLogText(Addr: TSockAddr): string;
+function GetMessageLogText(Message: PcnocStackMessage): string;
+
 implementation
+
+function SockAddToLogText(Addr: TSockAddr): string;
+type
+  TIPAddr= packed array[1..4] of byte;
+var
+  IPAddr: ^TIPAddr;
+begin
+  if Addr.sa_family = AF_INET then
+    begin
+    IPAddr := @Addr.sin_Addr.s_addr;
+    Result := IntToStr(IPAddr^[1]) + '.' + IntToStr(IPAddr^[2]) + '.' + IntToStr(IPAddr^[3]) + '.' + IntToStr(IPAddr^[4]);
+    Result := Result + ':' + IntToStr(Addr.sin_port);
+    end
+  else
+    begin
+    Result := '(NI)'
+    end;
+end;
+
+function GetMessageLogText(Message: PcnocStackMessage): string;
+const
+  Width = 100;
+var
+  Contents: TBytes;
+  j: Integer;
+
+  procedure ObtainStr(StartInd, StopInd: Integer);
+  var
+    i: Integer;
+    s: string;
+  begin
+    for i := StartInd to min(StopInd, Length(Contents) -1) do
+      begin
+      if Contents[i] in [32..126] then
+        begin
+        Result[j] := Chr(Contents[i]);
+        Inc(j);
+        end
+      else
+        begin
+        s := IntToStr(Contents[i]);
+        Move(s[1],Result[j],length(s));
+        Inc(j,Length(s));
+        end;
+      end;
+  end;
+
+begin
+  Contents := Message^.GetContents;
+  SetLength(Result, min(Length(Contents),Width+10) * 4);
+  j := 1;
+  if Length(Contents) > Width then
+    begin
+    ObtainStr(0, (Width div 2) - 1);
+    Result[31] := ' ';
+    Result[32] := '.';
+    Result[33] := '.';
+    Result[34] := '.';
+    Result[35] := ' ';
+    Inc(J, 5);
+    ObtainStr(Length(Contents)-(Width div 2), Length(Contents) -1);
+    end
+  else
+    ObtainStr(0, Length(Contents) -1);
+  SetLength(Result, j -1);
+end;
 
 { TcnocStackBinaryReaderThread }
 
@@ -65,6 +140,8 @@ constructor TcnocStackBinaryReaderThread.Create(Stream: TSocketStream);
 begin
   FStream := Stream;
   FLogger := TLogger.GetInstance;
+  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress);
+
   Inherited Create(False);
 end;
 
@@ -122,7 +199,9 @@ begin
           raise Exception.Create('Received incomplete message')
         end;
       if Assigned(FLogger) then
-        FLogger.Debug('TCP: Received message ' + ScnocStackMessageType[Message^.Header.MessageType]);
+        if TLevelUnit.TRACE.IsGreaterOrEqual(TLogger.GetInstance.GetLevel()) then
+          TLogger.GetInstance.Trace(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' => ' + PadRight(Message^.GetStackName,15) +
+            GetMessageLogText(Message));
       HandleReceivedMessage(Message);
       end;
   until Terminated;

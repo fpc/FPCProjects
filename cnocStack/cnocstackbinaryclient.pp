@@ -40,6 +40,9 @@ uses
   SysUtils,
   ssockets,
   syncobjs,
+  {$IFDEF UNIX}
+  BaseUnix,
+  {$ENDIF}
   sockets,
   cnocStackBinaryReaderThread,
   cnocStackMessageTypes,
@@ -115,6 +118,15 @@ type
       ExtAccessKeys: TStringArray = nil;
       IntAccessKeys: TStringArray = nil;
       ResponseData: TBytes = nil): TcnocStackErrorCodes; overload;
+    function SendMessage(
+      MessagType: TcnocStackMessageType;
+      StackName: string;
+      Flags: TcnocStackFlags;
+      StoryId: LongWord;
+      Data: string;
+      ExtAccessKeys: TStringArray = nil;
+      IntAccessKeys: TStringArray = nil;
+      ResponseData: TBytes = nil): TcnocStackErrorCodes; overload;
 
 
     function SendMessage(
@@ -180,6 +192,9 @@ end;
 procedure TcnocStackBinaryClient.Connect();
 begin
   FSocket := TInetSocket.Create(FHost, FPort, 1000);
+  {$IFDEF Linux}
+  FSocket.WriteFlags := MSG_NOSIGNAL;
+  {$ENDIF}
   FReaderThread := TcnocStackBinaryClientReader.Create(FSocket, Self);
 end;
 
@@ -242,7 +257,11 @@ begin
   else
     begin
     Result := ecNone;
-    FSocket.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
+    try
+      FSocket.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
+    except
+      Result := ecFailedToSendData;
+    end;
 
     if sfRequestDirectAck in Message^.Header.Flags then
       begin
@@ -397,6 +416,17 @@ begin
   finally
     TcnocStackMessage.DestroyMessage(Response);
   end;
+end;
+
+function TcnocStackBinaryClient.SendMessage(MessagType: TcnocStackMessageType; StackName: string;
+  Flags: TcnocStackFlags; StoryId: LongWord; Data: string; ExtAccessKeys: TStringArray;
+  IntAccessKeys: TStringArray; ResponseData: TBytes): TcnocStackErrorCodes;
+var
+  DataBytes: TBytes;
+begin
+  SetLength(DataBytes, Length(Data));
+  Move(Data[1], DataBytes[0], Length(Data));
+  Result := SendMessage(MessagType, StackName, Flags, StoryId, DataBytes, ExtAccessKeys, IntAccessKeys, ResponseData);
 end;
 
 end.

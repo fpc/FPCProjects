@@ -57,7 +57,8 @@ type
     ecErrorWhileWaitingForDirectAck,
     ecAbandonedWhileWaitingForDirectAck,
     ecAbandonedWhileWaitingForDirectResponse,
-    ecErrorWhileWaitingForDirectResponse
+    ecErrorWhileWaitingForDirectResponse,
+    ecFailedToSendData
   );
 
 const
@@ -78,11 +79,13 @@ const
     'The adressee of the message does not exist',
     'Error while waiting for direct ack',
     'Shutting down while waiting for direct ack',
+    'Shutting down while waiting for direct response',
     'Error while waiting for direct response',
-    'Shutting down while waiting for direct response'
+    'Connection problem while trying to send a message to the server'
   );
   cnocStackClientErrorCodes = [
-    ecNotConnected
+    ecNotConnected ,
+    ecFailedToSendData
   ];
 
 implementation

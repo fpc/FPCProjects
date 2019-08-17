@@ -37,12 +37,14 @@ interface
 uses
   Classes,
   Sysutils,
+  StrUtils,
   ssockets,
   syncobjs,
   Sockets,
   fgl,
   TypInfo,
   TLoggerUnit,
+  TLevelUnit,
   cnocStackMessageTypes,
   cnocStackErrorCodes,
   cnocStackBinaryReaderThread,
@@ -103,6 +105,8 @@ type
     FSenderHandler: TcnocStackInternalSenderHandler;
     FSenderHash: TcnocStackSenderHash;
     FResponseMessagesQueue: TcnocStackMessageTypesQueue;
+
+    FLogSockAddrText: string;
     function FlagsToString(Flags: TcnocStackFlags): string;
   protected
     procedure NotifyNewReaderMessage();
@@ -161,6 +165,8 @@ begin
   FStackList := StackList;
   FWakeupEvent := RTLEventCreate;
   FSubscribedStackList := TcnocStackInternalStackList.Create([]);
+
+  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress);
 
   FSenderHandler := SenderHandler;
   FSenderHash := FSenderHandler.RegisterSender(Self);
@@ -234,7 +240,9 @@ end;
 
 procedure TBinaryClientConnection.SendMessage(Message: PcnocStackMessage);
 begin
-  TLogger.GetInstance.Debug('TCP: Send message ' + ScnocStackMessageType[Message^.Header.MessageType]);
+  if TLevelUnit.TRACE.IsGreaterOrEqual(TLogger.GetInstance.GetLevel()) then
+    TLogger.GetInstance.Trace(PadRight('TCP: (' + FLogSockAddrText + ')', 28) + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' <= ' + PadRight(Message^.GetStackName,15) +
+      GetMessageLogText(Message));
   try
     FStream.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
   except on e: Exception do
