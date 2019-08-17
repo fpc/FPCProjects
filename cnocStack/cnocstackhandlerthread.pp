@@ -127,10 +127,11 @@ begin
             Sleep(10000);
             end;
         end;
-        for i := 0 to High(FSubscribeToStacks) do
-          FBinaryClient.SubscribeToStack(FSubscribeToStacks[i]);
         if FBinaryClient.IsConnected then
           begin
+          for i := 0 to High(FSubscribeToStacks) do
+            FBinaryClient.SubscribeToStack(FSubscribeToStacks[i]);
+
           repeat
           wr := FBinaryClient.WaitForMessage(Message, 1000);
           if wr = wrSignaled then
