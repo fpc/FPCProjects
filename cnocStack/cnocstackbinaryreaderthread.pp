@@ -57,6 +57,7 @@ type
   protected
     FLogger: TLogger;
     procedure HandleReceivedMessage(Message: PcnocStackMessage); virtual; abstract;
+    procedure HandleConnectionLost; virtual;
   public
     constructor Create(Stream: TSocketStream);
     destructor Destroy; override;
@@ -160,14 +161,14 @@ procedure TcnocStackBinaryReaderThread.Execute;
     if r = 0 then
       begin
       if Assigned(FLogger) then
-        FLogger.Debug('TCP: Connection closed');
+        FLogger.Debug(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + 'Connection closed');
       Terminate;
       end;
     if r < 0 then
       begin
       // In fact this is an error.. How to handle this?
       if Assigned(FLogger) then
-        FLogger.Info('TCP: Connection closed due to error: ' + IntToStr(FStream.LastError));
+        FLogger.Info(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + 'Connection closed due to error: ' + IntToStr(FStream.LastError));
       Terminate;
       end;
     Result:=Len;
@@ -205,11 +206,17 @@ begin
       HandleReceivedMessage(Message);
       end;
   until Terminated;
+  HandleConnectionLost;
 end;
 
 destructor TcnocStackBinaryReaderThread.Destroy;
 begin
   inherited Destroy;
+end;
+
+procedure TcnocStackBinaryReaderThread.HandleConnectionLost;
+begin
+  // Do nothing
 end;
 
 end.

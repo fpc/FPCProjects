@@ -60,6 +60,7 @@ type
     FReceivedControlMessagesQueue: TcnocStackMessageTypesQueue;
   protected
     procedure HandleReceivedMessage(Message: PcnocStackMessage); override;
+    procedure HandleConnectionLost; override;
   public
     constructor Create(Stream: TSocketStream; BinaryClient: TcnocStackBinaryClient);
     destructor Destroy; override;
@@ -76,6 +77,7 @@ type
     FHost: string;
     FPort: Word;
     function IntSendMessage(Message: PcnocStackMessage; out Response: PcnocStackMessage): TcnocStackErrorCodes;
+    procedure CleanupConnection;
   public
     constructor Create(Host: string; Port: Word);
     destructor Destroy; override;
@@ -181,6 +183,13 @@ begin
     end;
 end;
 
+procedure TcnocStackBinaryClientReader.HandleConnectionLost;
+begin
+  inherited HandleConnectionLost;
+  FReceivedControlMessagesQueue.DoShutDown;
+  FReceivedMessagesQueue.DoShutDown;
+end;
+
 { TcnocStackBinaryClient }
 
 constructor TcnocStackBinaryClient.Create(Host: string; Port: Word);
@@ -191,6 +200,8 @@ end;
 
 procedure TcnocStackBinaryClient.Connect();
 begin
+  if IsConnected then
+    Raise Exception.Create('Already connected');
   FSocket := TInetSocket.Create(FHost, FPort, 1000);
   {$IFDEF Linux}
   FSocket.WriteFlags := MSG_NOSIGNAL;
@@ -205,15 +216,7 @@ begin
     FReaderThread.Terminate;
     fpshutdown(FSocket.Handle, SHUT_RDWR);
 
-    // This seems silly, but TThread.WaitFor calls CheckSynchronize when it
-    // is the main thread, with a timeout of 100msecs. By waiting just a short
-    // period, this could be avoided. (Which means that the shutdown could be
-    // 100 msecs faster)
-    WaitForThreadTerminate(FReaderThread.Handle, 10);
-    FReaderThread.WaitFor;
-
-    FReaderThread.Destroy;
-    FSocket.Free;
+    CleanupConnection;
     end;
   inherited Destroy;
 end;
@@ -261,6 +264,16 @@ begin
       FSocket.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
     except
       Result := ecFailedToSendData;
+      // In principle it would be possible to check
+      // for FReaderThread.ReceivedMessagesQueue.Shutdown or FReaderThread.Terminated.
+      // But it could be the case that our write triggered the disconnect. Then
+      // the FReaderThread needs some time to process it.
+      if WaitForThreadTerminate(FReaderThread.Handle, 10) = 0 then
+        begin
+        // The connection is gone.
+        CleanupConnection;
+        end;
+      Exit;
     end;
 
     if sfRequestDirectAck in Message^.Header.Flags then
@@ -325,10 +338,21 @@ end;
 
 function TcnocStackBinaryClient.WaitForMessage(out Message: PcnocStackMessage; const Timeout: Integer): TWaitResult;
 begin
-  if Timeout> 0 then
-    Result := FReaderThread.ReceivedMessagesQueue.PopItemTimeout(Message, Timeout)
+  if not Assigned(FSocket) then
+    Result := wrAbandoned
   else
-    Result := FReaderThread.ReceivedMessagesQueue.PopItem(Message);
+    begin
+    if Timeout> 0 then
+      Result := FReaderThread.ReceivedMessagesQueue.PopItemTimeout(Message, Timeout)
+    else
+      Result := FReaderThread.ReceivedMessagesQueue.PopItem(Message);
+
+    if Result = wrAbandoned then
+      begin
+      // The connection has been lost. Free all resources
+      CleanupConnection;
+      end;
+    end;
 end;
 
 function TcnocStackBinaryClient.SendMessage(MessagType: TcnocStackMessageType; StackName: string;
@@ -385,6 +409,14 @@ end;
 function TcnocStackBinaryClient.IsConnected: Boolean;
 begin
   Result := Assigned(FSocket);
+  if Result then
+    begin
+    if Assigned(FReaderThread) and FReaderThread.ReceivedMessagesQueue.ShutDown then
+      begin
+      Result := False;
+      CleanupConnection;
+      end;
+    end;
 end;
 
 function TcnocStackBinaryClient.SendMessage(StackName: string; Data: string; out ResponseData: string;
@@ -427,6 +459,19 @@ begin
   SetLength(DataBytes, Length(Data));
   Move(Data[1], DataBytes[0], Length(Data));
   Result := SendMessage(MessagType, StackName, Flags, StoryId, DataBytes, ExtAccessKeys, IntAccessKeys, ResponseData);
+end;
+
+procedure TcnocStackBinaryClient.CleanupConnection;
+begin
+  // This seems silly, but TThread.WaitFor calls CheckSynchronize when it
+  // is the main thread, with a timeout of 100msecs. By waiting just a short
+  // period, this could be avoided. (Which means that the shutdown could be
+  // 100 msecs faster)
+  WaitForThreadTerminate(FReaderThread.Handle, 10);
+  FReaderThread.WaitFor;
+
+  FreeAndNil(FReaderThread);
+  FreeAndNil(FSocket);
 end;
 
 end.
