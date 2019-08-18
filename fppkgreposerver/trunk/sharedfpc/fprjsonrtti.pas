@@ -95,6 +95,8 @@ begin
       Exit;
       end;
     end;
+  if not IsWriteableProp(PropInfo) then
+    Exit;
   Inherited DoRestoreProperty(AObject, PropInfo, PropData);
 end;
 
