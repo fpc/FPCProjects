@@ -9,7 +9,7 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Files Count="14">
+    <Files Count="15">
       <Item1>
         <Filename Value="fprwebmodule.pas"/>
         <UnitName Value="fprWebModule"/>
@@ -67,6 +67,10 @@
         <Filename Value="fprauthenticationhandler.pas"/>
         <UnitName Value="fprAuthenticationHandler"/>
       </Item14>
+      <Item15>
+        <Filename Value="fprsetuplogging.pas"/>
+        <UnitName Value="fprSetupLogging"/>
+      </Item15>
     </Files>
     <RequiredPkgs Count="4">
       <Item1>

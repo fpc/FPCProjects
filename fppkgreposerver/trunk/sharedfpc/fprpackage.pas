@@ -10,7 +10,7 @@ interface
 uses
   fprWebModule, fprPackageIDEIntf, fprErrorHandling, fprPackageUtils, fprBuildTask, fprGCollection, 
   fprDeleteTree, fprBuildAgentResponse, fprCopyTree, fprJSONRTTI, fprInterfacedCollection, 
-  fprFPCVersion, fprWebHandler, fprAuthenticationHandler, LazarusPackageIntf;
+  fprFPCVersion, fprWebHandler, fprAuthenticationHandler, fprSetupLogging, LazarusPackageIntf;
 
 implementation
 
