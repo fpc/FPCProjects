@@ -25,11 +25,14 @@ type
     constructor create;
     destructor Destroy; override;
     class function GetInstance: TfprAuthenticationHandler;
-    function GetUserRole(AccessToken: string): string;
-
+    function GetUserRole(const AccessToken: string): string;
+    function VerifyAccessToken(const AccessToken: string; out ErrMessage: string): Boolean;
   end;
 
 implementation
+
+uses
+  fprErrorHandling;
 
 { TfprAuthenticationHandler }
 
@@ -42,19 +45,29 @@ begin
   Result := FInstance;
 end;
 
-function TfprAuthenticationHandler.GetUserRole(AccessToken: string): string;
+function TfprAuthenticationHandler.GetUserRole(const AccessToken: string): string;
 var
   JSonData: TJSONData;
 begin
-  Result := '';
-  JSonData := TfprWebModule.ObtainJSONRestRequest(FOIDCProvider.UserinfoEndpoint, AccessToken);
+  if AccessToken='' then
+    raise EJsonWebException.CreateHelp('Authentication token is missing', 403);
+
   try
-    if JSonData.JSONType = jtObject then
+    Result := '';
+    JSonData := TfprWebModule.ObtainJSONRestRequest(FOIDCProvider.UserinfoEndpoint, AccessToken);
+    try
+      if JSonData.JSONType = jtObject then
+        begin
+        Result := (JSonData as TJSONObject).Get('role', '');
+        end;
+    finally
+      JSonData.Free;
+    end;
+  except
+    on E: Exception do
       begin
-      Result := (JSonData as TJSONObject).Get('role', '');
+      raise EJsonWebException.CreateFmtHelp('Problem occured while contacting the authentication server: [%s]', [E.Message], 500);
       end;
-  finally
-    JSonData.Free;
   end;
 end;
 
@@ -69,6 +82,15 @@ destructor TfprAuthenticationHandler.Destroy;
 begin
   FOIDCProvider.Free;
   inherited Destroy;
+end;
+
+function TfprAuthenticationHandler.VerifyAccessToken(const AccessToken: string; out ErrMessage: string): Boolean;
+begin
+  Result := FOIDCProvider.VerifyJWT(AccessToken);
+  if not Result then
+    ErrMessage := FOIDCProvider.GetLatestError
+  else
+    ErrMessage := '';
 end;
 
 end.
