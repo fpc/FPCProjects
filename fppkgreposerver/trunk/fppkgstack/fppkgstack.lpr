@@ -12,8 +12,10 @@ uses
   cnocStackInternalStack,
   cnocStackBinaryListener,
   TLoggerUnit,
+  TLevelUnit,
   dcsGlobalSettings,
   TRollingFileAppenderUnit,
+  fprSetupLogging,
   cnocStackInternalSenderHandler;
 
 type
@@ -61,6 +63,8 @@ begin
     Exit;
   end;
 
+  AddLoggingSettings;
+
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('TCPPort', 'TCP', 'Port', '', #0, dcsPHasParameter);
 
@@ -83,14 +87,10 @@ begin
   end;
   GlobalSettings.EvaluateProgramParameters(Self);
 
-  TLoggerUnit.Initialize;
-  Appender  := TRollingFileAppender.Create(ChangeFileExt(ApplicationName, '.log'));
-  Appender.SetMaxFileSize(16000);
-  TLogger.GetInstance().AddAppender(Appender);
+  SetupLogging;
 
   StackList := TcnocStackInternalStackList.Create([]);
   try
-
     SettingTemplate := GlobalSettings.SettingTemplateList.FindSettingTemplate('Stack_');
     for i := 0 to SettingTemplate.Values.Count -1 do
       begin
