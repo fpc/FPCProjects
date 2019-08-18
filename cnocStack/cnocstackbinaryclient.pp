@@ -39,11 +39,14 @@ uses
   Classes,
   SysUtils,
   ssockets,
+  StrUtils,
   syncobjs,
   {$IFDEF UNIX}
   BaseUnix,
   {$ENDIF}
   sockets,
+  TLoggerUnit,
+  TLevelUnit,
   cnocStackBinaryReaderThread,
   cnocStackMessageTypes,
   cnocStackErrorCodes;
@@ -76,6 +79,8 @@ type
     FSocket: TInetSocket;
     FHost: string;
     FPort: Word;
+    FLogger: TLogger;
+    FLogSockAddrText: string;
     function IntSendMessage(Message: PcnocStackMessage; out Response: PcnocStackMessage): TcnocStackErrorCodes;
     procedure CleanupConnection;
   public
@@ -196,6 +201,7 @@ constructor TcnocStackBinaryClient.Create(Host: string; Port: Word);
 begin
   FHost := Host;
   FPort := Port;
+  FLogger := TLogger.GetInstance;
 end;
 
 procedure TcnocStackBinaryClient.Connect();
@@ -206,6 +212,7 @@ begin
   {$IFDEF Linux}
   FSocket.WriteFlags := MSG_NOSIGNAL;
   {$ENDIF}
+  FLogSockAddrText := SockAddToLogText(FSocket.RemoteAddress, FSocket.LocalAddress);
   FReaderThread := TcnocStackBinaryClientReader.Create(FSocket, Self);
 end;
 
@@ -260,6 +267,9 @@ begin
   else
     begin
     Result := ecNone;
+    if TLevelUnit.TRACE.IsGreaterOrEqual(FLogger.GetLevel()) then
+      FLogger.Trace(FLogSockAddrText + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' <= ' + PadRight(Message^.GetStackName,15) +
+        GetMessageLogText(Message));
     try
       FSocket.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
     except
