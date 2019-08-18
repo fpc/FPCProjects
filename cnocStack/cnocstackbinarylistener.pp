@@ -152,7 +152,10 @@ end;
 procedure TBinaryClientConnectionReader.HandleReceivedMessage(Message: PcnocStackMessage);
 begin
   if FReceivedMessagesQueue.PushItem(Message) <> wrSignaled then
+    begin
+    TLogger.GetInstance.Error('Failed to push message to stack');
     raise Exception.Create('Not able to push message to stack?');
+    end;
   FClientConnection.NotifyNewReaderMessage;
 end;
 
@@ -166,7 +169,7 @@ begin
   FWakeupEvent := RTLEventCreate;
   FSubscribedStackList := TcnocStackInternalStackList.Create([]);
 
-  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress);
+  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress, FStream.LocalAddress);
 
   FSenderHandler := SenderHandler;
   FSenderHash := FSenderHandler.RegisterSender(Self);
@@ -241,7 +244,7 @@ end;
 procedure TBinaryClientConnection.SendMessage(Message: PcnocStackMessage);
 begin
   if TLevelUnit.TRACE.IsGreaterOrEqual(TLogger.GetInstance.GetLevel()) then
-    TLogger.GetInstance.Trace(PadRight('TCP: (' + FLogSockAddrText + ')', 28) + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' <= ' + PadRight(Message^.GetStackName,15) +
+    TLogger.GetInstance.Trace(FLogSockAddrText + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' <= ' + PadRight(Message^.GetStackName,15) +
       GetMessageLogText(Message));
   try
     FStream.WriteBuffer(Message^, SizeOf(TcnocStackMessageHeader) + Message^.Header.ContentLength);
@@ -287,7 +290,7 @@ var
   Stack: TcnocStackInternalStack;
 begin
   Result := False;
-  if FReader.FReceivedMessagesQueue.PopItemTimeout(IncomingMsg, 0)=wrSignaled then
+  if FReader.ReceivedMessagesQueue.PopItemTimeout(IncomingMsg, 0)=wrSignaled then
     begin
     Result := True;
     try
@@ -310,7 +313,7 @@ begin
                 IncomingMsg^.Header.RoutingInfo := FSenderHash;
 
               case Stack.PushItem(IncomingMsg) of
-                wrTimeout: ErrCode := ecPushMessageTimeout;
+                wrTimeout: ErrCode := ecPushMessageTimeout; // Change into StackFull?!?
                 wrAbandoned: ErrCode := ecPushMessageAbandoned;
                 wrError: ErrCode := ecPushMessageError;
               end;

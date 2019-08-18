@@ -64,27 +64,36 @@ type
     procedure Execute; override;
   end;
 
-function SockAddToLogText(Addr: TSockAddr): string;
+function SockAddToLogText(AddrRemote, AddrLocal: TSockAddr): string;
 function GetMessageLogText(Message: PcnocStackMessage): string;
 
 implementation
 
-function SockAddToLogText(Addr: TSockAddr): string;
+function SockAddToLogText(AddrRemote, AddrLocal: TSockAddr): string;
 type
   TIPAddr= packed array[1..4] of byte;
-var
-  IPAddr: ^TIPAddr;
+
+  function AddrToString(Addr: TSockAddr): string;
+  var
+    IPAddr: ^TIPAddr;
+  begin
+    case Addr.sa_family of
+      AF_INET:
+        begin
+        IPAddr := @Addr.sin_Addr.s_addr;
+        Result := IntToStr(IPAddr^[1]) + '.' + IntToStr(IPAddr^[2]) + '.' + IntToStr(IPAddr^[3]) + '.' + IntToStr(IPAddr^[4]);
+        Result := Result + ':' + IntToStr(Addr.sin_port);
+        end;
+      AF_LOCAL:
+        begin
+        Result := 'local';
+        end
+    else
+      Result := 'NI'
+    end; {case}
+  end;
 begin
-  if Addr.sa_family = AF_INET then
-    begin
-    IPAddr := @Addr.sin_Addr.s_addr;
-    Result := IntToStr(IPAddr^[1]) + '.' + IntToStr(IPAddr^[2]) + '.' + IntToStr(IPAddr^[3]) + '.' + IntToStr(IPAddr^[4]);
-    Result := Result + ':' + IntToStr(Addr.sin_port);
-    end
-  else
-    begin
-    Result := '(NI)'
-    end;
+  Result := PadRight('TCP: (' + AddrToString(AddrLocal) + '-' + AddrToString(AddrRemote) + ')', 48)
 end;
 
 function GetMessageLogText(Message: PcnocStackMessage): string;
@@ -141,7 +150,7 @@ constructor TcnocStackBinaryReaderThread.Create(Stream: TSocketStream);
 begin
   FStream := Stream;
   FLogger := TLogger.GetInstance;
-  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress);
+  FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress, FStream.LocalAddress);
 
   Inherited Create(False);
 end;
@@ -161,14 +170,14 @@ procedure TcnocStackBinaryReaderThread.Execute;
     if r = 0 then
       begin
       if Assigned(FLogger) then
-        FLogger.Debug(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + 'Connection closed');
+        FLogger.Debug(FLogSockAddrText + 'Connection closed');
       Terminate;
       end;
     if r < 0 then
       begin
       // In fact this is an error.. How to handle this?
       if Assigned(FLogger) then
-        FLogger.Info(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + 'Connection closed due to error: ' + IntToStr(FStream.LastError));
+        FLogger.Info(FLogSockAddrText + 'Connection closed due to error: ' + IntToStr(FStream.LastError));
       Terminate;
       end;
     Result:=Len;
@@ -201,7 +210,7 @@ begin
         end;
       if Assigned(FLogger) then
         if TLevelUnit.TRACE.IsGreaterOrEqual(TLogger.GetInstance.GetLevel()) then
-          TLogger.GetInstance.Trace(PadRight('TCP: (' + FLogSockAddrText + ')',  28) + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' => ' + PadRight(Message^.GetStackName,15) +
+          TLogger.GetInstance.Trace(FLogSockAddrText + PadRight(ScnocStackMessageType[Message^.Header.MessageType], 16) + ' => ' + PadRight(Message^.GetStackName,15) +
             GetMessageLogText(Message));
       HandleReceivedMessage(Message);
       end;
