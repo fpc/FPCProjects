@@ -73,7 +73,9 @@ implementation
 
 constructor TcnocStackInternalStack.Create;
 begin
-  FQueue := TcnocStackMessageTypesQueue.create(10, INFINITE, 10);
+  // In fact, when the stack is full, it is full. But still, just in case a timeout
+  // of 20 msecs.
+  FQueue := TcnocStackMessageTypesQueue.create(10, 20, 10);
   FListeners := TStackListenerList.Create();
 end;
 
