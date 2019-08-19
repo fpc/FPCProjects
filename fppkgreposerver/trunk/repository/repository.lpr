@@ -18,7 +18,6 @@ uses
 
 var
   GlobalSettings: TDCSGlobalSettings;
-  ConfigFileStream: TFileStream;
   ConfigFileName: String;
 
 begin
@@ -41,12 +40,7 @@ begin
     ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
     if FileExists(ConfigFileName) then
     begin
-      ConfigFileStream := TFileStream.Create(ConfigFileName, fmOpenRead);
-      try
-        GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
-      finally
-        ConfigFileStream.Free;
-      end;
+      GlobalSettings.LoadSettingsFromIniFile(ConfigFileName);
     end;
   end;
 
