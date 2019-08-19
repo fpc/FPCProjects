@@ -23,7 +23,6 @@ uses
 
 var
   GlobalSettings: TDCSGlobalSettings;
-  ConfigFileStream: TFileStream;
   configfilename: string;
 
   RepositoryHandler: TrepRepositoryHander;
@@ -52,19 +51,10 @@ begin
 
   ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
   if FileExists(ConfigFileName) then
-    begin
-    ConfigFileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
-    try
-      GlobalSettings.LoadSettingsFromIniStream(ConfigFileStream);
-    finally
-      ConfigFileStream.Free;;
-    end;
-  end;
+    GlobalSettings.LoadSettingsFromIniFile(configfilename);
 
   if Application.HasOption('e') then
-    begin
     GlobalSettings.LoadSettingsFromEnvironment();
-    end;
 
   GlobalSettings.CheckProgramParameters(Application);
 

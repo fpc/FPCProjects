@@ -52,8 +52,6 @@ begin
   Handled := Assigned(AResponse);
 end;
 
-{ TrepPackageWM }
-
 constructor TrepPackageHander.Create;
 var
   GlobalSettings: TDCSGlobalSettings;
