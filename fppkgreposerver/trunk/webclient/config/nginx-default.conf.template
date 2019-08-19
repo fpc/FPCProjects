@@ -28,6 +28,11 @@ upstream identityserver_upstream {
     server ${HOST}:5000 backup;
 }
 
+upstream category_upstream {
+    server ${Identityserver_HOST}:8484;
+    server ${HOST}:8484 backup;
+}
+
 server {
     listen       4200;
     server_name  localhost;
@@ -97,5 +102,9 @@ server {
 
     location /identityserver/ {
         proxy_pass http://identityserver_upstream/;
+    }
+
+    location /category/ {
+        proxy_pass http://category_upstream/;
     }
 }

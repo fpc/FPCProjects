@@ -89,3 +89,10 @@ services:
         - Repository_fixes32_Testing__BaseURL=http://localhost:4200/repo/testing/
         - Repository_fixes32_Production__BaseURL=http://localhost:4200/repo/prod/
 
+  category:
+      network_mode: "host"
+      environment:
+        - OIDC__OpenIDProviderURL=http://localhost:5000
+        - HTTP__AllowCorsOrigin=http://localhost:4200
+        - Stack__host=localhost
+        - Stack__port=5425

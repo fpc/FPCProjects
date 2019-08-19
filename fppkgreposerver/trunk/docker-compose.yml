@@ -72,6 +72,17 @@ services:
       environment:
         - Storage__PackageListFile=/home/locuser/data/packages.json
 
+  category:
+      image: 'fpc.cnoc.nl:5000/category:latest'
+      build:
+        context: .
+        dockerfile: docker-category.dockerfile
+      container_name: category
+      volumes:
+        - packagedata:/home/locuser/data
+      environment:
+        - Storage__CategoryListFile=/home/locuser/data/category.json
+
   buildagent_trunk:
       image: 'fpc.cnoc.nl:5000/buildagent:latest'
       build:
