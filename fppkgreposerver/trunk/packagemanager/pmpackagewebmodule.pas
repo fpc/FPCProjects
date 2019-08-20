@@ -14,6 +14,8 @@ uses
   fprWebModule,
   fprErrorHandling,
   fprFPCVersion,
+  fprJSONFileStreaming,
+  fprStackClient,
   dcsGlobalSettings,
   cnocStackbinaryclient,
   pmPackage,
@@ -27,7 +29,7 @@ type
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     FPackageStreamer: TpmPackageJSonStreaming;
-    FStackClient: TcnocStackBinaryClient;
+    //FStackClient: TcnocStackBinaryClient;
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
@@ -202,7 +204,7 @@ var
 begin
   PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') then
-    TpmPackageCollection.Instance.SaveToFile(PackageListFile);
+    SaveCollectionToJSONFile(TpmPackageCollection.Instance, PackageListFile);
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);
@@ -212,10 +214,8 @@ begin
   inherited Create(AOwner);
   GlobalSettings := TDCSGlobalSettings.GetInstance;
 
-  FStackClient := TcnocStackBinaryClient.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToInt(GlobalSettings.GetSettingAsString('StackPort')));
-  FStackClient.Connect();
   FPackageStreamer := TpmPackageJSonStreaming.Create;
-  FPackageStreamer.StackClient := FStackClient;
+  FPackageStreamer.StackClient := TfprStackClientSingleton.Instance.Client;
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
@@ -224,7 +224,6 @@ end;
 
 Destructor TpmPackageWM.Destroy;
 begin
-  FStackClient.Free;
   FPackageStreamer.Free;
   inherited Destroy;
 end;

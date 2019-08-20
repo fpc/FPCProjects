@@ -8,9 +8,10 @@ uses
   Classes,
   SysUtils,
   fpmkunit,
+  fpjsonrtti,
   fprGCollection,
   fprFPCVersion,
-  fpjsonrtti;
+  fprModel;
 
 type
   TpmPackageState = (pmpsInitial, pmpsAcceptance, pmpsApproved, pmpsPublished, pmpsRevoked);
@@ -62,7 +63,9 @@ type
     FOwnerId: string;
     FPackageState: TpmPackageState;
     FPackageVersionList: TpmPackageVersionCollection;
+    FCategoryId: Integer;
     procedure SetPackageState(AValue: TpmPackageState);
+    function GetCategory: string;
   public
     constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
@@ -72,6 +75,8 @@ type
     property OwnerId: string read FOwnerId write FOwnerId;
     property PackageState: TpmPackageState read FPackageState write SetPackageState;
     property PackageVersionList: TpmPackageVersionCollection read FPackageVersionList;
+    property Category: string read GetCategory;
+    property CategoryId: Integer read FCategoryId write FCategoryId;
   end;
 
   TpmGenPackageCollection = specialize TcnocGCollection<TpmPackage>;
@@ -87,8 +92,6 @@ type
     class destructor Destroy;
     class property Instance: TpmPackageCollection read GetInstance;
     function FindPackageByName(AName: string): TpmPackage;
-    procedure LoadFromFile(AFileName: string);
-    procedure SaveToFile(AFileName: string);
   end;
 
   { TpmManifest }
@@ -199,6 +202,19 @@ begin
     end;
 end;
 
+function TpmPackage.GetCategory: string;
+var
+  ACategory: TfprPackageCategory;
+begin
+  Result := '';
+  if FCategoryId > 0 then
+    begin
+    ACategory := TfprPackageCategoryCollectionStackSingleton.GetAutoReadInstance.FindCategoryById(FCategoryId);
+    if Assigned(ACategory) then
+      Result := ACategory.Name;
+    end;
+end;
+
 { TpmPackageCollection }
 
 class function TpmPackageCollection.GetInstance: TpmPackageCollection; static;
@@ -229,44 +245,6 @@ begin
       end;
     end;
   Result := Nil;
-end;
-
-procedure TpmPackageCollection.LoadFromFile(AFileName: string);
-var
-  DeStreamer: TJSONDeStreamer;
-  FS: TStringStream;
-begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
-  try
-    FS := TStringStream.Create();
-    try
-      FS.LoadFromFile(AFileName);
-      FS.Seek(0, soFromBeginning);
-      DeStreamer.JSONToCollection(FS.DataString, Self);
-    finally
-      FS.Free;
-    end;
-  finally
-    DeStreamer.Free;
-  end;
-end;
-
-procedure TpmPackageCollection.SaveToFile(AFileName: string);
-var
-  Streamer: TJSONStreamer;
-  FS: TStringStream;
-begin
-  Streamer := TJSONStreamer.Create(nil);
-  try
-    FS := TStringStream.Create(Streamer.ObjectToJSONString(Self));
-    try
-      FS.SaveToFile(AFileName);
-    finally
-      FS.Free;
-    end;
-  finally
-    Streamer.Free;
-  end;
 end;
 
 end.

@@ -10,8 +10,12 @@ uses
   sysutils,
   fphttpapp,
   dcsGlobalSettings,
+  cnocStackJSONHandlerThread,
   fprErrorHandling,
   fprFPCVersion,
+  fprJSONFileStreaming,
+  fprStackClient,
+  fprModel,
   pmPackageWebModule,
   pmPackage,
   pmPackageJSonStreaming,
@@ -56,7 +60,10 @@ begin
 
   PackageListFile := GlobalSettings.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') and FileExists(PackageListFile) then
-    TpmPackageCollection.Instance.LoadFromFile(PackageListFile);
+    LoadCollectionFromJSONFile(TpmPackageCollection.Instance, PackageListFile);
+
+  TfprStackClientSingleton.Instance.InitHandler(['CategoryMonitor']);
+  TfprStackClientSingleton.Instance.Handler.AddHandler('signal', TfprPackageCategoryMonitorSingleton.Instance);
 
   Application.Port:=8088;
   Application.OnShowRequestException := @fprOnShowRequestException;
