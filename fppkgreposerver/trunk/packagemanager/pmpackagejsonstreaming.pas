@@ -14,6 +14,8 @@ uses
   cnocStackBinaryClient,
   cnocStackMessageTypes,
   cnocStackErrorCodes,
+  csJSONRttiStreamHelper,
+  csModel,
   fprErrorHandling,
   fprGCollection,
   pmPackage;
@@ -26,11 +28,17 @@ type
   private
     FFilterOutOldVersions: Boolean;
     FStackClient: TcnocStackBinaryClient;
+
+    FSerializer: TJSONRttiStreamClass;
+
     function CollectionToJSon(AList: TCollection): TJSONArray;
     function PackageVersionCollectionToJSonFiltered(APackage: TpmPackage; AVersionCollection: TpmPackageVersionCollection): TJSONArray;
 
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
   public
+    constructor Create; virtual;
+    destructor Destroy; override;
+
     function PackageToJSon(APackage: TpmPackage): string;
     procedure JSonToPackage(AJSonStr: String; APackage: TpmPackage);
 
@@ -118,40 +126,17 @@ begin
 end;
 
 function TpmPackageJSonStreaming.PackageToJSon(APackage: TpmPackage): string;
-var
-  Streamer: TJSONStreamer;
-  JO: TJSONObject;
 begin
-  Streamer := TJSONStreamer.Create(nil);
-  try
-    Streamer.OnStreamProperty := @StreamerStreamProperty;
-    Streamer.Options := Streamer.Options + [jsoLowerPropertyNames];
-    JO := Streamer.ObjectToJSON(APackage);
-    try
-      Result := JO.AsJSON;
-    finally
-      JO.Free;
-    end;
-  finally
-    Streamer.Free;
-  end;
+  Result := FSerializer.ObjectToJSONString(APackage);
 end;
 
 procedure TpmPackageJSonStreaming.JSonToPackage(AJSonStr: String; APackage: TpmPackage);
-var
-  DeStreamer: TJSONDeStreamer;
 begin
-  DeStreamer := TJSONDeStreamer.Create(nil);
   try
-    DeStreamer.Options := [jdoCaseInsensitive];
-    try
-      DeStreamer.JSONToObject(AJSonStr, APackage);
-    except
-      on E: Exception do
-        raise EJsonWebException.CreateFmt('Failed to parse package-data: %s', [E.Message]);
-    end;
-  finally
-    DeStreamer.Free;
+    FSerializer.JSONStringToObject(AJSonStr, APackage);
+  except
+    on E: Exception do
+      raise EJsonWebException.CreateFmt('Failed to parse package-data: %s', [E.Message]);
   end;
 end;
 
@@ -159,7 +144,7 @@ function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackag
 var
   JSONArr: TJSONArray;
 begin
-  JSONArr := CollectionToJSon(APackageList);
+  JSONArr := FSerializer.ObjectToJSON(APackageList) as TJSONArray;
   try
     Result := JSONArr.AsJSON;
   finally
@@ -232,6 +217,27 @@ begin
     Streamer.Free;
     RepPackageCol.Free;
   end;
+end;
+
+constructor TpmPackageJSonStreaming.Create;
+var
+  Description: TcsStreamDescription;
+begin
+  inherited Create;
+  FSerializer := TJSONRttiStreamClass.Create;
+  FSerializer.DescriptionStore.Describer.DefaultExportNameStyle := tcsensLowerCase;
+  FSerializer.DescriptionStore.Describer.DefaultImportNameStyle := tcsinsLowerCase;
+  FSerializer.DescriptionStore.Describer.Flags := [tcsdfCollectionAsList];
+
+  FSerializer.DescriptionStore.GetDescription(TpmPackageCollection).ListDescription.DefaultSubObjectDescription :=
+    FSerializer.DescriptionStore.GetDescription(TpmPackage);
+
+end;
+
+destructor TpmPackageJSonStreaming.Destroy;
+begin
+  FSerializer.Free;
+  inherited Destroy;
 end;
 
 end.
