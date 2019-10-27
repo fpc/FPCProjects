@@ -185,7 +185,7 @@ begin
   else
     begin
     Category := CategoryList.FindCategoryById(StrToIntDef(CategoryId, -1));
-    if not Assigned(CategoryList) then
+    if not Assigned(Category) then
       raise EJsonWebException.CreateFmtHelp('Category [%s] not found', [CategoryId], 404);
     result := ObjectToJSON(Category);
     Category.Free;
