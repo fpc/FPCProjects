@@ -14,6 +14,7 @@ uses
   fprErrorHandling,
   fprFPCVersion,
   fprJSONFileStreaming,
+  fprSetupLogging,
   fprStackClient,
   fprModel,
   pmPackageWebModule,
@@ -40,6 +41,8 @@ begin
   GlobalSettings.AddSetting('StackHost', 'Stack', 'host', 'stackhost', 's', dcsPHasParameter);
   GlobalSettings.AddSetting('StackPort', 'Stack', 'port', 'stackport', #0, dcsPHasParameter);
 
+  AddLoggingSettings;
+
   ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
   if FileExists(ConfigFileName) then
   begin
@@ -55,6 +58,8 @@ begin
   begin
     GlobalSettings.LoadSettingsFromEnvironment();
   end;
+
+  SetupLogging;
 
   TfprFPCVersionCollection.Instance.LoadFromSettings;
 
