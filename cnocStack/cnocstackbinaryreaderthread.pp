@@ -82,7 +82,7 @@ type
         begin
         IPAddr := @Addr.sin_Addr.s_addr;
         Result := IntToStr(IPAddr^[1]) + '.' + IntToStr(IPAddr^[2]) + '.' + IntToStr(IPAddr^[3]) + '.' + IntToStr(IPAddr^[4]);
-        Result := Result + ':' + IntToStr(Addr.sin_port);
+        Result := Result + ':' + IntToStr(BEtoN(Addr.sin_port));
         end;
       AF_LOCAL:
         begin
@@ -151,6 +151,9 @@ begin
   FStream := Stream;
   FLogger := TLogger.GetInstance;
   FLogSockAddrText := SockAddToLogText(FStream.RemoteAddress, FStream.LocalAddress);
+
+  if Assigned(FLogger) then
+    FLogger.Debug(FLogSockAddrText + 'Connection established');
 
   Inherited Create(False);
 end;
