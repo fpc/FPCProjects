@@ -135,16 +135,24 @@ begin
     end;
 
   ConfigurationURL := ConcatUri(OpenIDProvider, '.well-known/openid-configuration');
-  ConfigurationContent := TFPHTTPClient.SimpleGet(ConfigurationURL);
+  try
+    ConfigurationContent := TFPHTTPClient.SimpleGet(ConfigurationURL);
+  except
+    on E: Exception do
+      begin
+      FLatestError := Format('Failed to retrieve OpenID Provider''s configuration from [%s]: %s', [ConfigurationURL, E.Message]);
+      Exit;
+      end;
+  end;
   if ConfigurationContent='' then
     begin
-    FLatestError := Format('Failed to retrieve OpenID Provider''s configuration from %s', [ConfigurationURL]);
+    FLatestError := Format('Failed to retrieve OpenID Provider''s configuration from [%s]', [ConfigurationURL]);
     Exit;
     end;
   JSONData := GetJSON(ConfigurationContent);
   if JSONData.JSONType <> jtObject then
     begin
-    FLatestError := Format('Received invalid configuration-data from url %s: %s', [ConfigurationURL, ConfigurationContent]);
+    FLatestError := Format('Received invalid configuration-data from url "%s": %s', [ConfigurationURL, ConfigurationContent]);
     Exit;
     end;
 
