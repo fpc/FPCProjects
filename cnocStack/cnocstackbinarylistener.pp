@@ -424,7 +424,7 @@ begin
   FServer := TInetServer.Create(FHost, FPort);
   try
     // Set TCP_NODELAY, to avoid a latency of 40 mseconds on small
-    // packat sizes.
+    // packet sizes.
     i := 1;
     FServer.SetSockopt(IPPROTO_TCP, TCP_NODELAY, integer(i), SizeOf(i));
 
