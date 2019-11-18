@@ -208,7 +208,7 @@ procedure TcnocStackBinaryClient.Connect();
 begin
   if IsConnected then
     Raise Exception.Create('Already connected');
-  FSocket := TInetSocket.Create(FHost, FPort, 1000);
+  FSocket := TInetSocket.Create(FHost, FPort, 5000);
   {$IFDEF Linux}
   FSocket.WriteFlags := MSG_NOSIGNAL;
   {$ENDIF}
