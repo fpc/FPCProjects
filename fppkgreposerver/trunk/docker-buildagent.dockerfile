@@ -1,6 +1,6 @@
 FROM fedorabaseimage
 
-RUN dnf -y install make binutils subversion glibc-devel rsync
+RUN dnf -y install make binutils subversion glibc-devel rsync diffutils
 RUN dnf clean all
 
 USER locuser
