@@ -42,7 +42,12 @@ begin
     FClient := TcnocStackBinaryClient.Create(TDCSGlobalSettings.GetInstance.GetSettingAsString('StackHost'), StrToInt(TDCSGlobalSettings.GetInstance.GetSettingAsString('StackPort')));
   Result := FClient;
   if not Result.IsConnected then
-    Result.Connect();
+    try
+      Result.Connect();
+    except
+      // GetClient should not fail when the connection failed.
+      // So do nothing...
+    end;
 end;
 
 function TfprStackClient.GetHandler: TcnocStackJSONHandlerThread;
