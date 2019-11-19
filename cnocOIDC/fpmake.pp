@@ -20,6 +20,7 @@ begin
     P.Dependencies.Add('cnocRSA');
     P.Dependencies.Add('fcl-web');
     P.Dependencies.Add('dcpcrypt');
+    P.Dependencies.Add('log4fpc');
 
     T:=P.Targets.AddUnit('cnocopenidconnect.pas');
     T:=P.Targets.AddUnit('cnocoidcidtoken.pas');

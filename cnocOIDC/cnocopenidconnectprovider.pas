@@ -24,6 +24,7 @@ uses
   URIParser,
   fpjwt,
   cnocRSA,
+  TLoggerUnit,
   cnocOIDCIDToken;
 
 type
@@ -415,6 +416,8 @@ begin
     try
       JWT.AsEncodedString := AJWTAsString;
       Result := OIDCHandler.VerifyJWT(JWT, AJWTAsString);
+      if not Result then
+        TLogger.GetInstance('cnocOIDC').Debug('Token not valid: ' + OIDCHandler.GetLatestError);
       AJWT := JWT;
       JWT := nil;
     finally
@@ -603,6 +606,7 @@ begin
   AuthCookie := ARequest.CookieFields.Values['Authentication'];
   if not FAuthenticatedSessionMap.Find(AuthCookie, SessionIdx) then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint login refused, missing or invalid authentication cookie');
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     Exit;
@@ -612,6 +616,7 @@ begin
 
   if CompareDateTime(LocalTimeToUniversal(Now), AuthSession.ExpirationTime) = GreaterThanValue then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint login refused, session expired');
     FAuthenticatedSessionMap.Delete(SessionIdx);
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
@@ -731,6 +736,7 @@ begin
   LogoutId := ARequest.QueryFields.Values['logoutId'];
   if not FLogoutInfoMap.Find(LogoutId, SessionIdx) then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint logout refused, invalid logoutId');
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     Exit;
@@ -740,6 +746,7 @@ begin
 
   if CompareDateTime(LocalTimeToUniversal(Now), LogoutInfo.ExpirationTime) = GreaterThanValue then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint logout refused, logoutId expired');
     FLogoutInfoMap.Delete(SessionIdx);
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
@@ -749,6 +756,7 @@ begin
   AuthCookie := ARequest.CookieFields.Values['Authentication'];
   if not FAuthenticatedSessionMap.Find(AuthCookie, SessionIdx) then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint logout refused, missing or invalid authentication cookie');
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     Exit;
@@ -758,6 +766,7 @@ begin
 
   if LogoutInfo.IdToken <> AuthSession.IdToken then
     begin
+    TLogger.GetInstance('cnocOIDC').Debug('Authorization-endpoint logout refused, trying to logout for a token the user is currently not logged in with');
     AResponse.Code := 403;
     AResponse.CodeText := GetStatusCode(AResponse.Code);
     Exit;
@@ -790,7 +799,10 @@ begin
 
     i := FRevokedTokenMap.Count;
     if FRevokedTokenMap.Find(s, i) then
+      begin
+      TLogger.GetInstance('cnocOIDC').Debug('Access to user-info endpoint refused, token is revoked');
       AllowRequest := False;
+      end;
 
     if AllowRequest then
       begin
@@ -818,7 +830,9 @@ begin
       AResponse.Pragma := 'no-cache';
       AResponse.CacheControl := 'no-store, no-cache, max-age=0';
       end;
-    end;
+    end
+  else
+    TLogger.GetInstance('cnocOIDC').Debug('Access to user-info endpoint refused, bearer-token is missing');
 
   if not AllowRequest then
     begin
