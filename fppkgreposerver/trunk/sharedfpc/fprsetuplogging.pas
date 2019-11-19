@@ -84,7 +84,10 @@ begin
       end
     else
       raise Exception.CreateFmt('Invalid log-format [%s]. Possible values are: Console, File and Syslog.', [LogFormat]);
-    Appender.SetThreshold(toLevel(GlobalSettings.GetSettingAsString('LogLevel_'+TemplateList.Values[i])));
+
+    LogLevel := GlobalSettings.GetSettingAsString('LogLevel_'+TemplateList.Values[i]);
+    if LogLevel <> '' then
+      Appender.SetThreshold(toLevel(LogLevel));
   end;
 end;
 
