@@ -10,6 +10,7 @@ uses
   TLoggerUnit,
   TAppenderUnit,
   TEventLogAppenderUnit,
+  TConsoleAppenderUnit,
   TLevelUnit,
   TRollingFileAppenderUnit;
 
@@ -38,7 +39,7 @@ var
   i: Integer;
   LogFormat: String;
   LogFilename: string;
-  LogDirectory: string;
+  LogDirectory, LogLevel: string;
   Appender: TAppender;
   LogMaxFilesize: Longint;
   LogMaxFileCount: LongInt;
@@ -53,7 +54,8 @@ begin
     LogFormat := GlobalSettings.GetSettingAsString('LogFormat_'+TemplateList.Values[i]);
     if SameText(LogFormat, 'Console') then
       begin
-      // ToDo
+      Appender  := TConsoleAppender.Create();
+      TLogger.GetInstance().AddAppender(Appender)
       end
     else if SameText(LogFormat, 'File') then
       begin
