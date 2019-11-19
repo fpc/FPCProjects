@@ -27,7 +27,7 @@ begin
       begin
       ExcMessage := StringReplace(AnException.Message, LineEnding, '\n', [rfReplaceAll]);
       AResponse.ContentType := 'application/json';
-      AResponse.Content := Format('{"error":{"msg":%s}}', [AnsiQuotedStr(ExcMessage, '"')]);
+      AResponse.Content := Format('{"error":{"msg":"%s"}}', [StringReplace(ExcMessage, '"', '\"', [rfReplaceAll])]);
       end
     else
       AResponse.Content := AnException.Message;
@@ -41,7 +41,7 @@ begin
   else
     begin
     ExcMessage := StringReplace(AnException.Message, LineEnding, '\n', [rfReplaceAll]);
-    AResponse.Content := Format('{"error":{"msg":%s}}', [AnsiQuotedStr(ExcMessage, '"')]);
+    AResponse.Content := Format('{"error":{"msg":"%s"}}', [StringReplace(ExcMessage, '"', '\"', [rfReplaceAll])]);
     AResponse.ContentType := 'application/json';
     AResponse.Code := 200;
     AResponse.CodeText := 'OK';
