@@ -915,7 +915,8 @@ begin
 
       UserName := ARequest.ContentFields.Values['Username'];
       Password := ARequest.ContentFields.Values['Password'];
-      RememberLogin := StrToBool(ARequest.ContentFields.Values['RememberLogin']);
+      if not TryStrToBool(ARequest.ContentFields.Values['RememberLogin'], RememberLogin) then
+        RememberLogin := False;
       Subject := '';
       LoginHandled := False;
       FailureMessage := '';;
