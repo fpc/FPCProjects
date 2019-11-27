@@ -96,6 +96,7 @@ type
     procedure AddSetting(ASettingName, ASection, AKey, AParameterName: string; AParameterLetter: char;
       AParameter: TDCSSettingParameter; ADefaultValue: string = '');
     procedure LoadSettingsFromIniStream(AStream: TStream);
+    procedure LoadSettingsFromIniFile(AFilename: string);
     procedure LoadSettingsFromEnvironment();
     function CheckProgramParameters(AnApplication: TCustomApplication; AllErrors: Boolean = False): string;
     procedure EvaluateProgramParameters(AnApplication: TCustomApplication);
@@ -679,6 +680,18 @@ begin
   if not Assigned(FInstance) then
     FInstance := TDCSGlobalSettings.Create;
   Result := FInstance;
+end;
+
+procedure TDCSGlobalSettings.LoadSettingsFromIniFile(AFilename: string);
+var
+  ConfigFileStream: TFileStream;
+begin
+  ConfigFileStream := TFileStream.Create(AFilename, fmOpenRead);
+  try
+    LoadSettingsFromIniStream(ConfigFileStream);
+  finally
+    ConfigFileStream.Free;
+  end;
 end;
 
 end.
