@@ -13,7 +13,10 @@ uses
   idIdentityWebmodule,
   cnocOpenIDConnectProvider,
   dcsGlobalSettings,
-  fprErrorHandling;
+  TLoggerUnit,
+  TAppenderUnit,
+  fprErrorHandling,
+  fprSetupLogging;
 
 var
   ConfigFileStream: TFileStream;
@@ -24,6 +27,8 @@ begin
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('wwwroot', 'HTTP', 'wwwroot', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('BaseURL', 'HTTP', 'BaseURL', '', #0, dcsPHasParameter);
+
+  AddLoggingSettings;
 
   if Application.HasOption('e') then
   begin
@@ -40,6 +45,11 @@ begin
       ConfigFileStream.Free;
     end;
   end;
+
+  SetupLogging;
+
+  if TLogger.GetInstance().GetAllAppenders().Count > 0 then
+    TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance().GetAllAppenders.Items[0]);
 
   MimeTypesFile := '/etc/mime.types';
 
