@@ -46,6 +46,7 @@ type
 
     function PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
     function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
+    procedure SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
     procedure JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
     property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
     property FilterOutOldVersions: Boolean read FFilterOutOldVersions write FFilterOutOldVersions;
@@ -272,6 +273,18 @@ end;
 procedure TpmPackageJSonStreaming.JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
 begin
   FSerializer.JSONStringToObject(AJSonStr, APackageList);
+end;
+
+procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
+var
+  FS: TStringStream;
+begin
+  FS := TStringStream.Create(FPackageStreamer.PackageCollectionToJSon(APackageList));
+  try
+    FS.SaveToFile(Filename);
+  finally
+    FS.Free;
+  end;
 end;
 
 end.

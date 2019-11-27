@@ -83,6 +83,18 @@ services:
       environment:
         - Storage__CategoryListFile=/home/locuser/data/category.json
 
+  keyword:
+      image: 'fpc.cnoc.nl:5000/keyword:latest'
+      build:
+        context: .
+        dockerfile: docker-keyword.dockerfile
+      container_name: keyword
+      volumes:
+        - packagedata:/home/locuser/data
+      environment:
+        - Storage__KeywordListFile=/home/locuser/data/keyword.json
+
+
   buildagent_trunk:
       image: 'fpc.cnoc.nl:5000/buildagent:latest'
       build:

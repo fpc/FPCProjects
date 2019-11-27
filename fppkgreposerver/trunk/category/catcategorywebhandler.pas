@@ -156,9 +156,9 @@ begin
   CheckValid(Category);
 
   Collection := TfprPackageCategoryCollectionSingleton.Instance;
-  if Assigned(Collection.FindCategoryByName(Category.Name)) then
+  if Assigned(Collection.FindObjectByName(Category.Name)) then
     raise EJsonWebException.CreateFmtHelp('Package category with name [%s] already exists.', [Category.Name], 422);
-  if Assigned(Collection.FindCategoryById(Category.CategoryId)) then
+  if Assigned(Collection.FindObjectById(Category.CategoryId)) then
     raise EJsonWebException.CreateFmtHelp('Package category with id [%d] already exists.', [Category.CategoryId], 422);
   Category.Collection := Collection;
 
@@ -184,7 +184,7 @@ begin
     end
   else
     begin
-    Category := CategoryList.FindCategoryById(StrToIntDef(CategoryId, -1));
+    Category := CategoryList.FindObjectById(StrToIntDef(CategoryId, -1));
     if not Assigned(Category) then
       raise EJsonWebException.CreateFmtHelp('Category [%s] not found', [CategoryId], 404);
     result := ObjectToJSON(Category);
@@ -224,7 +224,7 @@ begin
     raise EJsonWebException.CreateHelp('Not enough rights to modify package categories.', 403);
 
   Collection := TfprPackageCategoryCollectionSingleton.Instance;
-  Category := Collection.FindCategoryById(StrToIntDef(CategoryId, -1));
+  Category := Collection.FindObjectById(StrToIntDef(CategoryId, -1));
   if not Assigned(Category) then
     raise EJsonWebException.CreateFmtHelp('Category with id [%d] does not exist', [CategoryId], 404);
 

@@ -101,3 +101,11 @@ services:
         - HTTP__AllowCorsOrigin=http://localhost:4200
         - Stack__host=localhost
         - Stack__port=5425
+
+  keyword:
+      network_mode: "host"
+      environment:
+        - OIDC__OpenIDProviderURL=http://localhost:5000
+        - HTTP__AllowCorsOrigin=http://localhost:4200
+        - Stack__host=localhost
+        - Stack__port=5425

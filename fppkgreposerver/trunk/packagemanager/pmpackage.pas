@@ -15,6 +15,8 @@ uses
 
 type
   TpmPackageState = (pmpsInitial, pmpsAcceptance, pmpsApproved, pmpsPublished, pmpsRevoked);
+  TpmArrayOfString = array of string;
+  TpmArrayOfInteger = array of integer;
 
   { TpmPackageVersion }
 
@@ -64,8 +66,12 @@ type
     FPackageState: TpmPackageState;
     FPackageVersionList: TpmPackageVersionCollection;
     FCategoryId: Integer;
+    FKeywordIds: TpmArrayOfInteger;
     procedure SetPackageState(AValue: TpmPackageState);
     function GetCategory: string;
+    function GetKeywords: TpmArrayOfString;
+    function GetKeywordIds: TpmArrayOfInteger;
+    procedure SetKeywordsIds(AValue: TpmArrayOfInteger);
   public
     constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
@@ -77,6 +83,8 @@ type
     property PackageVersionList: TpmPackageVersionCollection read FPackageVersionList;
     property Category: string read GetCategory;
     property CategoryId: Integer read FCategoryId write FCategoryId;
+    property Keywords: TpmArrayOfString read GetKeywords;
+    property KeywordIds: TpmArrayOfInteger read GetKeywordIds write SetKeywordsIds;
   end;
 
   TpmGenPackageCollection = specialize TcnocGCollection<TpmPackage>;
@@ -209,10 +217,37 @@ begin
   Result := '';
   if FCategoryId > 0 then
     begin
-    ACategory := TfprPackageCategoryCollectionStackSingleton.GetAutoReadInstance.FindCategoryById(FCategoryId);
+    ACategory := TfprPackageCategoryCollectionStackSingleton.GetAutoReadInstance('Category').FindObjectById(FCategoryId);
     if Assigned(ACategory) then
       Result := ACategory.Name;
     end;
+end;
+
+function TpmPackage.GetKeywordIds: TpmArrayOfInteger;
+begin
+  Result := FKeywordIds;
+end;
+
+function TpmPackage.GetKeywords: TpmArrayOfString;
+var
+  AKeyword: TfprPackageKeyword;
+  i: Integer;
+  t: array of string;
+begin
+  Result := [];
+  for i := 0 to Length(FKeywordIds) -1 do
+    begin
+    AKeyword := TfprPackageKeywordCollectionStackSingleton.GetAutoReadInstance('Keyword').FindObjectById(FKeywordIds[i]);
+    if not Assigned(AKeyword) then
+      Result := Concat(Result, ['(deleted)'])
+    else
+      Result := Concat(Result, [AKeyword.Name]);
+    end;
+end;
+
+procedure TpmPackage.SetKeywordsIds(AValue: TpmArrayOfInteger);
+begin
+  FKeywordIds := AValue;
 end;
 
 { TpmPackageCollection }

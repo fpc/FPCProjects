@@ -33,6 +33,11 @@ upstream category_upstream {
     server ${HOST}:8484 backup;
 }
 
+upstream keyword_upstream {
+    server ${Identityserver_HOST}:8585;
+    server ${HOST}:8585 backup;
+}
+
 server {
     listen       4200;
     server_name  localhost;
@@ -107,4 +112,9 @@ server {
     location /category/ {
         proxy_pass http://category_upstream/;
     }
+
+    location /keyword/ {
+        proxy_pass http://keyword_upstream/;
+    }
 }
+

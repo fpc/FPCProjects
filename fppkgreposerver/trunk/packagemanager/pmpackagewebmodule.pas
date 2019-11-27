@@ -17,7 +17,6 @@ uses
   fprJSONFileStreaming,
   fprStackClient,
   dcsGlobalSettings,
-  cnocStackbinaryclient,
   pmPackage,
   pmPackageJSonStreaming;
 
@@ -29,7 +28,6 @@ type
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     FPackageStreamer: TpmPackageJSonStreaming;
-    //FStackClient: TcnocStackBinaryClient;
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
@@ -204,7 +202,7 @@ var
 begin
   PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') then
-    SaveCollectionToJSONFile(TpmPackageCollection.Instance, PackageListFile);
+    FPackageStreamer.SavePackageCollectionToFile(TpmPackageCollection.Instance, PackageListFile);
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);
