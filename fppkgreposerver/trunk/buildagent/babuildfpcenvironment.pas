@@ -260,9 +260,14 @@ end;
 function TbaBuildFPCEnvironment.GetAdditionalPackages: TStringArray;
 var
   GlobalSettings: TDCSGlobalSettings;
+  AdditionalPackages: String;
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
-  Result := GlobalSettings.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'AdditionalPackages').Split([',',';']);
+  AdditionalPackages := GlobalSettings.GetSettingAsStringByKey(GetFPCEnvironmentKey, 'AdditionalPackages');
+  if AdditionalPackages<>'' then
+    Result := AdditionalPackages.Split([',',';'])
+  else
+    Result := [];
 end;
 
 initialization
