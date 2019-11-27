@@ -29,7 +29,6 @@ type
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
   private
     FPackageStreamer: TpmPackageJSonStreaming;
-    //FStackClient: TcnocStackBinaryClient;
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
@@ -200,11 +199,19 @@ end;
 
 procedure TpmPackageWM.SavePackageList;
 var
+  FS: TStringStream;
   PackageListFile: String;
 begin
   PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') then
-    SaveCollectionToJSONFile(TpmPackageCollection.Instance, PackageListFile);
+    begin
+    FS := TStringStream.Create(FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance));
+    try
+      FS.SaveToFile(PackageListFile);
+    finally
+      FS.Free;
+    end;
+    end;
 end;
 
 constructor TpmPackageWM.Create(AOwner: TComponent);

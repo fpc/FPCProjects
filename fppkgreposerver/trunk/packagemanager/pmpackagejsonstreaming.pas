@@ -35,6 +35,8 @@ type
     function PackageVersionCollectionToJSonFiltered(APackage: TpmPackage; AVersionCollection: TpmPackageVersionCollection): TJSONArray;
 
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
+    function SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
+    function GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -44,6 +46,7 @@ type
 
     function PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
     function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
+    procedure JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
     property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
     property FilterOutOldVersions: Boolean read FFilterOutOldVersions write FFilterOutOldVersions;
   end;
@@ -220,8 +223,6 @@ begin
 end;
 
 constructor TpmPackageJSonStreaming.Create;
-var
-  Description: TcsStreamDescription;
 begin
   inherited Create;
   FSerializer := TJSONRttiStreamClass.Create;
@@ -232,12 +233,45 @@ begin
   FSerializer.DescriptionStore.GetDescription(TpmPackageCollection).ListDescription.DefaultSubObjectDescription :=
     FSerializer.DescriptionStore.GetDescription(TpmPackage);
 
+  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageState').OnSetValueAsString := @SetPackageStateAsString;
+  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageState').OnGetValueAsString := @GetPackageStateAsString;
+
+  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageVersionList').ListDescription.DefaultSubObjectDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageVersion).Clone;
 end;
 
 destructor TpmPackageJSonStreaming.Destroy;
 begin
   FSerializer.Free;
   inherited Destroy;
+end;
+
+function TpmPackageJSonStreaming.SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
+var
+  State: TpmPackageState;
+begin
+  Assert(AnInstance is TpmPackage);
+  Result:=False;
+  for State := low(TpmPackageState) to high (TpmPackageState) do
+    begin
+    if SameText(CpmPackageStateString[State], AValue) then
+      begin
+      TpmPackage(AnInstance).PackageState := State;
+      Result := True;
+      Exit;
+      end;
+    end;
+end;
+
+function TpmPackageJSonStreaming.GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
+begin
+  Assert(AnInstance is TpmPackage);
+  AValue := CpmPackageStateString[TpmPackage(AnInstance).PackageState];
+  Result := True;
+end;
+
+procedure TpmPackageJSonStreaming.JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
+begin
+  FSerializer.JSONStringToObject(AJSonStr, APackageList);
 end;
 
 end.
