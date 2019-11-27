@@ -7,6 +7,8 @@ services:
         - HTTP__BaseURL=http://localhost:5000
         - HTTP__AllowCorsOrigin=http://localhost:4200
         - HTTP__wwwroot=wwwroot
+        - Log_file__Format=console
+        - Log_file__Level=Trace
 
   buildmanager:
       network_mode: "host"
@@ -18,6 +20,9 @@ services:
 
   fppkgstack:
       network_mode: "host"
+      environment:
+        - Log_file__Format=console
+        - Log_file__Level=Trace
 
   webclient:
       network_mode: "host"
