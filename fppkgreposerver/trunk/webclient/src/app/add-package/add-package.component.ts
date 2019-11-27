@@ -20,9 +20,9 @@ export class AddPackageComponent implements OnInit {
 
   newPackage: Package = {
     name: null,
-    ownerid: '',
-    packagestate: '',
-    packageversionlist: []
+    ownerid: undefined,
+    packagestate: undefined,
+    packageversionlist: undefined
   };
   errMessage: string = null;
 
