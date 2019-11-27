@@ -14,6 +14,7 @@ uses
   cnocStackBinaryClient,
   cnocStackMessageTypes,
   cnocStackErrorCodes,
+  fprErrorHandling,
   fprGCollection,
   fprInterfacedCollection,
   fprJSONRTTI,
@@ -21,40 +22,57 @@ uses
 
 type
 
-  { TfprPackageCategory }
+  { TfprCrudCollectionItem }
 
-  TfprPackageCategory = class(TfprInterfacedCollectionItem)
+  TfprCrudCollectionItem = class(TfprInterfacedCollectionItem)
   private
     FName: string;
-    FCategoryId: integer;
+  protected
+    function GetId: Integer; virtual; abstract;
   published
-    property CategoryId: integer read FCategoryId write FCategoryId;
+    function CheckValidity: Boolean; virtual;
     property Name: string read FName write FName;
+    property Id: Integer read GetId;
   end;
 
-  TfprGenPackageCategoryCollection = specialize TcnocGCollection<TfprPackageCategory>;
+  { TcnocGCrudCollection }
 
-  { TfprPackageCategoryCollection }
-
-  TfprPackageCategoryCollection = class(TfprGenPackageCategoryCollection)
+  generic TcnocGCrudCollection<T: TfprCrudCollectionItem> = class(specialize TcnocGCollection<T>)
   public
-    function FindCategoryByName(AName: string): TfprPackageCategory;
-    function FindCategoryById(ACategoryId: integer): TfprPackageCategory;
+    function FindObjectByName(AName: string): T;
+    function FindObjectById(AnId: integer): T;
   end;
 
-  TfprPackageCategoryCollectionSingleton = specialize TcnocSingleton<TfprPackageCategoryCollection>;
+  { TfprCollectionStackSingleton }
 
-  { TfprPackageCategoryCollectionStackSingleton }
-
-  TfprPackageCategoryCollectionStackSingleton = class(TfprPackageCategoryCollectionSingleton)
+  generic TfprCollectionStackSingleton<T: TCollection> = class(specialize TcnocSingleton<T>)
   private
     class var FVersion: Integer;
     class var FCachedVersion: Integer;
-    class procedure LoadCategoryCollectionFromStack(Collection: TfprPackageCategoryCollection);
+    class procedure LoadCollectionFromStack(StackName: string; Collection: T);
   public
     class procedure IncVersion;
-    class function GetAutoReadInstance: TfprPackageCategoryCollection;
+    class function GetAutoReadInstance(const StackName: string): T;
   end;
+
+
+
+  { TfprPackageCategory }
+
+  TfprPackageCategory = class(TfprCrudCollectionItem)
+  private
+    FCategoryId: integer;
+  protected
+    function GetId: Integer; override;
+  published
+    property CategoryId: integer read FCategoryId write FCategoryId;
+  end;
+
+  TfprPackageCategoryCollection = specialize TcnocGCrudCollection<TfprPackageCategory>;
+
+  TfprPackageCategoryCollectionSingleton = specialize TcnocSingleton<TfprPackageCategoryCollection>;
+
+  TfprPackageCategoryCollectionStackSingleton = specialize TfprCollectionStackSingleton<TfprPackageCategoryCollection>;
 
   { TfprPackageCategoryMonitor }
 
@@ -65,11 +83,78 @@ type
 
   TfprPackageCategoryMonitorSingleton = specialize TcnocSingleton<TfprPackageCategoryMonitor>;
 
+  { TfprPackageKeyword }
+
+  TfprPackageKeyword = class(TfprCrudCollectionItem)
+  private
+    FKeywordId: integer;
+  protected
+    function GetId: Integer; override;
+  public
+    function CheckValidity: Boolean; override;
+  published
+    property KeywordId: Integer read FKeywordId write FKeywordId;
+  end;
+
+  TfprPackageKeywordCollection = specialize TcnocGCrudCollection<TfprPackageKeyword>;
+
+  TfprPackageKeywordCollectionSingleton = specialize TcnocSingleton<TfprPackageKeywordCollection>;
+
+  TfprPackageKeywordCollectionStackSingleton = specialize TfprCollectionStackSingleton<TfprPackageKeywordCollection>;
+
+  { TfprPackageKeywordMonitor }
+
+  TfprPackageKeywordMonitor = class(IcnocStackHandleMessage)
+  private
+    procedure HandleMessage(const BinaryClient: TcnocStackBinaryClient; const IncomingMessage: PcnocStackMessage; var Handled: Boolean);
+  end;
+
+  TfprPackageKeywordMonitorSingleton = specialize TcnocSingleton<TfprPackageKeywordMonitor>;
+
 implementation
 
-{ TfprPackageCategoryCollectionStackSingleton }
+procedure TfprPackageKeywordMonitor.HandleMessage(const BinaryClient: TcnocStackBinaryClient; const IncomingMessage: PcnocStackMessage; var Handled: Boolean);
+var
+  msg: String;
+begin
+  msg := IncomingMessage^.GetContentsAsAnsiString;
+  TfprPackageKeywordCollectionStackSingleton.IncVersion;
+  Handled := true;
+end;
 
-class function TfprPackageCategoryCollectionStackSingleton.GetAutoReadInstance: TfprPackageCategoryCollection;
+function TfprPackageKeyword.CheckValidity: Boolean;
+begin
+  Result := inherited CheckValidity;
+
+  if Name = '' then
+    raise EJsonWebException.CreateFmtHelp('Keyword [%d] must have a name.', [FKeywordId], 422);
+
+  if (length(Name) < 3) or (length(Name) > 15) then
+    raise EJsonWebException.CreateFmtHelp('The keyword name [%s] must have between 3 and 15 characters.', [Name], 422);
+end;
+
+function TfprPackageKeyword.GetId: Integer;
+begin
+  Result := KeywordId;
+end;
+
+{ TfprCrudCollectionItem }
+
+function TfprCrudCollectionItem.CheckValidity: Boolean;
+begin
+  Result := True;
+end;
+
+{ TfprPackageCategory }
+
+function TfprPackageCategory.GetId: Integer;
+begin
+  Result := CategoryId;
+end;
+
+{ TfprCollectionStackSingleton }
+
+class function TfprCollectionStackSingleton.GetAutoReadInstance(const StackName: string): T;
 var
   AVersion: Integer;
 begin
@@ -78,21 +163,21 @@ begin
   if AVersion >= FCachedVersion then
     begin
     FCachedVersion := AVersion + 1;
-    LoadCategoryCollectionFromStack(Result);
+    LoadCollectionFromStack(StackName, Result);
     end;
 end;
 
-class procedure TfprPackageCategoryCollectionStackSingleton.IncVersion;
+class procedure TfprCollectionStackSingleton.IncVersion;
 begin
   InterlockedIncrement(FVersion);
 end;
 
-class procedure TfprPackageCategoryCollectionStackSingleton.LoadCategoryCollectionFromStack(Collection: TfprPackageCategoryCollection);
+class procedure TfprCollectionStackSingleton.LoadCollectionFromStack(StackName: string; Collection: T);
 var
   Response: string;
   DeStreamer: TfprJSONDeStreamer;
 begin
-  if TfprStackClientSingleton.Instance.Client.SendMessage('Category', '{"name":"crud","action":"get"}', Response) = TcnocStackErrorCodes.ecNone then
+  if TfprStackClientSingleton.Instance.Client.SendMessage(Stackname, '{"name":"crud","action":"get"}', Response) = TcnocStackErrorCodes.ecNone then
     begin
     DeStreamer := TfprJSONDeStreamer.Create(nil);
     try
@@ -105,20 +190,22 @@ begin
     end;
 end;
 
-{ TfprPackageCategoryMonitor }
+{ TcnocGCrudCollection }
 
-procedure TfprPackageCategoryMonitor.HandleMessage(const BinaryClient: TcnocStackBinaryClient; const IncomingMessage: PcnocStackMessage; var Handled: Boolean);
+function TcnocGCrudCollection.FindObjectById(AnId: integer): T;
 var
-  msg: String;
+  i: Integer;
 begin
-  msg := IncomingMessage^.GetContentsAsAnsiString;
-  TfprPackageCategoryCollectionStackSingleton.IncVersion;
-  Handled := true;
+  result := Nil;;
+  for i := 0 to Count -1 do
+    if AnId = Items[i].Id then
+      begin
+      Result := Items[i];
+      Break;
+      end;
 end;
 
-{ TfprPackageCategoryCollection }
-
-function TfprPackageCategoryCollection.FindCategoryByName(AName: string): TfprPackageCategory;
+function TcnocGCrudCollection.FindObjectByName(AName: string): T;
 var
   i: Integer;
 begin
@@ -131,22 +218,15 @@ begin
       end;
 end;
 
-function TfprPackageCategoryCollection.FindCategoryById(ACategoryId: integer): TfprPackageCategory;
-var
-  i,j: Integer;  s: string;
-begin
-  result := Nil;;
-  for i := 0 to Count -1 do
-    begin
-    j := Items[i].Categoryid;
-    s := Items[i].Name;
-    if ACategoryId = Items[i].Categoryid then
-      begin
-      Result := Items[i];
-      Break;
-      end;
+{ TfprPackageCategoryMonitor }
 
-    end;
+procedure TfprPackageCategoryMonitor.HandleMessage(const BinaryClient: TcnocStackBinaryClient; const IncomingMessage: PcnocStackMessage; var Handled: Boolean);
+var
+  msg: String;
+begin
+  msg := IncomingMessage^.GetContentsAsAnsiString;
+  TfprPackageCategoryCollectionStackSingleton.IncVersion;
+  Handled := true;
 end;
 
 end.
