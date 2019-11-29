@@ -72,6 +72,8 @@ services:
         - GIT__RepositoriesPath=/home/locuser/gitrepos
         - GIT__UserName=FPPKG Repository server
         - GIT__Email=noreply@cnoc.nl
+        - Log_file__Format=console
+        - Log_file__Level=Trace
 
   packagemanager:
       network_mode: "host"

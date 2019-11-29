@@ -11,7 +11,9 @@ uses
   HTTPDefs,
   fphttpapp,
   jsonparser,
+  TLoggerUnit,
   fprErrorHandling,
+  fprSetupLogging,
   dcsGlobalSettings,
   prPackageWebModule,
   prFunctionsWebModule;
@@ -31,6 +33,8 @@ begin
   GlobalSettings.AddSetting('GITUserName', 'GIT', 'UserName', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('GITEmail', 'GIT', 'Email', '', #0, dcsPHasParameter);
 
+  AddLoggingSettings;
+
   if Application.HasOption('e') then
   begin
     GlobalSettings.LoadSettingsFromEnvironment();
@@ -43,6 +47,11 @@ begin
       GlobalSettings.LoadSettingsFromIniFile(ConfigFileName);
     end;
   end;
+
+  SetupLogging;
+
+  if TLogger.GetInstance().GetAllAppenders().Count > 0 then
+    TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance().GetAllAppenders.Items[0]);
 
   Application.OnShowRequestException := @fprOnShowRequestException;
 

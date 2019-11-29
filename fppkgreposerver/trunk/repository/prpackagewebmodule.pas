@@ -22,6 +22,8 @@ uses
   pkgrepos,
   zipper,
   jsonparser,
+  TLoggerUnit,
+  fprLog,
   fprPackageUtils,
   fprBuildAgentResponse,
   fprFPCVersion,
@@ -137,12 +139,18 @@ begin
 
       IsNew := PackageObject.Get('packagestate', '') = 'new';
       if IsNew then
+        begin
+        TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
         AddGITRepositoryForNewPackage(PackageName);
+        end;
 
       RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
 
       if IsNew then
+        begin
         TagPackage(PackageName, 'Initial version', FPCVersion, 'initial');
+        TfprLog.Log(Format('Package [%s] is new. Create an initial tag.', [PackageName]));
+        end;
 
       AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
       AResponse.Code := 200;
@@ -521,7 +529,10 @@ begin
   RepoPath := GetPackageRepoPath(APackageName);
 
   if not FileExists(RepoPath) then
+    begin
+    TfprLog.Log(Format('Can not find the repository of package [%s] at location [%s]', [APackageName, RepoPath]));
     raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
+    end;
 
   RunGit(TmpPath, 'clone git repository', ['clone', RepoPath, 'pkgclone'], CmdRes );
   SetGitUserAndEmail(RepoPath);
