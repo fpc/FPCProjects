@@ -528,7 +528,7 @@ var
 begin
   RepoPath := GetPackageRepoPath(APackageName);
 
-  if not FileExists(RepoPath) then
+  if not DirectoryExists(RepoPath) then
     begin
     TfprLog.Log(Format('Can not find the repository of package [%s] at location [%s]', [APackageName, RepoPath]));
     raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
