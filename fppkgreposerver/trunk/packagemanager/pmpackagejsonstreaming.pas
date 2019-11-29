@@ -279,7 +279,7 @@ procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TpmP
 var
   FS: TStringStream;
 begin
-  FS := TStringStream.Create(FPackageStreamer.PackageCollectionToJSon(APackageList));
+  FS := TStringStream.Create(PackageCollectionToJSon(APackageList));
   try
     FS.SaveToFile(Filename);
   finally
