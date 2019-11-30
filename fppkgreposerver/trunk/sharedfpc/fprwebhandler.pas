@@ -153,9 +153,17 @@ var
 begin
   JSonData := TfprWebModule.ObtainJSONRestRequest(AnURL, AccessToken, Method, Content );
   try
-    Result := Assigned(JSonData) and (JSonData.JSONType in [jtObject, jtArray]);
+    Result := Assigned(JSonData);
     if Result then
-      FDeStreamer.JSONToObject(TJSONObject(JSonData), AnObject);
+      begin
+      if (JSonData.JSONType = jtObject) then
+        FDeStreamer.JSONToObject(TJSONObject(JSonData), AnObject)
+      else
+        begin
+        Assert(AnObject is TCollection);
+        FDeStreamer.JSONToCollection(TJSONArray(JSonData), TCollection(AnObject));
+        end;
+      end;
   finally
     JSonData.Free;
   end;
