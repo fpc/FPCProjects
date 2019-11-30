@@ -56,7 +56,7 @@ type
       Content: TStream = nil): Boolean;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function ObjectToJSONContentString(AnObject: TObject): string;
-    function GetUserRole: string;
+    function GetUserRole: string; deprecated 'Use TfprAuthenticationHandler';
     function RequireAuthentication(ARequest: TRequest): Boolean; virtual;
     function PerformAuthentication(ARequest: TRequest): Boolean; virtual;
   public
@@ -436,6 +436,9 @@ var
 begin
   if not Assigned(FOIDC) then
     raise Exception.Create('OpenIDConnect provider not assigned');
+
+  if FOIDC.UserinfoEndpoint='' then
+    FOIDC.RetrieveEndpoints;
 
   Result := '';
   JSonData := ObtainJSONRestRequest(FOIDC.UserinfoEndpoint, True);
