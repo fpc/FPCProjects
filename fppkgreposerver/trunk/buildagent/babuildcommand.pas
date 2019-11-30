@@ -251,7 +251,11 @@ begin
         SourceFilePath := ConcatPaths([BuildFilesLocation, FSourceFilename]);
         until not DirectoryExists(SourceFilePath);
 
-        ForceDirectories(SourceFilePath);
+        if not ForceDirectories(SourceFilePath) then
+          begin
+          ReturnMessage := 'Failed to create the directory for the source-files: [' + SourceFilePath + ']';
+          Exit;
+          end;
 
         FSourceFilename := ConcatPaths([FSourceFilename, Filename.TextContent]);
 
