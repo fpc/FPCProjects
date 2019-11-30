@@ -21,6 +21,7 @@ uses
   DCSHTTPRestServer,
   fpWeb,
   fprErrorHandling,
+  fprLog,
   fprJSONRTTI;
 
 type
@@ -44,6 +45,7 @@ type
     FAccessToken: string;
     procedure DoneSession; override;
     Procedure DoBeforeRequest(ARequest: TRequest); override;
+    procedure DoAfterResponse(AResponse: TResponse); override;
     procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse;
       var AHandled: boolean); override;
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
@@ -124,6 +126,9 @@ var
   JWT: TcnocOIDCIDTokenJWT;
 begin
   inherited DoBeforeRequest(ARequest);
+
+  TfprLog.LogTrace('Received [' +ARequest.Method+ '] request.', ARequest.PathInfo + ':' + ARequest.Query, ARequest);
+
   FSubjectId := '';
   FAccessToken := '';
   FreeAndNil(FOIDC);
@@ -502,6 +507,12 @@ begin
   except
     CorsEntry.Free;
   end;
+end;
+
+procedure TfprWebModule.DoAfterResponse(AResponse: TResponse);
+begin
+  inherited DoAfterResponse(AResponse);
+  TfprLog.LogTrace('Respond with [' + IntToStr(AResponse.Code) + ':' + AResponse.CodeText + ']', AResponse.Content);
 end;
 
 end.

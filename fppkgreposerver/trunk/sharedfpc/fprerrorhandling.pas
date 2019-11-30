@@ -7,7 +7,8 @@ interface
 uses
   SysUtils,
   HTTPDefs,
-  fphttpserver;
+  fphttpserver,
+  TLoggerUnit;
 
 
 type
@@ -46,6 +47,7 @@ begin
     AResponse.Code := 200;
     AResponse.CodeText := 'OK';
     end;
+  TLogger.GetInstance.Trace('Respond with [' + IntToStr(AResponse.Code) + ':' + AResponse.CodeText + ']. Content: [' + Trim(Copy(AResponse.Content,1,100)) + ']');
   handled := True;
 end;
 
