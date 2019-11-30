@@ -52,6 +52,9 @@ begin
   if AccessToken='' then
     raise EJsonWebException.CreateHelp('Authentication token is missing', 403);
 
+  if FOIDCProvider.UserinfoEndpoint='' then
+    FOIDCProvider.RetrieveEndpoints;
+
   try
     Result := '';
     JSonData := TfprWebModule.ObtainJSONRestRequest(FOIDCProvider.UserinfoEndpoint, AccessToken);
