@@ -687,7 +687,7 @@ begin
         StopProcessing := true;
         end;
       end
-    else
+    else if ARequest.Method='OPTIONS' then
       begin
       AResponse.Code := 403;
       AResponse.CodeText := GetStatusCode(AResponse.Code);
