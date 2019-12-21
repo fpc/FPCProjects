@@ -226,7 +226,10 @@ begin
     end;
     end
   else
+    begin
+    TfprLog.Error(Format('Failed to create temporary path [%s].', [TmpPath]));
     raise Exception.Create('Failed to create temporary path');
+    end;
 end;
 
 function TprPackageWM.CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion;
