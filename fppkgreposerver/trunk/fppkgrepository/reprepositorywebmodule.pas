@@ -22,6 +22,7 @@ uses
   dcsGlobalSettings,
   fprWebModule,
   fprFPCVersion,
+  fprLog,
   fprBuildAgentResponse,
   fprDeleteTree,
   fprCopyTree,
@@ -39,7 +40,7 @@ type
 
   TrepRepositoryHander = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
   private
-    function ObtainFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
+    function GetFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
     function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository; AccessToken: string): TJSONData;
   protected
     procedure RebuildPackage(APackage: TrepPackage; AFPCVersion: string; AManifest: TXMLDocument; APackagesNode: TDOMElement;
@@ -119,7 +120,7 @@ begin
   Result := HandleRepositoryRequest(ARequest.RouteParams['fpcversion'], ARequest.RouteParams['repository'], ARequest.RouteParams['extra'], AccessToken);
 end;
 
-function TrepRepositoryHander.ObtainFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
+function TrepRepositoryHander.GetFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
 begin
   Result := TfprFPCVersionCollection.Instance;
   if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', AccessToken, Result) then
@@ -147,11 +148,17 @@ var
   VersionCollection: TfprFPCVersionCollection;
 begin
   Result := nil;
+  TfprLog.Log(Format('Rebuild repository [%s] for fpc-version [%s]', [ARepository.Name, AFPCVersion.FPCVersion]));
   if Arepository.Path='' then
     raise EHTTPClient.CreateFmtHelp('Path of repository %s is not defined.', [ARepository.Name], 500);
 
   RepositoryURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('repositoryurl');
+  if RepositoryURL='' then
+    raise EHTTPClient.CreateHelp('Repositoryurl has not been configured.', 500);
+
   BuildAgentURL := RetrieveBuildAgentURL(AFPCVersion.FPCVersion, AccessToken);
+
+  TfprLog.Log(Format('Use RepositoryURL [%s] and BuildAgentURL [%s]', [RepositoryURL, BuildAgentURL]));
 
   Manifest := TXMLDocument.Create;
   try
@@ -161,10 +168,16 @@ begin
     RepositoryNode.AppendChild(PackagesNode);
 
     RepoTempPath := GetTempFileName(GetTempDir(False), 'repodir');
-    ForceDirectories(RepoTempPath);
+    TfprLog.Log(Format('Use RepoTempPath [%s]', [RepoTempPath]));
+    if not ForceDirectories(RepoTempPath) then
+      begin
+      raise EHTTPClient.CreateHelp('Failed to create temporary directory to build repository.', 500);
+      end;
+
     try
       if ARepository.MasterRepositoryName<>'' then
         begin
+        TfprLog.Log(Format('Add packages from the master-repository [%s]', [ARepository.MasterRepositoryName]));
         MasterRepository := AFPCVersion.RepositoryList.FindRepository(ARepository.MasterRepositoryName);
         if not Assigned(MasterRepository) then
           raise EHTTPClient.CreateFmtHelp('Master repository %s does not exist', [ARepository.MasterRepositoryName] , 400);
@@ -173,10 +186,11 @@ begin
           begin
           Package := MasterRepository.PackageList.Items[i];
           if not Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
-            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken);
+            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken)
           end;
         end;
 
+      TfprLog.Log('Add packages from the repository');
       for i := 0 to ARepository.PackageList.Count -1 do
         begin
         Package := ARepository.PackageList.Items[i];
@@ -184,6 +198,7 @@ begin
         RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken);
         end;
 
+      TfprLog.Log('Create the manifest (packages.xml)');
       ManifestStream := TStringStream.Create(nil);
       try
         WriteXML(Manifest, ManifestStream);
@@ -193,12 +208,9 @@ begin
         ManifestStream.Free;
       end;
 
-      VersionCollection := ObtainFPCVersionCollection(AccessToken);
-      try
-        FPCVersion := VersionCollection.FindVersion(ARepository.FPCVersion);
-      finally
-        VersionCollection.Free;
-      end;
+      TfprLog.Log('Ensure all directies exist');
+      VersionCollection := GetFPCVersionCollection(AccessToken);
+      FPCVersion := VersionCollection.FindVersion(ARepository.FPCVersion);
       if not Assigned(FPCVersion) then
         raise Exception.CreateFmt('FPC-version [%s] of repository [%s] is not known by the packagemanager', [ARepository.FPCVersion, ARepository.Name]);
       RepoPath := ConcatPaths([ARepository.Path, FPCVersion.URLPrefix]);
@@ -207,6 +219,7 @@ begin
 
       ForceDirectories(ExtractFileDir(RepoPath));
 
+      TfprLog.Log('Create the mirrors file');
       Mirrors := TXMLDocument.Create;
       try
         MirrorsNode := Mirrors.CreateElement('mirrors');
@@ -239,9 +252,11 @@ begin
         Mirrors.Free;
       end;
 
+      TfprLog.Log('Copy temporary files to final destination');
       if not CopyTree(IncludeTrailingPathDelimiter(RepoTempPath), ExcludeTrailingPathDelimiter(RepoPath)) then
         Raise Exception.CreateFmt('Failed to copy directory ''%s'' to ''%s''. Errorcode: %d.', [RepoTempPath, RepoPath, IOResult]);
     finally
+      TfprLog.Log('Remove temporary files');
       DeleteTree(RepoTempPath, False);
     end;
   finally
@@ -263,6 +278,7 @@ var
   PackageManifest: TXMLDocument;
   PackagePackagesNode, PackageNode: TDOMNode;
 begin
+  TfprLog.Log(Format('Rebuild package [%s]', [APackage.Name]));
   try
     HTTPClient := TFPHTTPClient.Create(nil);
     try

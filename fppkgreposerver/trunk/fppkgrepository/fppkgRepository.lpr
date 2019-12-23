@@ -13,10 +13,12 @@ uses
   httproute,
   dcsGlobalSettings,
   fprErrorHandling,
+  fprSetupLogging,
   repPackageWebmodule,
   repPackage,
   Generics.Collections,
   reprepositorywebmodule,
+  repFunctionsHandler,
   cnocStackJSONHandlerThread,
   cnocStackMessageTypes,
   cnocStackbinaryclient;
@@ -27,6 +29,7 @@ var
 
   RepositoryHandler: TrepRepositoryHander;
   PackageHandler: TrepPackageHander;
+  FunctionsHandler: TrepFunctionsHander;
 
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
@@ -49,6 +52,8 @@ begin
   GlobalSettings.AddSettingTemplate('Repository_', 'Contact', 'Contact-', '');
   GlobalSettings.AddSettingTemplate('Repository_', 'StorageFile', 'StorageFile-', '');
 
+  AddLoggingSettings;
+
   ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
   if FileExists(ConfigFileName) then
     GlobalSettings.LoadSettingsFromIniFile(configfilename);
@@ -58,6 +63,8 @@ begin
 
   GlobalSettings.CheckProgramParameters(Application);
 
+  SetupLogging;
+
   TrepFPCVersionList.Instance.InitFromSettings;
 
   Application.OnShowRequestException := @fprOnShowRequestException;
@@ -65,6 +72,7 @@ begin
   GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['Repository']);
   try
     RepositoryHandler := TrepRepositoryHander.Create;
+    FunctionsHandler := TrepFunctionsHander.Create;
     PackageHandler := TrepPackageHander.Create;
     try
       HTTPRouter.RegisterRoute('/repository/:fpcversion/:repository/:extra', rmAll, RepositoryHandler);
@@ -74,6 +82,9 @@ begin
       HTTPRouter.RegisterRoute('/package/:fpcversion/:repository/:package', PackageHandler);
       GStackClient.AddHandler('package', PackageHandler);
 
+      HTTPRouter.RegisterRoute('/functions/:function', FunctionsHandler);
+      GStackClient.AddHandler('functions', FunctionsHandler);
+
       Application.Port:=8282;
       Application.Initialize;
       Application.Run;
@@ -82,6 +93,7 @@ begin
     finally
       PackageHandler.Free;
       RepositoryHandler.Free;
+      FunctionsHandler.Free;
     end;
   finally
     GStackClient.Free;

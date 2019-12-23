@@ -35,7 +35,7 @@
         <PackageName Value="FCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="fppkgRepository.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -61,6 +61,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="repRepositoryWebmodule"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="repfunctionshandler.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="repFunctionsHandler"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -73,6 +78,26 @@
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       <SrcPath Value="../fpstack"/>
     </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <IncludeAssertionCode Value="True"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <Checks>
+        <IOChecks Value="True"/>
+        <RangeChecks Value="True"/>
+        <OverflowChecks Value="True"/>
+        <StackChecks Value="True"/>
+      </Checks>
+      <VerifyObjMethodCallValidity Value="True"/>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+        <TrashVariables Value="True"/>
+      </Debugging>
+    </Linking>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
