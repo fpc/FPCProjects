@@ -13,6 +13,6 @@
   <span *ngFor="let repository of repositoryList">
     <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
     <span *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">Published in {{repository.name}}</span>
-    <button *ngIf="((packageVersion.tag!='initial') && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]) && (publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+    <button *ngIf="((packageVersion.tag!='initial') && (publishedVersionPerRepositoryMap[repository.name]) && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
   </span>
 </span>
