@@ -46,6 +46,7 @@ import { PackageVersionComponent } from './package-version/package-version.compo
 import { PackageCardComponent } from './package-card/package-card.component';
 import { FpcVersionSelectBoxComponent } from './fpc-version-select-box/fpc-version-select-box.component';
 import { VersionPipe } from './version.pipe';
+import { CurrentFpcversionService } from './current-fpcversion.service';
 
 @NgModule({
   declarations: [
@@ -92,6 +93,7 @@ import { VersionPipe } from './version.pipe';
     PackageService,
     RepositoryService,
     FppkgRepositoryService,
+    CurrentFpcversionService,
     NgbActiveModal,
     {
       provide: HTTP_INTERCEPTORS,

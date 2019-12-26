@@ -4,6 +4,7 @@ import { AddPackageComponent } from '../add-package/add-package.component';
 import { PackageService } from '../package.service';
 import { Package } from '../package';
 import { FPCVersion } from '../fpcversion';
+import { CurrentFpcversionService } from '../current-fpcversion.service';
 
 @Component({
   selector: 'app-packages-page',
@@ -18,20 +19,20 @@ export class PackagesPageComponent implements OnInit {
 
   constructor(
     private modalService: NgbModal,
-    private packageService: PackageService) { }
+    private packageService: PackageService,
+    private currentFpcversionService: CurrentFpcversionService
+    ) { }
 
   ngOnInit() {
     this.packageService.getPackageList()
       .subscribe(packageList => { this.packageList = packageList; this.filteredPackageList = packageList } )
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => { this.selectedVersion = version } )
   }
 
   open() {
     const modalRef = this.modalService.open(AddPackageComponent);
     modalRef.componentInstance.packageList = this.packageList;
-  }
-
-  setFPCVersion(version: FPCVersion): void {
-    this.selectedVersion = version;
   }
 
   search(term: string): void {

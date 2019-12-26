@@ -6,6 +6,7 @@ import { PackageService } from '../package.service';
 import { Package } from '../package';
 import { VersionUtils } from '../version';
 import { FPCVersion } from '../fpcversion';
+import { CurrentFpcversionService } from '../current-fpcversion.service';
 
 @Component({
   selector: 'app-package',
@@ -28,7 +29,8 @@ export class PackageComponent implements OnInit {
 
   constructor(
     private _modalService: NgbModal,
-    private _packageService: PackageService) { }
+    private _packageService: PackageService,
+    private currentFpcversionService: CurrentFpcversionService) { }
 
   showUploadSourceDialog() {
     const modalRef = this._modalService.open(UploadPackageComponent);
@@ -59,11 +61,6 @@ export class PackageComponent implements OnInit {
     this.selectedVersion = version;
   }
 
-  setFPCVersion(version: FPCVersion): void {
-    this.selectedFPCVersion = version;
-    this.filterPackageVersionList();
-  }
-
   filterPackageVersionList() {
     this.packageVersionList = [];
     if ((this.currentPackage) && this.selectedFPCVersion) {
@@ -78,5 +75,10 @@ export class PackageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => {
+        this.selectedFPCVersion = version;
+        this.filterPackageVersionList()
+       } )
   }
 }
