@@ -17,7 +17,7 @@ export class PackageComponent implements OnInit {
   selectedFPCVersion: FPCVersion = null;
   packageVersionList: any[] = [];
   selectedVersion: any = null;
-  private currentPackage: Package = null;
+  public currentPackage: Package = null;
 
   @Input() set package(selpackage: Package) {
     this.currentPackage = selpackage;
