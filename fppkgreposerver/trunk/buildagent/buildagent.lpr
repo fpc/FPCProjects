@@ -13,6 +13,8 @@ uses
   Classes,
   SysUtils,
   CustApp,
+  TLoggerUnit,
+  fprSetupLogging,
   DCSHandler,
   dcsConsoleServer,
   DCSTCPServer,
@@ -92,6 +94,9 @@ begin
 
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
+
+  AddLoggingSettings;
+
   // quick check parameters
   ErrorMsg := GlobalSettings.CheckProgramParameters(Self);
   if ErrorMsg<>'' then begin
@@ -125,6 +130,11 @@ begin
       end;
     end;
   end;
+
+  SetupLogging;
+
+  if TLogger.GetInstance.GetAllAppenders.Count > 0 then
+    TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance.GetAllAppenders.Items[0]);
 
   CommandStr := GlobalSettings.GetSettingAsString('port');
   if CommandStr<>'' then
