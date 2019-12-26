@@ -264,7 +264,9 @@ begin
           ReturnMessage := 'Failed to copy archive to the build-files-location';
           Exit;
           end;
-        end;
+        end
+        else
+          FDistributor.SendNotification(SendByLisId, ntListenerMessage, UID, 'Archive created, but the BuildFiles:Location setting is not provided. The archive will not be available for download.', TextName);
       Result := True;
     finally
       ManifestXML.Free;
