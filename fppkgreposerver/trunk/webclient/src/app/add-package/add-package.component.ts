@@ -22,7 +22,10 @@ export class AddPackageComponent implements OnInit {
     name: null,
     ownerid: undefined,
     packagestate: undefined,
-    packageversionlist: undefined
+    packageversionlist: undefined,
+    keywords: undefined,
+    category: undefined,
+    support: undefined
   };
   errMessage: string = null;
 

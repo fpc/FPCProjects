@@ -1,7 +1,7 @@
 <p class="mb-1" *ngIf="packageVersion.description">{{packageVersion.description}}</p>
-<p *ngIf="package.Keywords" class="mb-1"><span class="text-muted">Keywords</span> {{package.keywords}}</p>
-<p *ngIf="package.Category" class="mb-1"><span class="text-muted">Category</span> {{package.Category}}</p>
-<p *ngIf="package.Support" class="mb-1"><span class="text-muted">Support</span> {{package.Support}}</p>
+<p *ngIf="package.keywords" class="mb-1"><span class="text-muted">Keywords</span> {{package.keywords}}</p>
+<p *ngIf="package.category" class="mb-1"><span class="text-muted">Category</span> {{package.category}}</p>
+<p *ngIf="package.support" class="mb-1"><span class="text-muted">Support</span> {{package.support}}</p>
 <p class="mb-1"><span class="text-muted">Version</span> {{packageVersion.version | version}}</p>
 <p *ngIf="!packageVersion.description" class="mb-1 text-danger">This package does not have a description.</p>
 <p *ngIf="packageVersion.license" class="mb-1"><span class="text-muted">License: </span>{{packageVersion.license}}</p>
