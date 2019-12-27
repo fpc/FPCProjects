@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { shareReplay } from 'rxjs/operators';
-import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Package } from './package';
 import { FPCVersion } from './fpcversion';
