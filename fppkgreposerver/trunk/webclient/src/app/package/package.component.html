@@ -9,6 +9,9 @@
   </div>
   <div class="card-body">
     <p class="mb-1 font-italic" *ngIf="currentPackage.packagestate!='published'"><span class="text-muted">State: </span>{{currentPackage.packagestate}}</p>
+    <p *ngIf="currentPackage.category" class="mb-1"><span class="text-muted">Category</span> {{currentPackage.category}}</p>
+    <p *ngIf="currentPackage.keywords" class="mb-1"><span class="text-muted">Keywords</span> {{currentPackage.keywords}}</p>
+    <p *ngIf="currentPackage.support" class="mb-1"><span class="text-muted">Support</span> {{currentPackage.support}}</p>
     <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
 
     <div *ngIf="(!selectedVersion)">

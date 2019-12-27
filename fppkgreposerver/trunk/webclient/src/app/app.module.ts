@@ -47,6 +47,8 @@ import { PackageCardComponent } from './package-card/package-card.component';
 import { FpcVersionSelectBoxComponent } from './fpc-version-select-box/fpc-version-select-box.component';
 import { VersionPipe } from './version.pipe';
 import { CurrentFpcversionService } from './current-fpcversion.service';
+import { CategoryService } from './category.service';
+import { CategoriesComponent } from './categories/categories.component';
 
 @NgModule({
   declarations: [
@@ -73,7 +75,8 @@ import { CurrentFpcversionService } from './current-fpcversion.service';
     PackageVersionComponent,
     PackageCardComponent,
     FpcVersionSelectBoxComponent,
-    VersionPipe
+    VersionPipe,
+    CategoriesComponent
   ],
   imports: [
     BrowserModule,
@@ -91,6 +94,7 @@ import { CurrentFpcversionService } from './current-fpcversion.service';
     BuildAgentService,
     BuildManagerService,
     PackageService,
+    CategoryService,
     RepositoryService,
     FppkgRepositoryService,
     CurrentFpcversionService,

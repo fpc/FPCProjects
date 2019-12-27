@@ -10,8 +10,12 @@
       <li class="nav-item">
         <a class="nav-link" routerLink="/packages">Packages</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/admin" *ngIf="isAdmin">Admin</a>
+      <li ngbDropdown class="nav-item" *ngIf="isAdmin">
+        <a class="nav-link" ngbDropdownToggle>Admin</a>
+        <div ngbDropdownMenu>
+          <a class="dropdown-item" routerLink="/admin">Rebuild</a>
+          <a class="dropdown-item" routerLink="/categories">Categories</a>
+        </div>
       </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/about">About</a>

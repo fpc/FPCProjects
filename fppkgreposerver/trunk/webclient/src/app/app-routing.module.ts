@@ -5,6 +5,7 @@ import { AdminGuardService } from './admin-guard.service';
 import { BuildPackageComponent } from './build-package/build-package.component';
 import { LoginComponent } from './login/login.component';
 import { AdminComponent } from './admin/admin.component';
+import { CategoriesComponent } from './categories/categories.component';
 import { AboutComponent } from './about/about.component';
 import { PackagePageComponent } from './package-page/package-page.component';
 import { PackagesPageComponent } from './packages-page/packages-page.component';
@@ -44,6 +45,12 @@ const routes: Routes = [
     path: 'admin',
     canActivate: [AdminGuardService],
     component: AdminComponent,
+    children: []
+  },
+  {
+    path: 'categories',
+    canActivate: [AdminGuardService],
+    component: CategoriesComponent,
     children: []
   },
   {

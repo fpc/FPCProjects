@@ -5,6 +5,7 @@ export const environment = {
   buildAgentUrl: 'http://localhost:4200/buildagent',
   packageManagerUrl: 'http://localhost:4200/packagemanager',
   buildManagerUrl: 'http://localhost:4200/buildmanager',
+  categoryUrl: 'http://localhost:4200/category',
   repositoryUrl:  'http://localhost:4200/repository',
   fppkgRepositoryUrl: 'http://localhost:4200/fppkgrepository'
 };

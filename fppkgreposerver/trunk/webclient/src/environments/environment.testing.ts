@@ -5,6 +5,7 @@ export const environment = {
   buildAgentUrl: 'http://fpc.cnoc.nl:8080/buildagent',
   packageManagerUrl: 'http://fpc.cnoc.nl:8080/packagemanager',
   buildManagerUrl: 'http://fpc.cnoc.nl:8080/buildmanager',
+  categoryUrl: 'http://fpc.cnoc.nl:8080/category',
   repositoryUrl:  'http://fpc.cnoc.nl:8080/repository',
   fppkgRepositoryUrl: 'http://fpc.cnoc.nl:8080/fppkgrepository'
 };

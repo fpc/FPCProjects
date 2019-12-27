@@ -1,5 +1,5 @@
 <div class="card-body">
-  <strong class="d-inline-block mb-2 text-success">Category</strong>
+  <strong class="d-inline-block mb-2 text-success">{{package.category}}</strong>
   <h4 class="card-title mb-0"><a routerLink="/package/{{package.name}}">{{package.name}}</a></h4>
 
   <div *ngIf="selectedVersion">
