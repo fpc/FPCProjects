@@ -21,6 +21,8 @@ type
   TpmFPCVersionWM = class(TfprWebModule)
     procedure DataModuleCreate(Sender: TObject);
     Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  protected
+    function RequireAuthentication(ARequest: TRequest): Boolean; override;
   end;
 
 var
@@ -52,6 +54,14 @@ begin
     end
   else
     raise EHTTP.CreateHelp('FPC-versions are immutable', 405);
+end;
+
+function TpmFPCVersionWM.RequireAuthentication(ARequest: TRequest): Boolean;
+begin
+  if ARequest.Method<>'GET' then
+    Result := inherited
+  else
+    Result := False;
 end;
 
 initialization

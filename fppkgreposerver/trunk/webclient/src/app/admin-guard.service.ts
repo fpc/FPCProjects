@@ -26,7 +26,7 @@ export class AdminGuardService {
   canActivate() {
     var canContinue: boolean = ((this.isAuthorized) && (this.isAdmin));
     if (!canContinue)  {
-      this.router.navigate(['/']);
+      this.router.navigate(['/forbidden']);
     }
     return canContinue;
   }

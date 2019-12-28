@@ -14,20 +14,14 @@ import { LoggedOutComponent } from './logged-out/logged-out.component';
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'build',
     canActivate: [AuthGuardService],
     component: BuildPackageComponent,
     children: []
   },
   {
-    path: 'packages',
-    canActivate: [AuthGuardService],
+    path: '',
     component: PackagesPageComponent,
-    children: []
-  },
-  {
-    path: 'login',
-    component: LoginComponent,
     children: []
   },
   {

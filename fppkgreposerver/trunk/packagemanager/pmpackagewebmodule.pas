@@ -34,6 +34,8 @@ type
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     procedure HandlePatchPackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     procedure SavePackageList;
+  protected
+    function RequireAuthentication(ARequest: TRequest): Boolean; override;
   public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
@@ -260,6 +262,14 @@ begin
     Patch.Free;
   end;
   AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+end;
+
+function TpmPackageWM.RequireAuthentication(ARequest: TRequest): Boolean;
+begin
+  if ARequest.Method<>'GET' then
+    Result := inherited
+  else
+    Result := False;
 end;
 
 initialization

@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, SimpleChanges } from '@angular/core';
 import { Package } from '../package';
+import { OidcSecurityService } from '../auth/services/oidc.security.service';
 
 @Component({
   selector: 'app-package-card',
@@ -11,10 +12,16 @@ export class PackageCardComponent implements OnInit {
   @Input() package: any;
   @Input() fpcversion: any;
   selectedVersion: any = null;
+  isAdmin: boolean;
 
-  constructor() { }
+  constructor(public oidcSecurityService: OidcSecurityService) { }
 
   ngOnInit() {
+    this.oidcSecurityService.getUserData().subscribe(
+      (data: any) => {
+        this.isAdmin = (data.role == "admin");
+      }
+    );
   }
 
   ngOnChanges(changes: SimpleChanges) {
