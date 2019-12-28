@@ -38,6 +38,8 @@ export class CategoryService {
   }
 
   public getCategoryList (): Observable<Category[]> {
+    // Extensive explanation can be found here:
+    // https://blog.thoughtram.io/angular/2018/03/05/advanced-caching-with-rxjs.html
     if (!this._categoryList) {
       this._categoryList = this._reload.pipe(
         switchMap(_ => this.requestCategoryList()),
