@@ -22,6 +22,19 @@ type
     property Items[Index: Integer]: T read GetItem write SetItem;
   end;
 
+  { TcnocGOwnedCollection }
+
+  generic TcnocGOwnedCollection<T: TCollectionItem> = class(TOwnedCollection)
+  protected
+    function GetItem(Index: Integer): T;
+    procedure SetItem(Index: Integer; Value: T);
+  public
+    constructor Create(AOwner: TPersistent);
+    function Add: T;
+    property Items[Index: Integer]: T read GetItem write SetItem;
+  end;
+
+
   { TcnocSingleton }
 
   generic TcnocSingleton<T: TObject> = class
@@ -35,6 +48,28 @@ type
 
 
 implementation
+
+{ TcnocGOwnedCollection }
+
+constructor TcnocGOwnedCollection.Create(AOwner: TPersistent);
+begin
+  inherited Create(AOwner, T);
+end;
+
+function TcnocGOwnedCollection.Add: T;
+begin
+  Result := T(Inherited Add);
+end;
+
+function TcnocGOwnedCollection.GetItem(Index: Integer): T;
+begin
+  Result := T(inherited GetItem(Index));
+end;
+
+procedure TcnocGOwnedCollection.SetItem(Index: Integer; Value: T);
+begin
+  inherited SetItem(Index, Value)
+end;
 
 { TcnocGSingletonCollection }
 
