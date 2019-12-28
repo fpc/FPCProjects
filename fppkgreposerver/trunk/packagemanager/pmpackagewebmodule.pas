@@ -32,6 +32,7 @@ type
     Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+    procedure HandlePatchPackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
     procedure SavePackageList;
   public
     constructor Create(AOwner: TComponent); override;
@@ -168,6 +169,10 @@ begin
 
     AResponse.Content := FPackageStreamer.PackageToJSon(Package);
     end
+  else if ARequest.Method = 'PATCH' then
+    begin
+    HandlePatchPackage(PackageName, ARequest, AResponse);
+    end
   else
     raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
   AResponse.Code := 200;
@@ -222,13 +227,37 @@ begin
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
-    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT, PATCH', '', True);
 end;
 
 Destructor TpmPackageWM.Destroy;
 begin
   FPackageStreamer.Free;
   inherited Destroy;
+end;
+
+procedure TpmPackageWM.HandlePatchPackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+var
+  Package: TpmPackage;
+  Patch: TpmPatchPackage;
+begin
+  Patch := TpmPatchPackage.Create;
+  try
+    FPackageStreamer.JSonToPatchPackage(ARequest.Content, Patch);
+
+    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
+    if not Assigned(Package) then
+      raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
+
+    if Patch.CategoryId<>0 then
+      Package.CategoryId := Patch.CategoryId;
+
+    if length(Patch.KeywordIds)>0 then
+      Package.KeywordIds := Patch.KeywordIds;
+  finally
+    Patch.Free;
+  end;
+  AResponse.Content := FPackageStreamer.PackageToJSon(Package);
 end;
 
 initialization
