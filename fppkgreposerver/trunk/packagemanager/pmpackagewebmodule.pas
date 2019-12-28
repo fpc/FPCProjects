@@ -121,12 +121,12 @@ begin
     finally
       PackageVersion.Free;
     end;
-    SavePackageList;
     if Package.PackageState = pmpsInitial then
       begin
       TfprLog.Log('Received new package-version for package [' + PackageName + '] which is in the initial state. Update the state to Acceptance.', ARequest);
       Package.PackageState := pmpsAcceptance;
       end;
+    SavePackageList;
     end
   else
     raise Exception.Create('Get package version not implemented');
