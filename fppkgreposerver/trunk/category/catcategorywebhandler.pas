@@ -42,7 +42,7 @@ type
     function HandleCategoryAddRequest(CategoryJSON: TJSONData; AccessToken: string): TJSONData; virtual;
     function HandleCategoryUpdateRequest(CategoryId: string; CategoryJSON: TJSONData; AccessToken: string): TJSONData; virtual;
   public
-
+    constructor Create; override;
   end;
 
 implementation
@@ -141,6 +141,7 @@ end;
 function TcatCategoryWebHandler.HandleCategoryAddRequest(CategoryJSON: TJSONData; AccessToken: string): TJSONData;
 var
   Category: TfprPackageCategory;
+  HighestCategoryId, i: Integer;
   Collection: TfprPackageCategoryCollection;
 begin
   if not Assigned(CategoryJSON) or CategoryJSON.IsNull then
@@ -150,12 +151,21 @@ begin
     raise EJsonWebException.CreateHelp('Not enough rights to modify package categories.', 403);
 
   Category := TfprPackageCategory.Create(nil);
+  Collection := TfprPackageCategoryCollectionSingleton.Instance;
 
   JSONContentToObject(CategoryJSON as TJSONObject, Category);
 
+  HighestCategoryId := 0;
+  if Category.CategoryId = 0 then
+    begin
+    for i := 0 to Collection.Count -1 do
+      if Collection.Items[i].CategoryId > HighestCategoryId then
+        HighestCategoryId := Collection.Items[i].CategoryId;
+    Category.CategoryId := HighestCategoryId +1;
+    end;
+
   CheckValid(Category);
 
-  Collection := TfprPackageCategoryCollectionSingleton.Instance;
   if Assigned(Collection.FindObjectByName(Category.Name)) then
     raise EJsonWebException.CreateFmtHelp('Package category with name [%s] already exists.', [Category.Name], 422);
   if Assigned(Collection.FindObjectById(Category.CategoryId)) then
@@ -270,6 +280,17 @@ begin
 
   if (length(Category.Name) < 3) or (length(Category.Name) > 15) then
     raise EJsonWebException.CreateFmtHelp('The package category name [%s] must have between 3 and 15 characters.', [Category.Name], 422);
+end;
+
+constructor TcatCategoryWebHandler.Create;
+var
+  GlobalSettings: TDCSGlobalSettings;
+begin
+  inherited Create;
+
+  GlobalSettings := TDCSGlobalSettings.GetInstance;
+  if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
 end.
