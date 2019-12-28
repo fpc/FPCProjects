@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { OidcSecurityService } from './auth/services/oidc.security.service';
 import { Observable } from 'rxjs/Observable';
 import { shareReplay } from 'rxjs/operators';
@@ -34,6 +34,13 @@ export class CategoryService {
       this._categoryList = this.http.get<Category[]>(`${this.categoryURL}/category`, {headers: this.getHeaders()}).pipe(shareReplay());
     }
     return this._categoryList;
+  }
+
+  public updateCategoryName(category: Category) {
+    console.log(this._categoryList);
+    this.http.put<Category>(`${this.categoryURL}/category/${category.categoryid}`, category, {headers: this.getHeaders()}).subscribe(category => {
+      console.log(category);
+    });
   }
 
 }

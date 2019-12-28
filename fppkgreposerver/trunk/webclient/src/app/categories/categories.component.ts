@@ -20,4 +20,7 @@ export class CategoriesComponent implements OnInit {
       .subscribe(categoryList => { this.categoryList = categoryList } )
   }
 
+  updateField(category: Category) {
+    this.categoryService.updateCategoryName(category);
+  }
 }

@@ -49,6 +49,10 @@ import { VersionPipe } from './version.pipe';
 import { CurrentFpcversionService } from './current-fpcversion.service';
 import { CategoryService } from './category.service';
 import { CategoriesComponent } from './categories/categories.component';
+import { ViewModeDirective } from './edit-in-place/view-mode.directive';
+import { EditModeDirective } from './edit-in-place/edit-mode.directive';
+import { EditableComponent } from './edit-in-place/editable/editable.component';
+import { EditableOnEnterDirective } from './edit-in-place/editable-on-enter.directive';
 
 @NgModule({
   declarations: [
@@ -76,7 +80,11 @@ import { CategoriesComponent } from './categories/categories.component';
     PackageCardComponent,
     FpcVersionSelectBoxComponent,
     VersionPipe,
-    CategoriesComponent
+    CategoriesComponent,
+    ViewModeDirective,
+    EditModeDirective,
+    EditableComponent,
+    EditableOnEnterDirective
   ],
   imports: [
     BrowserModule,

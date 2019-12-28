@@ -1,12 +1,19 @@
 <div class="card">
   <div class="card-header">
-    <h5 class="float-left">Categories list</h5>
+    <h5 class="float-left">Category list</h5>
   </div>
   <div class="card-body">
     <p class="card-text">A complete list of all categories</p>
     <ul class="list-group">
       <li *ngFor="let category of categoryList" class="list-group-item d-flex justify-content-between align-items-center">
-        {{category.name}}
+
+        <app-editable-component appEditableOnEnter (update)="updateField(category)">
+          <ng-template appViewMode>{{category.name}}</ng-template>
+          <ng-template appEditMode>
+            <input [(ngModel)]="category.name" focusable>
+          </ng-template>
+        </app-editable-component>
+
         <span class="badge badge-primary badge-pill">{{category.id}}</span>
       </li>
     </ul>
