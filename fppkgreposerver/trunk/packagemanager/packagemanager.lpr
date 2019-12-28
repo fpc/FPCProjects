@@ -13,6 +13,7 @@ uses
   cnocStackJSONHandlerThread,
   csJSONRttiStreamHelper,
   csModel,
+  TLoggerUnit,
   fprErrorHandling,
   fprFPCVersion,
   fprJSONFileStreaming,
@@ -65,6 +66,9 @@ begin
   end;
 
   SetupLogging;
+
+  if TLogger.GetInstance().GetAllAppenders().Count > 0 then
+    TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance().GetAllAppenders.Items[0]);
 
   TfprFPCVersionCollection.Instance.LoadFromSettings;
 

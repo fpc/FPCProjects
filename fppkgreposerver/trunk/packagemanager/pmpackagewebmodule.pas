@@ -10,6 +10,7 @@ uses
   httpdefs,
   fpjson,
   fpHTTP,
+  fprLog,
   fphttpserver,
   fprWebModule,
   fprErrorHandling,
@@ -99,6 +100,7 @@ var
 begin
   if ARequest.Method = 'POST' then
     begin
+    TfprLog.Log('Received a new Package-version request for package ' + PackageName, ARequest);
     PackageVersion := TpmPackageVersion.Create(nil);
     try
       JSONContentStringToObject(ARequest.Content, PackageVersion);
@@ -121,7 +123,10 @@ begin
     end;
     SavePackageList;
     if Package.PackageState = pmpsInitial then
+      begin
+      TfprLog.Log('Received new package-version for package [' + PackageName + '] which is in the initial state. Update the state to Acceptance.', ARequest);
       Package.PackageState := pmpsAcceptance;
+      end;
     end
   else
     raise Exception.Create('Get package version not implemented');

@@ -48,7 +48,7 @@ type
     property HomepageURL: string read FHomepageURL write FHomepageURL;
   end;
 
-  TpmGenPackageVersionCollection = specialize TcnocGCollection<TpmPackageVersion>;
+  TpmGenPackageVersionCollection = specialize TcnocGOwnedCollection<TpmPackageVersion>;
 
   { TpmPackageVersionCollection }
 
@@ -112,6 +112,18 @@ type
     property Filename: string read FFilename write FFilename;
     property Author: string read FAuthor write FAuthor;
   end;
+
+  { TpmPatchPackage }
+
+  TpmPatchPackage = class
+  private
+    FCategoryId: Integer;
+    FKeywordIds: TpmArrayOfInteger;
+  published
+    property CategoryId: Integer read FCategoryId write FCategoryId;
+    property KeywordIds: TpmArrayOfInteger read FKeywordIds write FKeywordIds;
+  end;
+
 
 const
   CpmPackageStateString: array[TpmPackageState] of string = ('new', 'acceptance', 'approved', 'published', 'revoked');
@@ -177,7 +189,7 @@ end;
 constructor TpmPackage.Create(ACollection: TCollection);
 begin
   inherited;
-  FPackageVersionList := TpmPackageVersionCollection.Create();
+  FPackageVersionList := TpmPackageVersionCollection.Create(Self);
 end;
 
 destructor TpmPackage.Destroy;

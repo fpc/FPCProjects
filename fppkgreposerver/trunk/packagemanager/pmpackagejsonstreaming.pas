@@ -37,14 +37,16 @@ type
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
     function SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
     function GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
+    function DoFilterPackageVersions(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
   public
     constructor Create; virtual;
     destructor Destroy; override;
 
     function PackageToJSon(APackage: TpmPackage): string;
     procedure JSonToPackage(AJSonStr: String; APackage: TpmPackage);
+    procedure JSonToPatchPackage(AJSonStr: String; APatchPackage: TpmPatchPackage);
 
-    function PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
+    function PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
     function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
     procedure SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
     procedure JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
@@ -144,11 +146,16 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection): string;
+function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
 var
   JSONArr: TJSONArray;
+  DescriptionTag: string;
 begin
-  JSONArr := FSerializer.ObjectToJSON(APackageList) as TJSONArray;
+  if ReleasedVersionInformationOnly then
+    DescriptionTag := 'ReleasedVersionInformationOnly'
+  else
+    DescriptionTag := '';
+  JSONArr := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
   try
     Result := JSONArr.AsJSON;
   finally
@@ -224,6 +231,11 @@ begin
 end;
 
 constructor TpmPackageJSonStreaming.Create;
+var
+  PackageDescription: TcsStreamDescription;
+  PackageCollDescription: TcsStreamDescription;
+  FilteredPackageDescription: TcsStreamDescription;
+  FilteredPackageCollDescription, a: TcsStreamDescription;
 begin
   inherited Create;
   FSerializer := TJSONRttiStreamClass.Create;
@@ -231,13 +243,20 @@ begin
   FSerializer.DescriptionStore.Describer.DefaultImportNameStyle := tcsinsLowerCase;
   FSerializer.DescriptionStore.Describer.Flags := [tcsdfCollectionAsList];
 
-  FSerializer.DescriptionStore.GetDescription(TpmPackageCollection).ListDescription.DefaultSubObjectDescription :=
-    FSerializer.DescriptionStore.GetDescription(TpmPackage);
+  PackageDescription := FSerializer.DescriptionStore.GetDescription(TpmPackage);
+  PackageDescription.Properties.FindByPropertyName('PackageState').OnSetValueAsString := @SetPackageStateAsString;
+  PackageDescription.Properties.FindByPropertyName('PackageState').OnGetValueAsString := @GetPackageStateAsString;
 
-  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageState').OnSetValueAsString := @SetPackageStateAsString;
-  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageState').OnGetValueAsString := @GetPackageStateAsString;
+  PackageDescription.Properties.FindByPropertyName('PackageVersionList').ListDescription.DefaultSubObjectDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageVersion){.Clone};
 
-  FSerializer.DescriptionStore.GetDescription(TpmPackage).Properties.FindByPropertyName('PackageVersionList').ListDescription.DefaultSubObjectDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageVersion).Clone;
+  PackageCollDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageCollection);
+
+  FilteredPackageDescription := FSerializer.DescriptionStore.CloneDescription(TpmPackage, '', 'ReleasedVersionInformationOnly');
+  FilteredPackageCollDescription := FSerializer.DescriptionStore.CloneDescription(TpmPackageCollection, '', 'ReleasedVersionInformationOnly');
+  FilteredPackageDescription.Properties.FindByPropertyName('PackageVersionList').ListDescription.OnFilter := @DoFilterPackageVersions;
+
+  PackageCollDescription.ListDescription.DefaultSubObjectDescription := PackageDescription;
+  FilteredPackageCollDescription.ListDescription.DefaultSubObjectDescription := FilteredPackageDescription;
 end;
 
 destructor TpmPackageJSonStreaming.Destroy;
@@ -279,11 +298,54 @@ procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TpmP
 var
   FS: TStringStream;
 begin
-  FS := TStringStream.Create(PackageCollectionToJSon(APackageList));
+  FS := TStringStream.Create(PackageCollectionToJSon(APackageList, False));
   try
     FS.SaveToFile(Filename);
   finally
     FS.Free;
+  end;
+end;
+
+function TpmPackageJSonStreaming.DoFilterPackageVersions(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
+var
+  Version: TpmPackageVersion;
+  JSONObject: TJSONObject;
+  Package: TpmPackage;
+  ResponseStr: string;
+  StackResult: TcnocStackErrorCodes;
+  DeStreamer: TJSONDeStreamer;
+  RepPackageCol: TpmRepositoryPackageCollection;
+begin
+  Result := False;
+  Package := (AnInstance as TCollection).Owner as TpmPackage;
+  Version := (AnInstance as TCollection).Items[ADescription.Index] as TpmPackageVersion;
+  if Assigned(FStackClient) then
+    begin
+    JSONObject := TJSONObject.Create(['name', 'package', 'method', 'GET', 'package', Package.Name]);
+    try
+      StackResult := FStackClient.SendMessage('Repository', JSONObject.AsJSON, ResponseStr);
+      DeStreamer := TJSONDeStreamer.Create(nil);
+      try
+        DeStreamer.Options := [jdoCaseInsensitive];
+        RepPackageCol := TpmRepositoryPackageCollection.Create;
+        DeStreamer.JSONToCollection(ResponseStr, RepPackageCol);
+        Result := Assigned(RepPackageCol.FindRepositoryPackageByTag(Version.Tag));
+      finally
+        DeStreamer.Free;
+      end;
+    finally
+      JSONObject.Free;
+    end;
+    end;
+end;
+
+procedure TpmPackageJSonStreaming.JSonToPatchPackage(AJSonStr: String; APatchPackage: TpmPatchPackage);
+begin
+  try
+    FSerializer.JSONStringToObject(AJSonStr, APatchPackage);
+  except
+    on E: Exception do
+      raise EJsonWebException.CreateFmt('Failed to parse package-data: %s', [E.Message]);
   end;
 end;
 
