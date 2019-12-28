@@ -16,9 +16,18 @@
 
         <span class="badge badge-primary badge-pill">{{category.id}}</span>
       </li>
+      <li *ngIf="newCategory" class="list-group-item d-flex justify-content-between align-items-center">
+        <app-editable-component appEditableOnStart appEditableOnEnter (update)="saveNewCategory()">
+          <ng-template appViewMode>{{newCategory.name}}</ng-template>
+          <ng-template appEditMode>
+            <input [(ngModel)]="newCategory.name" focusable>
+          </ng-template>
+        </app-editable-component>
+        <span class="badge badge-primary badge-pill">new</span>
+      </li>
     </ul>
     <p class="card-text">
-      <button type="button" class="btn btn-primary">
+      <button type="button" (click)="addCategory()" class="btn btn-primary">
         Add Category
       </button>
     </p>

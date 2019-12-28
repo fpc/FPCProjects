@@ -53,6 +53,7 @@ import { ViewModeDirective } from './edit-in-place/view-mode.directive';
 import { EditModeDirective } from './edit-in-place/edit-mode.directive';
 import { EditableComponent } from './edit-in-place/editable/editable.component';
 import { EditableOnEnterDirective } from './edit-in-place/editable-on-enter.directive';
+import { EditableOnStartDirective } from './edit-in-place/editable-on-start.directive';
 
 @NgModule({
   declarations: [
@@ -84,7 +85,8 @@ import { EditableOnEnterDirective } from './edit-in-place/editable-on-enter.dire
     ViewModeDirective,
     EditModeDirective,
     EditableComponent,
-    EditableOnEnterDirective
+    EditableOnEnterDirective,
+    EditableOnStartDirective
   ],
   imports: [
     BrowserModule,

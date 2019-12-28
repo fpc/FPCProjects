@@ -67,4 +67,8 @@ export class EditableComponent implements OnInit {
     this.mode = 'view';
   }
 
+  toEditMode() {
+    this.mode = 'edit';
+  }
+
 }

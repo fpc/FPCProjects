@@ -10,6 +10,7 @@ import { Category } from '../category';
 export class CategoriesComponent implements OnInit {
 
   categoryList: Category[];
+  newCategory: Category = null;
 
   constructor(
     private categoryService: CategoryService
@@ -22,5 +23,14 @@ export class CategoriesComponent implements OnInit {
 
   updateField(category: Category) {
     this.categoryService.updateCategoryName(category);
+  }
+  saveNewCategory() {
+    this.categoryService.addCategory(this.newCategory);
+    this.newCategory = null;
+  }
+
+  addCategory() {
+    this.newCategory = new Category;
+
   }
 }
