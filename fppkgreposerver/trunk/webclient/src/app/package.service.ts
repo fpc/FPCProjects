@@ -60,6 +60,10 @@ export class PackageService {
     return this.http.post<Package>(url, newPackage, {headers: this.getHeaders()});
   }
 
+  patchPackageCategory(anPackage: Package): Observable<Package> {
+    const url = `${this.packageManagerURL}/package/${anPackage.name}`;
+    return this.http.patch<Package>(url, {categoryid: anPackage.categoryid}, {headers: this.getHeaders()});
+  }
 
 
 }

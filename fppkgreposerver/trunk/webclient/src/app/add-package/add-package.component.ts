@@ -25,6 +25,7 @@ export class AddPackageComponent implements OnInit {
     packageversionlist: undefined,
     keywords: undefined,
     category: undefined,
+    categoryid: undefined,
     support: undefined
   };
   errMessage: string = null;

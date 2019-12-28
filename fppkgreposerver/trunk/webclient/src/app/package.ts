@@ -7,5 +7,6 @@ export interface Package {
   packageversionlist: Packageversion[];
   keywords: string[];
   category: string;
+  categoryid: number;
   support: string;
 }

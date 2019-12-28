@@ -4,8 +4,10 @@ import { UploadPackageComponent } from '../upload-package/upload-package.compone
 import { TagPackageComponent } from '../tag-package/tag-package.component';
 import { PackageService } from '../package.service';
 import { Package } from '../package';
+import { Category } from '../category';
 import { VersionUtils } from '../version';
 import { FPCVersion } from '../fpcversion';
+import { CategoryService } from '../category.service';
 import { CurrentFpcversionService } from '../current-fpcversion.service';
 
 @Component({
@@ -18,6 +20,7 @@ export class PackageComponent implements OnInit {
   selectedFPCVersion: FPCVersion = null;
   packageVersionList: any[] = [];
   selectedVersion: any = null;
+  categoryList: Category[];
   public currentPackage: Package = null;
 
   @Input() set package(selpackage: Package) {
@@ -30,7 +33,8 @@ export class PackageComponent implements OnInit {
   constructor(
     private _modalService: NgbModal,
     private _packageService: PackageService,
-    private currentFpcversionService: CurrentFpcversionService) { }
+    private currentFpcversionService: CurrentFpcversionService,
+    private categoryService: CategoryService) { }
 
   showUploadSourceDialog() {
     const modalRef = this._modalService.open(UploadPackageComponent);
@@ -57,6 +61,11 @@ export class PackageComponent implements OnInit {
       .subscribe(fpcPackage => this.packageUpdated.emit());
   }
 
+  patchPackageCategory() {
+    this._packageService.patchPackageCategory(this.currentPackage)
+      .subscribe(fpcPackage => this.packageUpdated.emit());
+  }
+
   selectVersion(version) {
     this.selectedVersion = version;
   }
@@ -80,5 +89,8 @@ export class PackageComponent implements OnInit {
         this.selectedFPCVersion = version;
         this.filterPackageVersionList()
        } )
+    this.categoryService.getCategoryList()
+    .subscribe(categoryList => { this.categoryList = categoryList } )
+
   }
 }
