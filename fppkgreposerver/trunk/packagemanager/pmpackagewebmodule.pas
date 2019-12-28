@@ -58,7 +58,7 @@ begin
     begin
     // Return list of all packages
     FPackageStreamer.FilterOutOldVersions := True;
-    AResponse.Content := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance);
+    AResponse.Content := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance, True);
     AResponse.Code := 200;
     end
   else
