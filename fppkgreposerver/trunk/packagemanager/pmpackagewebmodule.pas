@@ -254,6 +254,8 @@ begin
 
     if length(Patch.KeywordIds)>0 then
       Package.KeywordIds := Patch.KeywordIds;
+
+    SavePackageList;
   finally
     Patch.Free;
   end;
