@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: buildagent-service
+spec:
+  ports:
+  - name: trunk
+    port: 8080
+    protocol: TCP
+  - name: v304
+    port: 9090
+    protocol: TCP
+  selector:
+    app: buildagents
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persistent-disk-buildfiles
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: azurefile
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: buildagents
+spec:
+  selector:
+    matchLabels:
+      app: buildagents
+  serviceName: "buildagents"
+  template:
+    metadata:
+      name: buildagents
+      labels:
+        app: buildagents
+    spec:
+      volumes:
+      - name: buildfiles
+        persistentVolumeClaim:
+          claimName: persistent-disk-buildfiles
+      containers:
+      # buildagent-trunk
+      - name: buildagent-trunk
+        env:
+        - name: TestEnv_x86_64_linux_trunk__FPCSourcePath
+          value: /home/locuser/svn/fpc
+        - name: TestEnv_x86_64_linux_trunk__PristineEnvironmentPath
+          value: /home/locuser/buildenv/pristine/x86_64-linux-trunk/
+        - name: TestEnv_x86_64_linux_trunk__BuildPath
+          value: /home/locuser/buildenv/build/
+        - name: TestEnv_x86_64_linux_trunk__StartCompiler
+          value: ppcx64_3.0.2
+        - name: TestEnv_x86_64_linux_trunk__FppkgCfgTemplate
+          value: /home/locuser/templates/fppkg.cfg.template
+        - name: TestEnv_x86_64_linux_trunk__RemoteMirrors
+          value: http://51.124.138.35/repo/testing/mirrors.xml
+        - name: TestEnv_x86_64_linux_trunk__FPCSVNUrl
+          value: https://svn.freepascal.org/svn/fpc/trunk
+        - name: OIDC__OpenIDProviderURL
+          value: http://51.124.138.35/identityserver
+        - name: Connections__BuildManagerURL
+          value: http://fppkg/buildmanager
+        - name: Agent__Name
+          value: Default
+        - name: Agent__URL
+          value: http://51.124.138.35/buildagenttrunk
+        - name:  Agent__FPCVersion
+          value: trunk
+        - name: Log_file__Format
+          value: console
+        - name: Log_file__Level
+          value: Trace
+        - name: HTTP__AllowCorsOrigin
+          value: http://fpc.cnoc.nl
+        - name: BuildFiles__Location
+          value: /home/locuser/buildfiles
+        - name: BuildFiles__URL
+          value: http://51.124.138.35/buildfiles/
+        image: quay.io/loesje/buildagent
+        volumeMounts:
+        - name: buildfiles
+          mountPath: /home/locuser/buildfiles
+
+      - name: buildagent-304
+        env:
+        - name: HTTP__Port
+          value: "9090"
+        - name: TestEnv_x86_64_linux_3.0.4__FPCSourcePath
+          value: /home/locuser/svn/fpc
+        - name: TestEnv_x86_64_linux_3.0.4__PristineEnvironmentPath
+          value: /home/locuser/buildenv/pristine/x86_64-linux-3_0_4/
+        - name: TestEnv_x86_64_linux_3.0.4__BuildPath
+          value: /home/locuser/buildenv/build/
+        - name: TestEnv_x86_64_linux_3.0.4__StartCompiler
+          value: ppcx64_3.0.2
+        - name: TestEnv_x86_64_linux_3.0.4__FppkgCfgTemplate
+          value: /home/locuser/templates/fppkg.cfg.304.template
+        - name: TestEnv_x86_64_linux_3.0.4__RemoteMirrors
+          value: http://51.124.138.35/repo/testing/mirrors.xml
+        - name: TestEnv_x86_64_linux_3.0.4__FPCSVNUrl
+          value: https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
+        - name: TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug
+          value: "true"
+        - name: OIDC__OpenIDProviderURL
+          value: http://51.124.138.35/identityserver
+        - name: Connections__BuildManagerURL
+          value: http://fppkg/buildmanager
+        - name: Agent__Name
+          value: Default
+        - name: Agent__URL
+          value: http://51.124.138.35/buildagent304
+        - name:  Agent__FPCVersion
+          value: 3.0.4
+        - name: Log_file__Format
+          value: console
+        - name: Log_file__Level
+          value: Trace
+        - name: HTTP__AllowCorsOrigin
+          value: http://fpc.cnoc.nl
+        - name: BuildFiles__Location
+          value: /home/locuser/buildfiles
+        - name: BuildFiles__URL
+          value: http://51.124.138.35/buildfiles/
+        image: quay.io/loesje/buildagent
+        volumeMounts:
+        - name: buildfiles
+          mountPath: /home/locuser/buildfiles
