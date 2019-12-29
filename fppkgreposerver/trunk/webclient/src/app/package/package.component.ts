@@ -9,6 +9,7 @@ import { VersionUtils } from '../version';
 import { FPCVersion } from '../fpcversion';
 import { CategoryService } from '../category.service';
 import { CurrentFpcversionService } from '../current-fpcversion.service';
+import { OidcSecurityService } from '../auth/services/oidc.security.service';
 
 @Component({
   selector: 'app-package',
@@ -28,13 +29,15 @@ export class PackageComponent implements OnInit {
     this.filterPackageVersionList();
   };
   @Output() packageUpdated = new EventEmitter();
+  mayEditPackage: boolean;
 
 
   constructor(
     private _modalService: NgbModal,
     private _packageService: PackageService,
     private currentFpcversionService: CurrentFpcversionService,
-    private categoryService: CategoryService) { }
+    private categoryService: CategoryService,
+    public oidcSecurityService: OidcSecurityService) { }
 
   showUploadSourceDialog() {
     const modalRef = this._modalService.open(UploadPackageComponent);
@@ -89,8 +92,14 @@ export class PackageComponent implements OnInit {
         this.selectedFPCVersion = version;
         this.filterPackageVersionList()
        } )
-    this.categoryService.getCategoryList()
-    .subscribe(categoryList => { this.categoryList = categoryList } )
-
+    this.oidcSecurityService.getUserData().subscribe(
+      (data: any) => {
+        this.mayEditPackage = (data.role == "admin");
+        if (this.mayEditPackage) {
+          this.categoryService.getCategoryList()
+            .subscribe(categoryList => { this.categoryList = categoryList } )
+        }
+      }
+    );
   }
 }

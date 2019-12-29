@@ -10,7 +10,7 @@
   <div class="card-body">
     <p class="mb-1 font-italic" *ngIf="currentPackage.packagestate!='published'"><span class="text-muted">State: </span>{{currentPackage.packagestate}}</p>
 
-    <p *ngIf="currentPackage.category" class="mb-1"><span class="text-muted">Category</span>
+    <p *ngIf="currentPackage.category || mayEditPackage" class="mb-1"><span class="text-muted">Category</span>
       <app-editable-component appEditableOnEnter (update)="patchPackageCategory()">
         <ng-template appViewMode>{{currentPackage.category}}</ng-template>
         <ng-template appEditMode>
