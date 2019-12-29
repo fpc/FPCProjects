@@ -2,14 +2,14 @@ version: '3'
 
 services:
   identityserver:
-      image: 'fpc.cnoc.nl:5000/identityserver:latest'
+      image: 'quay.io/loesje/identityserver:latest'
       build:
         context: .
         dockerfile: docker-identityserver.dockerfile
       container_name: identityserver
 
   buildmanager:
-      image: 'fpc.cnoc.nl:5000/buildmanager:latest'
+      image: 'quay.io/loesje/buildmanager:latest'
       build:
         context: .
         dockerfile: docker-buildmanager.dockerfile
@@ -18,7 +18,7 @@ services:
       container_name: buildmanager
 
   webclient:
-      image: 'fpc.cnoc.nl:5000/webclient:latest'
+      image: 'fppkg.azurecr.io/webclient:latest'
       build:
         context: .
         dockerfile: docker-webclient.dockerfile
@@ -46,7 +46,7 @@ services:
         - repo:/usr/share/nginx/html/repo
 
   repository:
-      image: 'fpc.cnoc.nl:5000/repository:latest'
+      image: 'quay.io/loesje/repository:latest'
       build:
         context: .
         dockerfile: docker-repository.dockerfile
@@ -55,14 +55,14 @@ services:
         - gitrepos:/home/locuser/gitrepos
 
   fppkgstack:
-      image: 'fpc.cnoc.nl:5000/fppkgstack:latest'
+      image: 'quay.io/loesje/fppkgstack:latest'
       build:
         context: .
         dockerfile: docker-fppkgstack.dockerfile
       container_name: fppkgstack
 
   packagemanager:
-      image: 'fpc.cnoc.nl:5000/packagemanager:latest'
+      image: 'quay.io/loesje/packagemanager:latest'
       build:
         context: .
         dockerfile: docker-packagemanager.dockerfile
@@ -73,7 +73,7 @@ services:
         - Storage__PackageListFile=/home/locuser/data/packages.json
 
   category:
-      image: 'fpc.cnoc.nl:5000/category:latest'
+      image: 'quay.io/loesje/category:latest'
       build:
         context: .
         dockerfile: docker-category.dockerfile
@@ -84,7 +84,7 @@ services:
         - Storage__CategoryListFile=/home/locuser/data/category.json
 
   keyword:
-      image: 'fpc.cnoc.nl:5000/keyword:latest'
+      image: 'quay.io/loesje/keyword:latest'
       build:
         context: .
         dockerfile: docker-keyword.dockerfile
@@ -96,7 +96,7 @@ services:
 
 
   buildagent_trunk:
-      image: 'fpc.cnoc.nl:5000/buildagent:latest'
+      image: 'quay.io/loesje/buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -116,7 +116,7 @@ services:
         - TestEnv_x86_64_linux_trunk__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/trunk
 
   buildagent_fixes32:
-      image: 'fpc.cnoc.nl:5000/buildagent:latest'
+      image: 'quay.io/loesje/buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -136,7 +136,7 @@ services:
         - TestEnv_x86_64_linux_fixes32__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/branches/fixes_3_2
 
   buildagent_304:
-      image: 'fpc.cnoc.nl:5000/buildagent:latest'
+      image: 'quay.io/loesje/buildagent:latest'
       build:
         context: .
         dockerfile: docker-buildagent.dockerfile
@@ -157,7 +157,7 @@ services:
         - TestEnv_x86_64_linux_3.0.4__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
 
   fppkgrepository:
-      image: 'fpc.cnoc.nl:5000/fppkgrepository:latest'
+      image: 'quay.io/loesje/fppkgrepository:latest'
       build:
         context: .
         dockerfile: docker-fppkgrepository.dockerfile
