@@ -168,18 +168,18 @@ services:
        - repo:/home/locuser/repo
        - packagedata:/home/locuser/data
       environment:
-       - Repository_Trunk_Testing__path=/home/locuser/repo/testing
-       - Repository_Trunk_Testing__StorageFile=/home/locuser/data/packages-trunk-testing.json
-       - Repository_Trunk_Production__path=/home/locuser/repo/prod
-       - Repository_Trunk_Production__StorageFile=/home/locuser/data/packages-trunk-production.json
-       - Repository_304_Testing__path=/home/locuser/repo/testing
-       - Repository_304_Testing__StorageFile=/home/locuser/data/packages-304-testing.json
-       - Repository_304_Production__path=/home/locuser/repo/prod
-       - Repository_304_Production__StorageFile=/home/locuser/data/packages-304-production.json
-       - Repository_fixes32_Testing__path=/home/locuser/repo/testing
-       - Repository_fixes32_Testing__StorageFile=/home/locuser/data/packages-fixes32-testing.json
-       - Repository_fixes32_Production__path=/home/locuser/repo/prod
-       - Repository_fixes32_Production__StorageFile=/home/locuser/data/packages-fixes32-production.json
+       - Repository_Trunk-Testing__path=/home/locuser/repo/testing
+       - Repository_Trunk-Testing__StorageFile=/home/locuser/data/packages-trunk-testing.json
+       - Repository_Trunk-Production__path=/home/locuser/repo/prod
+       - Repository_Trunk-Production__StorageFile=/home/locuser/data/packages-trunk-production.json
+       - Repository_304-Testing__path=/home/locuser/repo/testing
+       - Repository_304-Testing__StorageFile=/home/locuser/data/packages-304-testing.json
+       - Repository_304-Production__path=/home/locuser/repo/prod
+       - Repository_304-Production__StorageFile=/home/locuser/data/packages-304-production.json
+       - Repository_fixes32-Testing__path=/home/locuser/repo/testing
+       - Repository_fixes32-Testing__StorageFile=/home/locuser/data/packages-fixes32-testing.json
+       - Repository_fixes32-Production__path=/home/locuser/repo/prod
+       - Repository_fixes32-Production__StorageFile=/home/locuser/data/packages-fixes32-production.json
 
 volumes:
   gitrepos:
