@@ -69,6 +69,11 @@ export class PackageComponent implements OnInit {
       .subscribe(fpcPackage => this.packageUpdated.emit());
   }
 
+  patchSupportCategory() {
+    this._packageService.patchSupportCategory(this.currentPackage)
+      .subscribe(fpcPackage => this.packageUpdated.emit());
+  }
+
   selectVersion(version) {
     this.selectedVersion = version;
   }

@@ -65,5 +65,8 @@ export class PackageService {
     return this.http.patch<Package>(url, {categoryid: anPackage.categoryid}, {headers: this.getHeaders()});
   }
 
-
+  patchSupportCategory(anPackage: Package): Observable<Package> {
+    const url = `${this.packageManagerURL}/package/${anPackage.name}`;
+    return this.http.patch<Package>(url, {support: anPackage.support}, {headers: this.getHeaders()});
+  }
 }

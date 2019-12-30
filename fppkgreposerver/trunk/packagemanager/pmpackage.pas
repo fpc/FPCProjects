@@ -67,6 +67,7 @@ type
     FPackageVersionList: TpmPackageVersionCollection;
     FCategoryId: Integer;
     FKeywordIds: TpmArrayOfInteger;
+    FSupport: string;
     procedure SetPackageState(AValue: TpmPackageState);
     function GetCategory: string;
     function GetKeywords: TpmArrayOfString;
@@ -85,6 +86,7 @@ type
     property CategoryId: Integer read FCategoryId write FCategoryId;
     property Keywords: TpmArrayOfString read GetKeywords;
     property KeywordIds: TpmArrayOfInteger read GetKeywordIds write SetKeywordsIds;
+    property Support: string read FSupport write FSupport;
   end;
 
   TpmGenPackageCollection = specialize TcnocGCollection<TpmPackage>;
@@ -119,9 +121,11 @@ type
   private
     FCategoryId: Integer;
     FKeywordIds: TpmArrayOfInteger;
+    FSupport: string;
   published
     property CategoryId: Integer read FCategoryId write FCategoryId;
     property KeywordIds: TpmArrayOfInteger read FKeywordIds write FKeywordIds;
+    property Support: string read FSupport write FSupport;
   end;
 
 

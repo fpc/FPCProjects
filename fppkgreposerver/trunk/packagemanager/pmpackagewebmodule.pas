@@ -254,6 +254,9 @@ begin
     if Patch.CategoryId<>0 then
       Package.CategoryId := Patch.CategoryId;
 
+    if Patch.Support<>'' then
+      Package.Support := Patch.Support;
+
     if length(Patch.KeywordIds)>0 then
       Package.KeywordIds := Patch.KeywordIds;
 

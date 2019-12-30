@@ -12,6 +12,6 @@
   <div *ngIf="!selectedVersion">
       <p *ngIf="fpcversion">This package is not available for FPC-version {{fpcversion.name}}.</p>
   </div>
-
+  <p *ngIf="package.support" class="mb-1"><span class="text-muted">Support: </span>{{package.support}}</p>
 </div>
 

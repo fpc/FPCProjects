@@ -15,14 +15,21 @@
         <ng-template appViewMode>{{currentPackage.category}}</ng-template>
         <ng-template appEditMode>
           <select [(ngModel)]="currentPackage.categoryid">
-              <option *ngFor="let category of categoryList" value="{{category.categoryid}}">{{category.name}}</option>
-            </select>
-          </ng-template>
+            <option *ngFor="let category of categoryList" value="{{category.categoryid}}">{{category.name}}</option>
+          </select>
+        </ng-template>
       </app-editable-component>
     </p>
 
     <p *ngIf="currentPackage.keywords" class="mb-1"><span class="text-muted">Keywords</span> {{currentPackage.keywords}}</p>
-    <p *ngIf="currentPackage.support" class="mb-1"><span class="text-muted">Support</span> {{currentPackage.support}}</p>
+    <p *ngIf="currentPackage.support || mayEditPackage" class="mb-1"><span class="text-muted">Support</span>
+      <app-editable-component appEditableOnEnter (update)="patchSupportCategory()">
+        <ng-template appViewMode>{{currentPackage.support}}</ng-template>
+        <ng-template appEditMode>
+          <input [(ngModel)]="currentPackage.support" />
+        </ng-template>
+      </app-editable-component>
+    </p>
     <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
 
     <div *ngIf="(!selectedVersion)">
