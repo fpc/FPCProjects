@@ -29,7 +29,7 @@
     <p class="card-text">
       <app-package-list [packageList]="filteredPackageList" [fpcversion]="selectedVersion"></app-package-list>
     </p>
-    <p class="card-text">
+    <p class="card-text" *ngIf="mayAddPackage">
       <button type="button" class="btn btn-primary" (click)="open()">
         Add package
       </button>

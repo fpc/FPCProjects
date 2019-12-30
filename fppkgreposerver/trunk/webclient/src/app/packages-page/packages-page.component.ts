@@ -5,6 +5,7 @@ import { PackageService } from '../package.service';
 import { Package } from '../package';
 import { FPCVersion } from '../fpcversion';
 import { CurrentFpcversionService } from '../current-fpcversion.service';
+import { OidcSecurityService } from '../auth/services/oidc.security.service';
 
 @Component({
   selector: 'app-packages-page',
@@ -16,18 +17,25 @@ export class PackagesPageComponent implements OnInit {
   packageList: Package[];
   filteredPackageList: Package[];
   selectedVersion: FPCVersion = null;
+  mayAddPackage: boolean = false;
 
   constructor(
     private modalService: NgbModal,
     private packageService: PackageService,
-    private currentFpcversionService: CurrentFpcversionService
+    private currentFpcversionService: CurrentFpcversionService,
+    private oidcSecurityService: OidcSecurityService
     ) { }
 
   ngOnInit() {
     this.packageService.getPackageList()
       .subscribe(packageList => { this.packageList = packageList; this.filteredPackageList = packageList } )
     this.currentFpcversionService.getCurrentVersion()
-      .subscribe(version => { this.selectedVersion = version } )
+      .subscribe(version => { this.selectedVersion = version } );
+    this.oidcSecurityService.getIsAuthorized().subscribe(
+      isAuthorized => {
+        this.mayAddPackage = isAuthorized;
+      }
+    );
   }
 
   open() {
