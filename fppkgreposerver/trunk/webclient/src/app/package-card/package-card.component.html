@@ -8,6 +8,7 @@
       <p *ngIf="!selectedVersion.description" class="text-danger">This package does not have a description.</p>
       <p *ngIf="selectedVersion.license" class="mb-1"><span class="text-muted">License: </span>{{selectedVersion.license}}</p>
       <p *ngIf="selectedVersion.author" class="mb-1"><span class="text-muted">Author: </span>{{selectedVersion.author}}</p>
+      <p *ngIf="selectedVersion.homepageurl" class="mb-1"><span class="text-muted">Site: </span><a href="http://{{selectedVersion.homepageurl}}" target="_blank">{{selectedVersion.homepageurl}}</a></p>
   </div>
   <div *ngIf="!selectedVersion">
       <p *ngIf="fpcversion">This package is not available for FPC-version {{fpcversion.name}}.</p>
