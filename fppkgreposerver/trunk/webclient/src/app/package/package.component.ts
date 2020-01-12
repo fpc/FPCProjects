@@ -99,7 +99,7 @@ export class PackageComponent implements OnInit {
        } )
     this.oidcSecurityService.getUserData().subscribe(
       (data: any) => {
-        this.mayEditPackage = (data.role == "admin");
+        this.mayEditPackage = ((!!data) && (data.role == "admin"));
         if (this.mayEditPackage) {
           this.categoryService.getCategoryList()
             .subscribe(categoryList => { this.categoryList = categoryList } )

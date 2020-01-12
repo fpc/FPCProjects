@@ -19,7 +19,7 @@ export class AdminGuardService {
       });
     this.userDataSubscription = this.oidcSecurityService.getUserData().subscribe(
       (data: any) => {
-        this.isAdmin = (data.role == "admin");
+        this.isAdmin = ((!!data) && (data.role == "admin"));
       });
   }
 

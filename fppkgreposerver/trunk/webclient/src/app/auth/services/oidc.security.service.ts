@@ -26,7 +26,7 @@ export class OidcSecurityService {
     private _isAuthorized = new BehaviorSubject<boolean>(false);
     private _isAuthorizedValue: boolean;
 
-    private _userData = new BehaviorSubject<any>('');
+    private _userData = new BehaviorSubject<any>(null);
     private _userDataValue: boolean;
 
     private headers: Headers;

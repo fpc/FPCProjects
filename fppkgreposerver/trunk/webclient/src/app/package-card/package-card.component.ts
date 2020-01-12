@@ -19,7 +19,7 @@ export class PackageCardComponent implements OnInit {
   ngOnInit() {
     this.oidcSecurityService.getUserData().subscribe(
       (data: any) => {
-        this.isAdmin = (data.role == "admin");
+        this.isAdmin = ((!!data) && (data.role == "admin"));
       }
     );
   }

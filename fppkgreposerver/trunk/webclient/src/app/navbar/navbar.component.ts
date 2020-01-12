@@ -25,7 +25,7 @@ export class NavbarComponent implements OnInit {
       });
       this.userDataSubscription = this.oidcSecurityService.getUserData().subscribe(
         (data: any) => {
-          this.isAdmin = (data.role == "admin");
+          this.isAdmin = ((!!data) && (data.role == "admin"));
         }
       );
     }
