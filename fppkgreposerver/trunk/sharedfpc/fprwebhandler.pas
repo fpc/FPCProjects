@@ -18,6 +18,7 @@ uses
   fphttpclient,
   fphttpserver,
   fprJSONRTTI,
+  fprLog,
   fprWebModule,
   fprErrorHandling,
   cnocStackMessageTypes;
@@ -108,38 +109,41 @@ var
   JSONContent: TJSONData;
   StopProcessing: boolean;
 begin
+  TfprLog.LogTrace('Received [' +ARequest.Method+ '] request.', ARequest.PathInfo + ':' + ARequest.Query, ARequest);
+
   HandleCors(ARequest, AResponse, StopProcessing);
-  if StopProcessing then
-    Exit;
-
-  JSONContent:=nil;
-  if ARequest.Content <> '' then
+  if not StopProcessing then
     begin
-    With TJSONParser.Create(ARequest.Content) do
-      try
-        JSONContent:=Parse;
-      finally
-        Free;
+    JSONContent:=nil;
+    if ARequest.Content <> '' then
+      begin
+      With TJSONParser.Create(ARequest.Content) do
+        try
+          JSONContent:=Parse;
+        finally
+          Free;
+        end;
       end;
-    end;
 
-  JSONData := DoHandleRequest(ARequest, JSONContent);
-  try
-    if not Assigned(JSONData) then
-      begin
-      AResponse.Content := '{"error":{"msg":"Request did not return any data"}}';
-      AResponse.Code := 500;
-      end
-    else
-      begin
-      AResponse.Content := JSONData.AsJSON;
-      AResponse.Code := 200;
-      end;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
-    AResponse.ContentType := 'application/json; charset=utf-8';
-  finally
-    JSONData.Free;
-  end;
+    JSONData := DoHandleRequest(ARequest, JSONContent);
+    try
+      if not Assigned(JSONData) then
+        begin
+        AResponse.Content := '{"error":{"msg":"Request did not return any data"}}';
+        AResponse.Code := 500;
+        end
+      else
+        begin
+        AResponse.Content := JSONData.AsJSON;
+        AResponse.Code := 200;
+        end;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+      AResponse.ContentType := 'application/json; charset=utf-8';
+    finally
+      JSONData.Free;
+    end;
+    end;
+  TfprLog.LogTrace('Respond with [' + IntToStr(AResponse.Code) + ':' + AResponse.CodeText + ']', AResponse.Content);
 end;
 
 function TfprWebHandler.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
