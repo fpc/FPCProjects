@@ -9,6 +9,7 @@ uses
   SysUtils,
   fpjson,
   cnocOpenIDConnect,
+  cnocOIDCIDToken,
   dcsGlobalSettings,
   fprWebModule;
 
@@ -26,6 +27,7 @@ type
     destructor Destroy; override;
     class function GetInstance: TfprAuthenticationHandler;
     function GetUserRole(const AccessToken: string): string;
+    function GetSubject(const AccessToken: string): string;
     function VerifyAccessToken(const AccessToken: string; out ErrMessage: string): Boolean;
   end;
 
@@ -94,6 +96,19 @@ begin
     ErrMessage := FOIDCProvider.GetLatestError
   else
     ErrMessage := '';
+end;
+
+function TfprAuthenticationHandler.GetSubject(const AccessToken: string): string;
+var
+  JWT: TcnocOIDCIDTokenJWT;
+begin
+  JWT := TcnocOIDCIDTokenJWT.Create;
+  try
+    JWT.AsEncodedString := AccessToken;
+    Result := JWT.Claims.sub;
+  finally
+    JWT.Free;
+  end;
 end;
 
 end.
