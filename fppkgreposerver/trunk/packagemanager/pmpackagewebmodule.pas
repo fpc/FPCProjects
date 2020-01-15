@@ -10,13 +10,16 @@ uses
   httpdefs,
   fpjson,
   fpHTTP,
+  httproute,
+  cnocStackMessageTypes,
+  cnocStackHandlerThread,
+  cnocStackJSONHandlerThread,
   fprLog,
-  fphttpserver,
-  fprWebModule,
   fprErrorHandling,
   fprFPCVersion,
-  fprJSONFileStreaming,
+  fprAuthenticationHandler,
   fprStackClient,
+  fprWebHandler,
   dcsGlobalSettings,
   pmPackage,
   pmPackageJSonStreaming;
@@ -25,19 +28,24 @@ type
 
   { TpmPackageWM }
 
-  TpmPackageWM = class(TfprWebModule)
-    Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  TpmPackageWM = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
+  protected
+    function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; override;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
+
+    function HandlePackageRequest(const PackageName, SubObject, Method, Data, AccessToken: string): TJSONData;
   private
     FPackageStreamer: TpmPackageJSonStreaming;
-    Procedure HandlePackageVersion(PackageName: string; ARequest: TRequest; AResponse: TResponse);
-    Procedure HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
-    Procedure HandlePackageApprove(PackageName: string; ARequest: TRequest; AResponse: TResponse);
-    procedure HandlePatchPackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+    function HandlePackageVersion(const PackageName, Method, Data, AccessToken: string): TJSONData;
+    function HandlePackage(PackageName, Method, Data, AccessToken: string): TJSONData;
+    function HandlePackageApprove(const PackageName, Method, AccessToken: string): TJSONData;
+    function HandlePatchPackage(const PackageName, Data, AccessToken: string): TJSONData;
     procedure SavePackageList;
   protected
-    function RequireAuthentication(ARequest: TRequest): Boolean; override;
+    procedure EnsureLoggedIn(const AccessToken: string);
+    procedure EnsureAdmin(const AccessToken: string);
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(); override;
     Destructor Destroy; override;
   end;
 
@@ -46,67 +54,52 @@ var
 
 implementation
 
-{$R *.lfm}
-
 { TpmPackageWM }
 
-Procedure TpmPackageWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
-var
-  PackageName: string;
-  SubObject: string;
+function TpmPackageWM.HandlePackageRequest(const PackageName, SubObject, Method, Data, AccessToken: string): TJSONData;
 begin
-  PackageName := ARequest.GetNextPathInfo;
-  if (PackageName = '') and (ARequest.Method = 'GET') then
+  if (PackageName = '') and (Method = 'GET') then
     begin
     // Return list of all packages
     FPackageStreamer.FilterOutOldVersions := True;
-    AResponse.Content := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance, True);
-    AResponse.Code := 200;
+    Result := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance, True);
     end
   else
     begin
     FPackageStreamer.FilterOutOldVersions := False;
-    SubObject := ARequest.GetNextPathInfo;
     case SubObject of
       '':
         begin
-        HandlePackage(PackageName, ARequest, AResponse);
-        AResponse.Code := 200;
+        Result := HandlePackage(PackageName, Method, Data, AccessToken);
         end;
       'version':
         begin
-        HandlePackageVersion(PackageName, ARequest, AResponse);
-        AResponse.Code := 200;
+        Result := HandlePackageVersion(PackageName, Method, Data, AccessToken);
         end;
       'approve':
         begin
-        HandlePackageApprove(PackageName, ARequest, AResponse);
-        AResponse.Code := 200;
+        Result := HandlePackageApprove(PackageName, Method, AccessToken);
         end
     else
       begin
-      AResponse.Code := 404;
+      raise EJsonWebException.CreateFmtHelp('Invalid subobject [%s], valid values are: version and approve', [SubObject], 404);
       end
     end; { case }
     end;
-
-
-  AResponse.CodeText := GetStatusCode(AResponse.Code);
-  Handled := True;
 end;
 
-Procedure TpmPackageWM.HandlePackageVersion(PackageName: string; ARequest: TRequest;
-  AResponse: TResponse);
+function TpmPackageWM.HandlePackageVersion(const PackageName, Method, Data, AccessToken: string): TJSONData;
 var
   Package: TpmPackage;
   PackageVersion: TpmPackageVersion;
 begin
-  if ARequest.Method = 'POST' then
+  if Method = 'POST' then
     begin
-    TfprLog.Log('Received a new Package-version request for package ' + PackageName, ARequest);
+    TfprLog.Log('Received a new Package-version request for package ' + PackageName);
+    EnsureLoggedIn(AccessToken);
     PackageVersion := TpmPackageVersion.Create(nil);
     try
-      JSONContentStringToObject(ARequest.Content, PackageVersion);
+      JSONContentStringToObject(Data, PackageVersion);
       Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
       if not Assigned(Package) then
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
@@ -117,7 +110,7 @@ begin
       if PackageVersion.Version.Empty then
         raise Exception.Create('The obligatory version-field is missing');
 
-      AResponse.Content := ObjectToJSONContentString(PackageVersion);
+      Result := FPackageStreamer.PackageVersionToJSon(PackageVersion);
 
       PackageVersion.Collection := Package.PackageVersionList;
       PackageVersion := nil;
@@ -126,26 +119,27 @@ begin
     end;
     if Package.PackageState = pmpsInitial then
       begin
-      TfprLog.Log('Received new package-version for package [' + PackageName + '] which is in the initial state. Update the state to Acceptance.', ARequest);
+      TfprLog.Log('Received new package-version for package [' + PackageName + '] which is in the initial state. Update the state to Acceptance.');
       Package.PackageState := pmpsAcceptance;
       end;
     SavePackageList;
     end
   else
-    raise Exception.Create('Get package version not implemented');
+    raise EHTTP.CreateHelp('Only POST is allowed on a package-version', 405);
 end;
 
-Procedure TpmPackageWM.HandlePackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+function TpmPackageWM.HandlePackage(PackageName, Method, Data, AccessToken: string): TJSONData;
 var
   Package: TpmPackage;
   ErrStr: string;
 begin
-  if ARequest.Method = 'POST' then
+  if Method = 'POST' then
     begin
+    EnsureLoggedIn(AccessToken);
     Package := TpmPackage.Create(nil);
     try
-      FPackageStreamer.JSonToPackage(ARequest.Content, Package);
-      Package.OwnerId := FSubjectId;
+      FPackageStreamer.JSonToPackage(Data, Package);
+      Package.OwnerId := TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken);
       Package.PackageState := pmpsInitial;
 
       if not Package.Validate(ErrStr) then
@@ -154,7 +148,7 @@ begin
       if Assigned(TpmPackageCollection.Instance.FindPackageByName(Package.Name)) then
         Raise EJsonWebException.CreateFmt('Package with the name %s does already exist', [Package.Name]);
 
-      AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+      Result := FPackageStreamer.PackageToJSon(Package);
 
       Package.Collection := TpmPackageCollection.Instance;
       Package := Nil;
@@ -163,33 +157,29 @@ begin
     end;
     SavePackageList;
     end
-  else if ARequest.Method = 'GET' then
+  else if Method = 'GET' then
     begin
     Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
-    AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+    Result := FPackageStreamer.PackageToJSon(Package);
     end
-  else if ARequest.Method = 'PATCH' then
+  else if Method = 'PATCH' then
     begin
-    HandlePatchPackage(PackageName, ARequest, AResponse);
+    Result := HandlePatchPackage(PackageName, Data, AccessToken);
     end
   else
-    raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
-  AResponse.Code := 200;
-  AResponse.CodeText := GetStatusCode(AResponse.Code);
+    raise EHTTP.CreateFmtHelp('Method %s not supported', [Method], 405);
 end;
 
-Procedure TpmPackageWM.HandlePackageApprove(PackageName: string; ARequest: TRequest;
-  AResponse: TResponse);
+function TpmPackageWM.HandlePackageApprove(const PackageName, Method, AccessToken: string): TJSONData;
 var
   Package: TpmPackage;
 begin
-  if GetUserRole <> 'admin' then
-    raise EHTTP.CreateFmtHelp('Approve is denied', [PackageName], 403);
+  EnsureAdmin(AccessToken);
 
-  if ARequest.Method = 'PUT' then
+  if Method = 'PUT' then
     begin
     Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
@@ -202,10 +192,10 @@ begin
 
     SavePackageList;
 
-    AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+    Result := FPackageStreamer.PackageToJSon(Package);
     end
   else
-    raise EHTTP.CreateFmtHelp('Method %s not supported', [ARequest.Method], 405);
+    raise EHTTP.CreateFmtHelp('Method %s not supported', [Method], 405);
 end;
 
 procedure TpmPackageWM.SavePackageList;
@@ -217,11 +207,11 @@ begin
     FPackageStreamer.SavePackageCollectionToFile(TpmPackageCollection.Instance, PackageListFile);
 end;
 
-constructor TpmPackageWM.Create(AOwner: TComponent);
+constructor TpmPackageWM.Create();
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
-  inherited Create(AOwner);
+  inherited Create();
   GlobalSettings := TDCSGlobalSettings.GetInstance;
 
   FPackageStreamer := TpmPackageJSonStreaming.Create;
@@ -238,14 +228,15 @@ begin
   inherited Destroy;
 end;
 
-procedure TpmPackageWM.HandlePatchPackage(PackageName: string; ARequest: TRequest; AResponse: TResponse);
+function TpmPackageWM.HandlePatchPackage(const PackageName, Data, AccessToken: string): TJSONData;
 var
   Package: TpmPackage;
   Patch: TpmPatchPackage;
 begin
+  EnsureLoggedIn(AccessToken);
   Patch := TpmPatchPackage.Create;
   try
-    FPackageStreamer.JSonToPatchPackage(ARequest.Content, Patch);
+    FPackageStreamer.JSonToPatchPackage(Data, Patch);
 
     Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
@@ -264,18 +255,45 @@ begin
   finally
     Patch.Free;
   end;
-  AResponse.Content := FPackageStreamer.PackageToJSon(Package);
+  Result := FPackageStreamer.PackageToJSon(Package);
 end;
 
-function TpmPackageWM.RequireAuthentication(ARequest: TRequest): Boolean;
+function TpmPackageWM.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
+var
+  AuthorizationToken, AccessToken: String;
 begin
-  if ARequest.Method<>'GET' then
-    Result := inherited
+  AuthorizationToken := ARequest.Authorization;
+  if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+    AccessToken := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7)
   else
-    Result := False;
+    AccessToken := '';
+
+  Result := HandlePackageRequest(ARequest.RouteParams['packagename'], ARequest.RouteParams['subobject'], ARequest.Method, ARequest.Content, AccessToken);
 end;
 
-initialization
-  RegisterHTTPModule('package', TpmPackageWM);
+procedure TpmPackageWM.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage;
+  const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+begin
+  AResponse := HandlePackageRequest(JSONData.Get('package',''), JSONData.Get('subobject',''), JSONData.get('method', ''), JSONData.FindPath('data').AsJSON, IncomingMessage^.GetExtAccessKey(0));
+  Handled := Assigned(AResponse);
+end;
+
+procedure TpmPackageWM.EnsureAdmin(const AccessToken: string);
+begin
+  EnsureLoggedIn(AccessToken);
+  if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin' then
+    raise EHTTP.CreateHelp('You have to be admin to perform this task', 403);
+end;
+
+procedure TpmPackageWM.EnsureLoggedIn(const AccessToken: string);
+var
+  ErrMessage: string;
+begin
+  if AccessToken='' then
+    raise EHTTP.CreateHelp('Authentication failed (no accesstoken (bearer) provided)', 403);
+  if not TfprAuthenticationHandler.GetInstance.VerifyAccessToken(AccessToken, ErrMessage) then
+    raise EHTTP.CreateFmtHelp('Authentication failed (%s)', [ErrMessage], 403);
+end;
+
 end.
 

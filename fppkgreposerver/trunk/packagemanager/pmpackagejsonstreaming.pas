@@ -42,11 +42,13 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
 
-    function PackageToJSon(APackage: TpmPackage): string;
+    function PackageToJSon(APackage: TpmPackage): TJSONData;
+    function PackageVersionToJSon(APackageVersion: TpmPackageVersion): TJSONData;
     procedure JSonToPackage(AJSonStr: String; APackage: TpmPackage);
     procedure JSonToPatchPackage(AJSonStr: String; APatchPackage: TpmPatchPackage);
 
-    function PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
+    function PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+    function PackageCollectionToJSonString(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
     function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
     procedure SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
     procedure JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
@@ -131,9 +133,9 @@ begin
     end;
 end;
 
-function TpmPackageJSonStreaming.PackageToJSon(APackage: TpmPackage): string;
+function TpmPackageJSonStreaming.PackageToJSon(APackage: TpmPackage): TJSONData;
 begin
-  Result := FSerializer.ObjectToJSONString(APackage);
+  Result := FSerializer.ObjectToJSON(APackage);
 end;
 
 procedure TpmPackageJSonStreaming.JSonToPackage(AJSonStr: String; APackage: TpmPackage);
@@ -146,21 +148,27 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
+function TpmPackageJSonStreaming.PackageCollectionToJSonString(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
 var
-  JSONArr: TJSONArray;
+  JSONData: TJSONData;
+begin
+  JSONData := PackageCollectionToJSon(APackageList, ReleasedVersionInformationOnly);
+  try
+    Result := JSONData.AsJSON;
+  finally
+    JSONData.Free;
+  end;
+end;
+
+function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+var
   DescriptionTag: string;
 begin
   if ReleasedVersionInformationOnly then
     DescriptionTag := 'ReleasedVersionInformationOnly'
   else
     DescriptionTag := '';
-  JSONArr := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
-  try
-    Result := JSONArr.AsJSON;
-  finally
-    JSONArr.Free;
-  end;
+  Result := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
 end;
 
 function TpmPackageJSonStreaming.PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
@@ -298,7 +306,7 @@ procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TpmP
 var
   FS: TStringStream;
 begin
-  FS := TStringStream.Create(PackageCollectionToJSon(APackageList, False));
+  FS := TStringStream.Create(PackageCollectionToJSonString(APackageList, False));
   try
     FS.SaveToFile(Filename);
   finally
@@ -347,6 +355,11 @@ begin
     on E: Exception do
       raise EJsonWebException.CreateFmt('Failed to parse package-data: %s', [E.Message]);
   end;
+end;
+
+function TpmPackageJSonStreaming.PackageVersionToJSon(APackageVersion: TpmPackageVersion): TJSONData;
+begin
+  Result := FSerializer.ObjectToJSON(APackageVersion);
 end;
 
 end.

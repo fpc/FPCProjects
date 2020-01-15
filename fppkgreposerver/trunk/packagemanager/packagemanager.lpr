@@ -9,6 +9,7 @@ uses
   classes,
   sysutils,
   fphttpapp,
+  httproute,
   dcsGlobalSettings,
   cnocStackJSONHandlerThread,
   csJSONRttiStreamHelper,
@@ -31,9 +32,10 @@ var
   GlobalSettings: TDCSGlobalSettings;
   PackageListFile: String;
   ConfigFileName: string;
-  Serializer: TJSONRttiStreamClass;
   FS: TStringStream;
   Streamer: TpmPackageJSonStreaming;
+  PackageHandler: TpmPackageWM;
+  GStackClient: TcnocStackJSONHandlerThread;
 begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
@@ -92,9 +94,26 @@ begin
   TfprStackClientSingleton.Instance.Handler.AddHandler('category_signal', TfprPackageCategoryMonitorSingleton.Instance);
   TfprStackClientSingleton.Instance.Handler.AddHandler('keyword_signal', TfprPackageKeywordMonitorSingleton.Instance);
 
-  Application.Port:=8088;
-  Application.OnShowRequestException := @fprOnShowRequestException;
-  Application.Initialize;
-  Application.Run;
+  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['Repository']);
+  try
+    PackageHandler := TpmPackageWM.Create();
+    try
+      HTTPRouter.RegisterRoute('/package/:packagename/:subobject', rmAll, PackageHandler);
+      HTTPRouter.RegisterRoute('/package/:packagename', rmAll, PackageHandler);
+      GStackClient.AddHandler('pmpackage', PackageHandler);
+
+      Application.Port:=8088;
+      Application.OnShowRequestException := @fprOnShowRequestException;
+      Application.Initialize;
+      Application.Run;
+
+      GStackClient.Terminate;
+      GStackClient.WaitFor;
+    finally
+      PackageHandler.Free;
+    end;
+  finally
+    GStackClient.Free;
+  end;
 end.
 
