@@ -29,7 +29,7 @@
         </Debugging>
       </Linking>
     </CompilerOptions>
-    <Files Count="20">
+    <Files Count="21">
       <Item1>
         <Filename Value="fprwebmodule.pas"/>
         <UnitName Value="fprWebModule"/>
@@ -111,6 +111,10 @@
         <Filename Value="fprlog.pas"/>
         <UnitName Value="fprLog"/>
       </Item20>
+      <Item21>
+        <Filename Value="fprinterfaceclasses.pas"/>
+        <UnitName Value="fprinterfaceclasses"/>
+      </Item21>
     </Files>
     <RequiredPkgs Count="3">
       <Item1>

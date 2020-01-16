@@ -11,7 +11,7 @@ uses
   fprWebModule, fprPackageIDEIntf, fprErrorHandling, fprPackageUtils, fprBuildTask, fprGCollection, 
   fprDeleteTree, fprBuildAgentResponse, fprCopyTree, fprJSONRTTI, fprInterfacedCollection, 
   fprFPCVersion, fprWebHandler, fprAuthenticationHandler, fprSetupLogging, fprJSONFileStreaming, 
-  fprStackClient, fprModel, fprCrudWebHandler, fprLog, LazarusPackageIntf;
+  fprStackClient, fprModel, fprCrudWebHandler, fprLog, fprInterfaceClasses, LazarusPackageIntf;
 
 implementation
 

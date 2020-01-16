@@ -20,6 +20,7 @@ uses
   fprAuthenticationHandler,
   fprStackClient,
   fprWebHandler,
+  fprInterfaceClasses,
   dcsGlobalSettings,
   pmPackage,
   pmPackageJSonStreaming;
@@ -62,7 +63,7 @@ begin
     begin
     // Return list of all packages
     FPackageStreamer.FilterOutOldVersions := True;
-    Result := FPackageStreamer.PackageCollectionToJSon(TpmPackageCollection.Instance, True);
+    Result := FPackageStreamer.PackageCollectionToJSon(TfprPackageCollection.Instance, True);
     end
   else
     begin
@@ -90,17 +91,17 @@ end;
 
 function TpmPackageWM.HandlePackageVersion(const PackageName, Method, Data, AccessToken: string): TJSONData;
 var
-  Package: TpmPackage;
-  PackageVersion: TpmPackageVersion;
+  Package: TfprPackage;
+  PackageVersion: TfprPackageVersion;
 begin
   if Method = 'POST' then
     begin
     TfprLog.Log('Received a new Package-version request for package ' + PackageName);
     EnsureLoggedIn(AccessToken);
-    PackageVersion := TpmPackageVersion.Create(nil);
+    PackageVersion := TfprPackageVersion.Create(nil);
     try
       JSONContentStringToObject(Data, PackageVersion);
-      Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
+      Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
       if not Assigned(Package) then
         raise EHTTP.CreateFmtHelp('Package %s does not exist', [PackageName], 404);
       if Assigned(Package.PackageVersionList.FindVersionByTag(PackageVersion.FPCVersion, PackageVersion.Tag)) then
@@ -117,10 +118,10 @@ begin
     finally
       PackageVersion.Free;
     end;
-    if Package.PackageState = pmpsInitial then
+    if Package.PackageState = prspsInitial then
       begin
       TfprLog.Log('Received new package-version for package [' + PackageName + '] which is in the initial state. Update the state to Acceptance.');
-      Package.PackageState := pmpsAcceptance;
+      Package.PackageState := prspsAcceptance;
       end;
     SavePackageList;
     end
@@ -130,27 +131,27 @@ end;
 
 function TpmPackageWM.HandlePackage(PackageName, Method, Data, AccessToken: string): TJSONData;
 var
-  Package: TpmPackage;
+  Package: TfprPackage;
   ErrStr: string;
 begin
   if Method = 'POST' then
     begin
     EnsureLoggedIn(AccessToken);
-    Package := TpmPackage.Create(nil);
+    Package := TfprPackage.Create(nil);
     try
       FPackageStreamer.JSonToPackage(Data, Package);
       Package.OwnerId := TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken);
-      Package.PackageState := pmpsInitial;
+      Package.PackageState := prspsInitial;
 
       if not Package.Validate(ErrStr) then
         Raise EJsonWebException.Create(ErrStr);
 
-      if Assigned(TpmPackageCollection.Instance.FindPackageByName(Package.Name)) then
+      if Assigned(TfprPackageCollection.Instance.FindPackageByName(Package.Name)) then
         Raise EJsonWebException.CreateFmt('Package with the name %s does already exist', [Package.Name]);
 
       Result := FPackageStreamer.PackageToJSon(Package);
 
-      Package.Collection := TpmPackageCollection.Instance;
+      Package.Collection := TfprPackageCollection.Instance;
       Package := Nil;
     finally
       Package.Free;
@@ -159,7 +160,7 @@ begin
     end
   else if Method = 'GET' then
     begin
-    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
+    Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
@@ -175,20 +176,20 @@ end;
 
 function TpmPackageWM.HandlePackageApprove(const PackageName, Method, AccessToken: string): TJSONData;
 var
-  Package: TpmPackage;
+  Package: TfprPackage;
 begin
   EnsureAdmin(AccessToken);
 
   if Method = 'PUT' then
     begin
-    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
+    Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
-    if Package.PackageState <> pmpsAcceptance then
+    if Package.PackageState <> prspsAcceptance then
       raise Exception.Create('Only packages in Acceptance state can be approved.');
 
-    Package.PackageState := pmpsApproved;
+    Package.PackageState := prspsApproved;
 
     SavePackageList;
 
@@ -204,7 +205,7 @@ var
 begin
   PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') then
-    FPackageStreamer.SavePackageCollectionToFile(TpmPackageCollection.Instance, PackageListFile);
+    FPackageStreamer.SavePackageCollectionToFile(TfprPackageCollection.Instance, PackageListFile);
 end;
 
 constructor TpmPackageWM.Create();
@@ -230,7 +231,7 @@ end;
 
 function TpmPackageWM.HandlePatchPackage(const PackageName, Data, AccessToken: string): TJSONData;
 var
-  Package: TpmPackage;
+  Package: TfprPackage;
   Patch: TpmPatchPackage;
 begin
   EnsureLoggedIn(AccessToken);
@@ -238,7 +239,7 @@ begin
   try
     FPackageStreamer.JSonToPatchPackage(Data, Patch);
 
-    Package := TpmPackageCollection.Instance.FindPackageByName(PackageName);
+    Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 

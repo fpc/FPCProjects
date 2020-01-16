@@ -18,6 +18,7 @@ uses
   csModel,
   fprErrorHandling,
   fprGCollection,
+  fprInterfaceClasses,
   pmPackage;
 
 type
@@ -32,7 +33,7 @@ type
     FSerializer: TJSONRttiStreamClass;
 
     function CollectionToJSon(AList: TCollection): TJSONArray;
-    function PackageVersionCollectionToJSonFiltered(APackage: TpmPackage; AVersionCollection: TpmPackageVersionCollection): TJSONArray;
+    function PackageVersionCollectionToJSonFiltered(APackage: TfprPackage; AVersionCollection: TfprPackageVersionCollection): TJSONArray;
 
     Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
     function SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
@@ -42,16 +43,16 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
 
-    function PackageToJSon(APackage: TpmPackage): TJSONData;
-    function PackageVersionToJSon(APackageVersion: TpmPackageVersion): TJSONData;
-    procedure JSonToPackage(AJSonStr: String; APackage: TpmPackage);
+    function PackageToJSon(APackage: TfprPackage): TJSONData;
+    function PackageVersionToJSon(APackageVersion: TfprPackageVersion): TJSONData;
+    procedure JSonToPackage(AJSonStr: String; APackage: TfprPackage);
     procedure JSonToPatchPackage(AJSonStr: String; APatchPackage: TpmPatchPackage);
 
-    function PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
-    function PackageCollectionToJSonString(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
-    function PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
-    procedure SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
-    procedure JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
+    function PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+    function PackageCollectionToJSonString(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
+    function PackageVersionCollectionToJSon(APackageVersionList: TfprPackageVersionCollection): string;
+    procedure SavePackageCollectionToFile(APackageList: TfprPackageCollection; Filename: string);
+    procedure JSonToPackageCollection(AJSonStr: string; APackageList: TfprPackageCollection);
     property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
     property FilterOutOldVersions: Boolean read FFilterOutOldVersions write FFilterOutOldVersions;
   end;
@@ -112,33 +113,33 @@ end;
 
 Procedure TpmPackageJSonStreaming.StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
 var
-  PackageState: TpmPackageState;
+  PackageState: TfprPackageState;
   AnObject: TObject;
 begin
   if Info^.Name='PackageState' then
     begin
-    PackageState := TpmPackageState(GetOrdProp(AObject, Info));
+    PackageState := TfprPackageState(GetOrdProp(AObject, Info));
     Res := TJSONString.Create(CpmPackageStateString[PackageState]);
     end
   else if Info^.PropType^.Kind = tkClass then
     begin
     AnObject := GetObjectProp(AObject, Info);
-    if AnObject is TpmPackageVersionCollection then
+    if AnObject is TfprPackageVersionCollection then
       begin
-      if AObject is TpmPackage then
-        Res := PackageVersionCollectionToJSonFiltered(TpmPackage(AObject), TpmPackageVersionCollection(AnObject))
+      if AObject is TfprPackage then
+        Res := PackageVersionCollectionToJSonFiltered(TfprPackage(AObject), TfprPackageVersionCollection(AnObject))
       else
-        Res := PackageVersionCollectionToJSonFiltered(nil, TpmPackageVersionCollection(AnObject));
+        Res := PackageVersionCollectionToJSonFiltered(nil, TfprPackageVersionCollection(AnObject));
       end;
     end;
 end;
 
-function TpmPackageJSonStreaming.PackageToJSon(APackage: TpmPackage): TJSONData;
+function TpmPackageJSonStreaming.PackageToJSon(APackage: TfprPackage): TJSONData;
 begin
   Result := FSerializer.ObjectToJSON(APackage);
 end;
 
-procedure TpmPackageJSonStreaming.JSonToPackage(AJSonStr: String; APackage: TpmPackage);
+procedure TpmPackageJSonStreaming.JSonToPackage(AJSonStr: String; APackage: TfprPackage);
 begin
   try
     FSerializer.JSONStringToObject(AJSonStr, APackage);
@@ -148,7 +149,7 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageCollectionToJSonString(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
+function TpmPackageJSonStreaming.PackageCollectionToJSonString(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
 var
   JSONData: TJSONData;
 begin
@@ -160,7 +161,7 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TpmPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
 var
   DescriptionTag: string;
 begin
@@ -171,7 +172,7 @@ begin
   Result := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
 end;
 
-function TpmPackageJSonStreaming.PackageVersionCollectionToJSon(APackageVersionList: TpmPackageVersionCollection): string;
+function TpmPackageJSonStreaming.PackageVersionCollectionToJSon(APackageVersionList: TfprPackageVersionCollection): string;
 var
   JSONArr: TJSONArray;
 begin
@@ -183,8 +184,8 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageVersionCollectionToJSonFiltered(APackage: TpmPackage;
-  AVersionCollection: TpmPackageVersionCollection): TJSONArray;
+function TpmPackageJSonStreaming.PackageVersionCollectionToJSonFiltered(APackage: TfprPackage;
+  AVersionCollection: TfprPackageVersionCollection): TJSONArray;
 var
   Streamer: TJSONStreamer;
   I: Integer;
@@ -251,16 +252,16 @@ begin
   FSerializer.DescriptionStore.Describer.DefaultImportNameStyle := tcsinsLowerCase;
   FSerializer.DescriptionStore.Describer.Flags := [tcsdfCollectionAsList];
 
-  PackageDescription := FSerializer.DescriptionStore.GetDescription(TpmPackage);
+  PackageDescription := FSerializer.DescriptionStore.GetDescription(TfprPackage);
   PackageDescription.Properties.FindByPropertyName('PackageState').OnSetValueAsString := @SetPackageStateAsString;
   PackageDescription.Properties.FindByPropertyName('PackageState').OnGetValueAsString := @GetPackageStateAsString;
 
-  PackageDescription.Properties.FindByPropertyName('PackageVersionList').ListDescription.DefaultSubObjectDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageVersion){.Clone};
+  PackageDescription.Properties.FindByPropertyName('PackageVersionList').ListDescription.DefaultSubObjectDescription := FSerializer.DescriptionStore.GetDescription(TfprPackageVersion){.Clone};
 
-  PackageCollDescription := FSerializer.DescriptionStore.GetDescription(TpmPackageCollection);
+  PackageCollDescription := FSerializer.DescriptionStore.GetDescription(TfprPackageCollection);
 
-  FilteredPackageDescription := FSerializer.DescriptionStore.CloneDescription(TpmPackage, '', 'ReleasedVersionInformationOnly');
-  FilteredPackageCollDescription := FSerializer.DescriptionStore.CloneDescription(TpmPackageCollection, '', 'ReleasedVersionInformationOnly');
+  FilteredPackageDescription := FSerializer.DescriptionStore.CloneDescription(TfprPackage, '', 'ReleasedVersionInformationOnly');
+  FilteredPackageCollDescription := FSerializer.DescriptionStore.CloneDescription(TfprPackageCollection, '', 'ReleasedVersionInformationOnly');
   FilteredPackageDescription.Properties.FindByPropertyName('PackageVersionList').ListDescription.OnFilter := @DoFilterPackageVersions;
 
   PackageCollDescription.ListDescription.DefaultSubObjectDescription := PackageDescription;
@@ -275,15 +276,15 @@ end;
 
 function TpmPackageJSonStreaming.SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
 var
-  State: TpmPackageState;
+  State: TfprPackageState;
 begin
-  Assert(AnInstance is TpmPackage);
+  Assert(AnInstance is TfprPackage);
   Result:=False;
-  for State := low(TpmPackageState) to high (TpmPackageState) do
+  for State := low(TfprPackageState) to high (TfprPackageState) do
     begin
     if SameText(CpmPackageStateString[State], AValue) then
       begin
-      TpmPackage(AnInstance).PackageState := State;
+      TfprPackage(AnInstance).PackageState := State;
       Result := True;
       Exit;
       end;
@@ -292,17 +293,17 @@ end;
 
 function TpmPackageJSonStreaming.GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
 begin
-  Assert(AnInstance is TpmPackage);
-  AValue := CpmPackageStateString[TpmPackage(AnInstance).PackageState];
+  Assert(AnInstance is TfprPackage);
+  AValue := CpmPackageStateString[TfprPackage(AnInstance).PackageState];
   Result := True;
 end;
 
-procedure TpmPackageJSonStreaming.JSonToPackageCollection(AJSonStr: string; APackageList: TpmPackageCollection);
+procedure TpmPackageJSonStreaming.JSonToPackageCollection(AJSonStr: string; APackageList: TfprPackageCollection);
 begin
   FSerializer.JSONStringToObject(AJSonStr, APackageList);
 end;
 
-procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TpmPackageCollection; Filename: string);
+procedure TpmPackageJSonStreaming.SavePackageCollectionToFile(APackageList: TfprPackageCollection; Filename: string);
 var
   FS: TStringStream;
 begin
@@ -316,17 +317,17 @@ end;
 
 function TpmPackageJSonStreaming.DoFilterPackageVersions(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
 var
-  Version: TpmPackageVersion;
+  Version: TfprPackageVersion;
   JSONObject: TJSONObject;
-  Package: TpmPackage;
+  Package: TfprPackage;
   ResponseStr: string;
   StackResult: TcnocStackErrorCodes;
   DeStreamer: TJSONDeStreamer;
   RepPackageCol: TpmRepositoryPackageCollection;
 begin
   Result := False;
-  Package := (AnInstance as TCollection).Owner as TpmPackage;
-  Version := (AnInstance as TCollection).Items[ADescription.Index] as TpmPackageVersion;
+  Package := (AnInstance as TCollection).Owner as TfprPackage;
+  Version := (AnInstance as TCollection).Items[ADescription.Index] as TfprPackageVersion;
   if Assigned(FStackClient) then
     begin
     JSONObject := TJSONObject.Create(['name', 'package', 'method', 'GET', 'package', Package.Name]);
@@ -357,7 +358,7 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageVersionToJSon(APackageVersion: TpmPackageVersion): TJSONData;
+function TpmPackageJSonStreaming.PackageVersionToJSon(APackageVersion: TfprPackageVersion): TJSONData;
 begin
   Result := FSerializer.ObjectToJSON(APackageVersion);
 end;

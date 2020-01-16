@@ -11,6 +11,7 @@ uses
   fpHTTP,
   fphttpserver,
   fprWebModule,
+  fprInterfaceClasses,
   pmPackage;
 
 type
@@ -33,7 +34,7 @@ implementation
 
 Procedure TpmFunctionsWM.ClearRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 begin
-  TpmPackageCollection.Instance.Clear;
+  TfprPackageCollection.Instance.Clear;
   AResponse.Content := '{Message: ''Cleared all packages''}';
   AResponse.Code := 200;
   AResponse.CodeText := GetStatusCode(AResponse.Code);

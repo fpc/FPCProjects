@@ -21,6 +21,7 @@ uses
   fprSetupLogging,
   fprStackClient,
   fprModel,
+  fprInterfaceClasses,
   pmPackageWebModule,
   pmPackage,
   pmPackageJSonStreaming,
@@ -82,7 +83,7 @@ begin
       FS := TStringStream.Create('');
       try
         FS.LoadFromFile(PackageListFile);
-        Streamer.JSonToPackageCollection(FS.DataString, TpmPackageCollection.Instance);
+        Streamer.JSonToPackageCollection(FS.DataString, TfprPackageCollection.Instance);
       finally
         FS.Free;
       end;
