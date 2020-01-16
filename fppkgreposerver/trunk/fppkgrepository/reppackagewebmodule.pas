@@ -30,6 +30,7 @@ type
   TrepPackageHander = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
   protected
     function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; override;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
   private
     function HandlePackageRequest(FPCVersionStr, RepName, PackageName, Method: string; const JSONContent: TJSONData; AccessToken: string): TJSONData;
   protected
@@ -39,7 +40,6 @@ type
     function HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository): TJSONData;
   public
     constructor Create; override;
-    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
   end;
 
 implementation
