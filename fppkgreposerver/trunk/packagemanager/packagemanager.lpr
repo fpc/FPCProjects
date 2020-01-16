@@ -95,13 +95,13 @@ begin
   TfprStackClientSingleton.Instance.Handler.AddHandler('category_signal', TfprPackageCategoryMonitorSingleton.Instance);
   TfprStackClientSingleton.Instance.Handler.AddHandler('keyword_signal', TfprPackageKeywordMonitorSingleton.Instance);
 
-  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['Repository']);
+  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['PMPackage']);
   try
     PackageHandler := TpmPackageWM.Create();
     try
       HTTPRouter.RegisterRoute('/package/:packagename/:subobject', rmAll, PackageHandler);
       HTTPRouter.RegisterRoute('/package/:packagename', rmAll, PackageHandler);
-      GStackClient.AddHandler('pmpackage', PackageHandler);
+      GStackClient.AddHandler('package', PackageHandler);
 
       Application.Port:=8088;
       Application.OnShowRequestException := @fprOnShowRequestException;

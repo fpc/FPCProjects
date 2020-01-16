@@ -25,6 +25,8 @@ uses
   fprLog,
   fprBuildAgentResponse,
   fprDeleteTree,
+  fprStackClient,
+  fprInterfaceClasses,
   fprCopyTree,
   fprErrorHandling,
   fprGCollection,
@@ -277,6 +279,8 @@ var
   ManifestStream: TStringStream;
   PackageManifest: TXMLDocument;
   PackagePackagesNode, PackageNode: TDOMNode;
+  PMPackage: TfprPackage;
+  NodeElement: TDOMElement;
 begin
   TfprLog.Log(Format('Rebuild package [%s]', [APackage.Name]));
   try
@@ -346,7 +350,17 @@ begin
 
             PackageNode := PackagePackagesNode.ChildNodes[0];
             PackageNode := PackageNode.CloneNode(True, AManifest);
+
+            PMPackage := TfprStackClientSingleton.Instance.specialize Call<TfprPackage>('PMPackage', '{"name": "package", "method": "GET", "package":"' + APackage.Name + '"}');
+            try
+              NodeElement := PackageNode.OwnerDocument.CreateElement('category');
+              NodeElement.TextContent := PMPackage.Category;
+              PackageNode.AppendChild(NodeElement);
+            finally
+              PMPackage.Free;
+            end;
             APackagesNode.AppendChild(PackageNode);
+
           finally
             PackageManifest.Free;
           end;

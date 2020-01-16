@@ -274,8 +274,18 @@ end;
 
 procedure TpmPackageWM.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage;
   const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+var
+  AccessToken: String;
+  JSData: TJSONData;
+  Data: string;
 begin
-  AResponse := HandlePackageRequest(JSONData.Get('package',''), JSONData.Get('subobject',''), JSONData.get('method', ''), JSONData.FindPath('data').AsJSON, IncomingMessage^.GetExtAccessKey(0));
+  AccessToken := IncomingMessage^.GetExtAccessKey(0);
+  JSData := JSONData.FindPath('data');
+  if Assigned(JSData) then
+    Data := JSData.AsJson
+  else
+    Data := '';
+  AResponse := HandlePackageRequest(JSONData.Get('package',''), JSONData.Get('subobject',''), JSONData.get('method', ''), Data, AccessToken);
   Handled := Assigned(AResponse);
 end;
 
