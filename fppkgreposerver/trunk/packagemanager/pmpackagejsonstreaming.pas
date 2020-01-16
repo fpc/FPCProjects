@@ -7,7 +7,6 @@ interface
 uses
   Classes,
   SysUtils,
-  fgl,
   fpjsonrtti,
   fpjson,
   typinfo,
@@ -32,10 +31,6 @@ type
 
     FSerializer: TJSONRttiStreamClass;
 
-    function CollectionToJSon(AList: TCollection): TJSONArray;
-    function PackageVersionCollectionToJSonFiltered(APackage: TfprPackage; AVersionCollection: TfprPackageVersionCollection): TJSONArray;
-
-    Procedure StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
     function SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
     function GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
     function DoFilterPackageVersions(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
@@ -50,7 +45,6 @@ type
 
     function PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
     function PackageCollectionToJSonString(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
-    function PackageVersionCollectionToJSon(APackageVersionList: TfprPackageVersionCollection): string;
     procedure SavePackageCollectionToFile(APackageList: TfprPackageCollection; Filename: string);
     procedure JSonToPackageCollection(AJSonStr: string; APackageList: TfprPackageCollection);
     property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
@@ -97,43 +91,6 @@ end;
 
 { TpmPackageJSonStreaming }
 
-function TpmPackageJSonStreaming.CollectionToJSon(AList: TCollection): TJSONArray;
-var
-  Streamer: TJSONStreamer;
-begin
-  Streamer := TJSONStreamer.Create(nil);
-  try
-    Streamer.OnStreamProperty := @StreamerStreamProperty;
-    Streamer.Options := Streamer.Options + [jsoLowerPropertyNames];
-    Result := Streamer.StreamCollection(AList);
-  finally
-    Streamer.Free;
-  end;
-end;
-
-Procedure TpmPackageJSonStreaming.StreamerStreamProperty(Sender: TObject; AObject: TObject; Info: PPropInfo; var Res: TJSONData);
-var
-  PackageState: TfprPackageState;
-  AnObject: TObject;
-begin
-  if Info^.Name='PackageState' then
-    begin
-    PackageState := TfprPackageState(GetOrdProp(AObject, Info));
-    Res := TJSONString.Create(CpmPackageStateString[PackageState]);
-    end
-  else if Info^.PropType^.Kind = tkClass then
-    begin
-    AnObject := GetObjectProp(AObject, Info);
-    if AnObject is TfprPackageVersionCollection then
-      begin
-      if AObject is TfprPackage then
-        Res := PackageVersionCollectionToJSonFiltered(TfprPackage(AObject), TfprPackageVersionCollection(AnObject))
-      else
-        Res := PackageVersionCollectionToJSonFiltered(nil, TfprPackageVersionCollection(AnObject));
-      end;
-    end;
-end;
-
 function TpmPackageJSonStreaming.PackageToJSon(APackage: TfprPackage): TJSONData;
 begin
   Result := FSerializer.ObjectToJSON(APackage);
@@ -172,79 +129,12 @@ begin
   Result := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
 end;
 
-function TpmPackageJSonStreaming.PackageVersionCollectionToJSon(APackageVersionList: TfprPackageVersionCollection): string;
-var
-  JSONArr: TJSONArray;
-begin
-  JSONArr := CollectionToJSon(APackageVersionList);
-  try
-    Result := JSONArr.AsJSON;
-  finally
-    JSONArr.Free;
-  end;
-end;
-
-function TpmPackageJSonStreaming.PackageVersionCollectionToJSonFiltered(APackage: TfprPackage;
-  AVersionCollection: TfprPackageVersionCollection): TJSONArray;
-var
-  Streamer: TJSONStreamer;
-  I: Integer;
-  JSONObject: TJSONObject;
-  ResponseStr: string;
-
-  RepPackageCol: TpmRepositoryPackageCollection;
-
-  StackResult: TcnocStackErrorCodes;
-  DeStreamer: TJSONDeStreamer;
-begin
-  RepPackageCol := nil;
-  Streamer := TJSONStreamer.Create(nil);
-  try
-    Streamer.OnStreamProperty := @StreamerStreamProperty;
-    Streamer.Options := Streamer.Options + [jsoLowerPropertyNames];
-
-    if Assigned(APackage) and Assigned(FStackClient) and (FilterOutOldVersions) then
-      begin
-      JSONObject := TJSONObject.Create(['name', 'package', 'method', 'GET', 'package', APackage.Name]);
-      try
-        StackResult := FStackClient.SendMessage('Repository', JSONObject.AsJSON, ResponseStr);
-        DeStreamer := TJSONDeStreamer.Create(nil);
-        try
-          DeStreamer.Options := [jdoCaseInsensitive];
-          RepPackageCol := TpmRepositoryPackageCollection.Create;
-          DeStreamer.JSONToCollection(ResponseStr, RepPackageCol);
-        finally
-          DeStreamer.Free;
-        end;
-      finally
-        JSONObject.Free;
-      end;
-      end;
-
-    Result:=TJSONArray.Create;
-    try
-      for I:=0 to AVersionCollection.Count-1 do
-        begin
-        if not assigned(RepPackageCol) or Assigned(RepPackageCol.FindRepositoryPackageByTag(AVersionCollection.Items[i].Tag)) then
-          Result.Add(Streamer.ObjectToJSON(AVersionCollection.Items[i]));
-        end;
-    except
-      FreeAndNil(Result);
-      Raise;
-    end;
-
-  finally
-    Streamer.Free;
-    RepPackageCol.Free;
-  end;
-end;
-
 constructor TpmPackageJSonStreaming.Create;
 var
   PackageDescription: TcsStreamDescription;
   PackageCollDescription: TcsStreamDescription;
   FilteredPackageDescription: TcsStreamDescription;
-  FilteredPackageCollDescription, a: TcsStreamDescription;
+  FilteredPackageCollDescription: TcsStreamDescription;
 begin
   inherited Create;
   FSerializer := TJSONRttiStreamClass.Create;
