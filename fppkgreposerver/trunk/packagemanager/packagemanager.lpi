@@ -31,16 +31,13 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="cnocstream"/>
+        <PackageName Value="fprPackage"/>
       </Item1>
       <Item2>
-        <PackageName Value="fprPackage"/>
-      </Item2>
-      <Item3>
         <PackageName Value="DCServer"/>
-      </Item3>
+      </Item2>
     </RequiredPackages>
     <Units Count="7">
       <Unit0>
