@@ -172,7 +172,7 @@ begin
   Result:=False;
   for State := low(TfprPackageState) to high (TfprPackageState) do
     begin
-    if SameText(CpmPackageStateString[State], AValue) then
+    if SameText(CfprPackageStateString[State], AValue) then
       begin
       TfprPackage(AnInstance).PackageState := State;
       Result := True;
@@ -184,7 +184,7 @@ end;
 function TpmPackageJSonStreaming.GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
 begin
   Assert(AnInstance is TfprPackage);
-  AValue := CpmPackageStateString[TfprPackage(AnInstance).PackageState];
+  AValue := CfprPackageStateString[TfprPackage(AnInstance).PackageState];
   Result := True;
 end;
 

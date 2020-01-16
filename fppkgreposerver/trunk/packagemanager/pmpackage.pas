@@ -38,10 +38,6 @@ type
     property Support: string read FSupport write FSupport;
   end;
 
-
-const
-  CpmPackageStateString: array[TfprPackageState] of string = ('new', 'acceptance', 'approved', 'published', 'revoked');
-
 implementation
 
 end.

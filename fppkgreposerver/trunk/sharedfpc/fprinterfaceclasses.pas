@@ -103,6 +103,9 @@ type
     function FindPackageByName(AName: string): TfprPackage;
   end;
 
+const
+  CfprPackageStateString: array[TfprPackageState] of string = ('new', 'acceptance', 'approved', 'published', 'revoked');
+
 implementation
 
 { TfprPackageVersion }
