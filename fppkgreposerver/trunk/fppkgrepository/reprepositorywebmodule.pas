@@ -356,6 +356,10 @@ begin
               NodeElement := PackageNode.OwnerDocument.CreateElement('category');
               NodeElement.TextContent := PMPackage.Category;
               PackageNode.AppendChild(NodeElement);
+
+              NodeElement := PackageNode.OwnerDocument.CreateElement('support');
+              NodeElement.TextContent := PMPackage.Support;
+              PackageNode.AppendChild(NodeElement);
             finally
               PMPackage.Free;
             end;
