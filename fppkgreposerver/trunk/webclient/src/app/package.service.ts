@@ -5,18 +5,20 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Package } from './package';
 import { FPCVersion } from './fpcversion';
-import { environment } from '../environments/environment';
+import { AppConfigService } from './app-config.service';
 
 @Injectable()
 export class PackageService {
 
-  private packageManagerURL = environment.packageManagerUrl;
+  private packageManagerURL: string;
   private _getPackageList: Observable<Package[]>;
   private _getFPCVersionList: Observable<FPCVersion[]>;
 
   constructor(
     private http: HttpClient,
+    private appConfigService: AppConfigService,
     private _securityService: OidcSecurityService) {
+      this.packageManagerURL = this.appConfigService.PackageManagerUrl;
     }
 
   getHeaders(): HttpHeaders {

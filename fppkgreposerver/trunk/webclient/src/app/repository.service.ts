@@ -3,14 +3,16 @@ import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErr
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Observable } from 'rxjs/Observable';
 import { FPCVersion } from './fpcversion';
-import { environment } from '../environments/environment';
+import { AppConfigService } from './app-config.service';
 
 @Injectable()
 export class RepositoryService {
 
-  private repositoryUrl = environment.repositoryUrl;
+  private repositoryUrl;
 
-  constructor(private _http: HttpClient, private _securityService: OidcSecurityService) { }
+  constructor(private _http: HttpClient, private _securityService: OidcSecurityService, private _appConfigService: AppConfigService) {
+    this.repositoryUrl = this._appConfigService.RepositoryUrl;
+  }
 
   getHeaders(): HttpHeaders {
     let authheaders: HttpHeaders;

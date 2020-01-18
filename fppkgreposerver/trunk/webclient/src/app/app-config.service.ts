@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthModule, OidcConfigService, OidcSecurityService } from 'angular-auth-oidc-client';
+import { OidcConfigService } from 'angular-auth-oidc-client';
 import { Observable } from 'rxjs/Rx';
-import { environment } from '../environments/environment';
-
 
 @Injectable()
 export class AppConfigService {
@@ -37,4 +35,23 @@ export class AppConfigService {
     return this.appConfig.identityServerUrl;
   }
 
+  get CategoryUrl() {
+    this.checkAppConfig();
+    return this.appConfig.categoryUrl;
+  }
+
+  get BuildManagerUrl() {
+    this.checkAppConfig();
+    return this.appConfig.buildManagerUrl;
+  }
+
+  get RepositoryUrl() {
+    this.checkAppConfig();
+    return this.appConfig.repositoryUrl;
+  }
+
+  get PackageManagerUrl() {
+    this.checkAppConfig();
+    return this.appConfig.packageManagerUrl;
+  }
 }

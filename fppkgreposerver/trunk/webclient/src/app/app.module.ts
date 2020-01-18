@@ -146,9 +146,6 @@ export class AppModule {
 
       openIDImplicitFlowConfiguration.log_console_debug_active = this.oidcConfigService.clientConfiguration.log_console_debug_active;
 
-      //configuration.FileServer = this.oidcConfigService.clientConfiguration.apiFileServer;
-      //configuration.Server = this.oidcConfigService.clientConfiguration.apiServer;
-
       const authWellKnownEndpoints = new AuthWellKnownEndpoints();
       authWellKnownEndpoints.setWellKnownEndpoints(this.oidcConfigService.wellKnownEndpoints);
 

@@ -4,17 +4,18 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Observable } from 'rxjs/Observable';
 import { shareReplay } from 'rxjs/operators';
 import { Repository } from './repository';
-import { environment } from '../environments/environment';
 import { RepPackage } from './rep-package';
+import { AppConfigService } from './app-config.service';
 
 @Injectable()
 export class FppkgRepositoryService {
 
-  private repositoryUrl = environment.fppkgRepositoryUrl;
+  private repositoryUrl: string;
   private _getRepositoryListMap: Map<string, Observable<Repository[]>>;
 
-  constructor(private _http: HttpClient, private _securityService: OidcSecurityService) {
+  constructor(private _http: HttpClient, private _securityService: OidcSecurityService, private appConfigService: AppConfigService) {
     this._getRepositoryListMap = new Map<string, Observable<Repository[]>>();
+    this.repositoryUrl = this.appConfigService.RepositoryUrl;
   }
 
   private getHeaders(): HttpHeaders {

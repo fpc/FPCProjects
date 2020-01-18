@@ -4,19 +4,21 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
-import { environment } from '../environments/environment';
 import { Category } from './category';
+import { AppConfigService } from './app-config.service';
 
 @Injectable()
 export class CategoryService {
 
-  private categoryURL = environment.categoryUrl;
+  private categoryURL;
   private _categoryList: Observable<Category[]>;
   private _reload = new BehaviorSubject<void>(null);
 
   constructor(
     private http: HttpClient,
+    private appConfigService: AppConfigService,
     private _securityService: OidcSecurityService) {
+      this.categoryURL = appConfigService.CategoryUrl;
     }
 
   getHeaders(): HttpHeaders {

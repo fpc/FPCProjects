@@ -3,14 +3,11 @@ import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErr
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { PackageService } from './package.service';
 import { Observable } from 'rxjs/Observable';
-import { environment } from '../environments/environment';
 import { BuildAgent } from './build-agent';
 import { FPCVersion } from './fpcversion';
 
 @Injectable()
 export class BuildAgentService {
-
-  private buildAgentUrl = environment.buildAgentUrl;
 
   constructor(
     private _http: HttpClient,

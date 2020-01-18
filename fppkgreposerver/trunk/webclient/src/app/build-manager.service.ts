@@ -4,15 +4,14 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { BuildTask } from './build-task';
 import { BuildAgent } from './build-agent';
 import { Observable } from 'rxjs/Observable';
-import { environment } from '../environments/environment';
+import { AppConfigService } from './app-config.service';
 
 @Injectable()
 export class BuildManagerService {
 
-  private buildManagerURL = environment.buildManagerUrl;
-
     constructor(
       private http: HttpClient,
+      private appConfigService: AppConfigService,
       private _securityService: OidcSecurityService) { }
 
     getHeaders(): HttpHeaders {
@@ -28,7 +27,7 @@ export class BuildManagerService {
     }
 
     startBuildTask(aPackageName, aTag, aFPCVersion: string): Observable<BuildTask> {
-      const url = `${this.buildManagerURL}/buildtask`;
+      const url = `${this.appConfigService.BuildManagerUrl}/buildtask`;
       let newBuildTask: BuildTask = {
         packagename: aPackageName,
         tag: aTag,
@@ -41,12 +40,12 @@ export class BuildManagerService {
     }
 
     getBuildTask(uniqueString: string): Observable<BuildTask> {
-      const url = `${this.buildManagerURL}/buildtask/${uniqueString}`;
+      const url = `${this.appConfigService.BuildManagerUrl}/buildtask/${uniqueString}`;
       return this.http.get<BuildTask>(url, {headers: this.getHeaders()});
     }
 
     getBuildAgentList(): Observable<BuildAgent[]> {
-      const url = `${this.buildManagerURL}/agent/list`;
+      const url = `${this.appConfigService.BuildManagerUrl}/agent/list`;
       return this.http.get<BuildAgent[]>(url, {headers: this.getHeaders()});
     }
 }
