@@ -5,7 +5,7 @@ import { PackageService } from '../package.service';
 import { Package } from '../package';
 import { FPCVersion } from '../fpcversion';
 import { CurrentFpcversionService } from '../current-fpcversion.service';
-import { OidcSecurityService } from '../auth/services/oidc.security.service';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 
 @Component({
   selector: 'app-packages-page',

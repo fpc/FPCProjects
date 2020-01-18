@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router }    from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { OidcSecurityService } from './auth/services/oidc.security.service';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 
 @Injectable()
 export class AdminGuardService {

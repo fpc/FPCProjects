@@ -22,6 +22,7 @@
     "@angular/platform-browser-dynamic": "^5.2.10",
     "@angular/router": "^5.2.10",
     "@ng-bootstrap/ng-bootstrap": "^1.1.2",
+    "angular-auth-oidc-client": "^4.1.0",
     "bootstrap": "^4.4.1",
     "core-js": "^2.6.11",
     "font-awesome": "^4.7.0",

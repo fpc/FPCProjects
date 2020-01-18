@@ -9,7 +9,7 @@ import { VersionUtils } from '../version';
 import { FPCVersion } from '../fpcversion';
 import { CategoryService } from '../category.service';
 import { CurrentFpcversionService } from '../current-fpcversion.service';
-import { OidcSecurityService } from '../auth/services/oidc.security.service';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 
 @Component({
   selector: 'app-package',
