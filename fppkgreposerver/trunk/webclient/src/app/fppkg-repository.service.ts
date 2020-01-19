@@ -15,7 +15,7 @@ export class FppkgRepositoryService {
 
   constructor(private _http: HttpClient, private _securityService: OidcSecurityService, private appConfigService: AppConfigService) {
     this._getRepositoryListMap = new Map<string, Observable<Repository[]>>();
-    this.repositoryUrl = this.appConfigService.RepositoryUrl;
+    this.repositoryUrl = this.appConfigService.FppkgRepositoryUrl;
   }
 
   private getHeaders(): HttpHeaders {

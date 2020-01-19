@@ -50,6 +50,11 @@ export class AppConfigService {
     return this.appConfig.repositoryUrl;
   }
 
+  get FppkgRepositoryUrl() {
+    this.checkAppConfig();
+    return this.appConfig.fppkgRepositoryUrl;
+  }
+
   get PackageManagerUrl() {
     this.checkAppConfig();
     return this.appConfig.packageManagerUrl;
