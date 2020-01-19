@@ -8,6 +8,7 @@ uses
   sysutils,
   fphttp,
   httproute,
+  opensslsockets,
   fphttpapp,
   fpwebfile,
   idIdentityWebmodule,
@@ -27,6 +28,7 @@ begin
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('wwwroot', 'HTTP', 'wwwroot', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('BaseURL', 'HTTP', 'BaseURL', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('AdminSubjects', 'Credentials', 'AdminSubjects', '', #0, dcsPHasParameter);
 
   AddLoggingSettings;
 

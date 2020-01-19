@@ -7,6 +7,8 @@ services:
         context: .
         dockerfile: docker-identityserver.dockerfile
       container_name: identityserver
+      environment:
+        - Credentials__AdminSubjects=M_Joost
 
   buildmanager:
       image: 'quay.io/loesje/buildmanager:latest'

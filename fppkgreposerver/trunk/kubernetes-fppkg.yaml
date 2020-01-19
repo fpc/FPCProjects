@@ -82,6 +82,8 @@ spec:
           value: http://fpc.cnoc.nl/identityserver
         - name: HTTP__wwwroot
           value: wwwroot
+        - name: Credentials__AdminSubjects
+          value: M_Joost
         - name: Log_file__Format
           value: console
         - name: Log_file__Level

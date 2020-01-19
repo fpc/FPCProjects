@@ -141,6 +141,8 @@ export class AppModule {
       openIDImplicitFlowConfiguration.redirect_url = this.oidcConfigService.clientConfiguration.redirect_url;
       openIDImplicitFlowConfiguration.client_id = this.oidcConfigService.clientConfiguration.client_id;
       openIDImplicitFlowConfiguration.response_type = this.oidcConfigService.clientConfiguration.response_type;
+      openIDImplicitFlowConfiguration.post_login_route = this.oidcConfigService.clientConfiguration.post_login_route;
+      openIDImplicitFlowConfiguration.post_logout_redirect_uri = this.oidcConfigService.clientConfiguration.post_logout_redirect_uri;
 
       openIDImplicitFlowConfiguration.max_id_token_iat_offset_allowed_in_seconds = this.oidcConfigService.clientConfiguration.max_id_token_iat_offset_allowed_in_seconds;
 
