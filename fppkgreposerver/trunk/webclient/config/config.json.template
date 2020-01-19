@@ -1,0 +1,11 @@
+{
+  "production": true,
+  "identityServerUrl": "${IdentityServerUrl}",
+  "webclientUrl": "${WebClientUrl}",
+  "buildAgentUrl": "${BuildAgentUrl}",
+  "packageManagerUrl": "${PackageManagerUrl}",
+  "categoryUrl": "${CategoryUrl}",
+  "buildManagerUrl": "${BuildManagerUrl}",
+  "repositoryUrl":  "${RepositoryUrl}",
+  "fppkgRepositoryUrl": "${FppkgRepositoryUrl}"
+}

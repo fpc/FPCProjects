@@ -36,6 +36,14 @@ services:
         - Identityserver_HOST=localhost
         - Packagemanager_HOST=localhost
         - Repository_HOST=localhost
+        - IdentityServerUrl=http://localhost:5000
+        - WebClientUrl=http://localhost:4200
+        - BuildAgentUrl=http://localhost:8080
+        - PackageManagerUrl=http://localhost:8088
+        - CategoryUrl=http://localhost:8484
+        - BuildManagerUrl=http://localhost:8181
+        - RepositoryUrl=http://localhost:8089
+        - FppkgRepositoryUrl=http://localhost:8282
 
   buildagent_trunk:
       network_mode: "host"

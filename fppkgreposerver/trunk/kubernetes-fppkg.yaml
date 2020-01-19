@@ -52,7 +52,23 @@ spec:
           value: localhost
         - name: Repository_HOST
           value: localhost
-        image: fppkg.azurecr.io/webclient
+        - name: IdentityServerUrl
+          value: http://fpc.cnoc.nl/identityserver
+        - name: WebClientUrl
+          value: http://fpc.cnoc.nl
+        - name: BuildAgentUrl
+          value: http://fpc.cnoc.nl/buildagent
+        - name: PackageManagerUrl
+          value: http://fpc.cnoc.nl/packagemanager
+        - name: CategoryUrl
+          value: http://fpc.cnoc.nl/category
+        - name: BuildManagerUrl
+          value: http://fpc.cnoc.nl/buildmanager
+        - name: RepositoryUrl
+          value: http://fpc.cnoc.nl/repository
+        - name: FppkgRepositoryUrl
+          value: http://fpc.cnoc.nl/fppkgrepository
+        image: quay.io/loesje/webclient
         volumeMounts:
         - name: buildfiles
           mountPath: /usr/share/nginx/html/buildfiles
@@ -63,7 +79,7 @@ spec:
       - name: identityserver
         env:
         - name: HTTP__BaseURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         - name: HTTP__wwwroot
           value: wwwroot
         - name: Log_file__Format
@@ -80,7 +96,7 @@ spec:
         - name: Storage__PackageListFile
           value: /home/locuser/data/packages.json
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         image: quay.io/loesje/packagemanager
         volumeMounts:
         - name: persistent-disk-packagedata
@@ -90,7 +106,7 @@ spec:
       - name: buildmanager
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         - name: Connections__PackageManagerURL
           value: http://localhost:8088
         - name: Connections__RepositoryURL
@@ -101,7 +117,7 @@ spec:
       - name: fppkgstack
         env:
         # - name: OIDC__OpenIDProviderURL
-        #   value: http://51.124.138.35/identityserver
+        #   value: http://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
@@ -112,7 +128,7 @@ spec:
       - name: repository
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
@@ -136,7 +152,7 @@ spec:
       - name: fppkgrepository
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
 
         - name: Log_file__Format
           value: console
@@ -151,14 +167,14 @@ spec:
           value: http://localhost:8089
 
         - name: Repository_Trunk-Testing__BaseURL
-          value: http://51.124.138.35/repo/testing/
+          value: http://fpc.cnoc.nl/repo/testing/
         - name: Repository_Trunk-Testing__path
           value: /home/locuser/repo/testing
         - name: Repository_Trunk-Testing__StorageFile
           value: /home/locuser/data/packages-trunk-testing.json
 
         - name: Repository_Trunk-Production__BaseURL
-          value: http://51.124.138.35/repo/prod/
+          value: http://fpc.cnoc.nl/repo/prod/
         - name: Repository_Trunk-Production__path
           value: /home/locuser/repo/prod
         - name: Repository_Trunk-Production__StorageFile
@@ -194,7 +210,7 @@ spec:
       - name: category
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
@@ -214,7 +230,7 @@ spec:
       - name: keyword
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://51.124.138.35/identityserver
+          value: http://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
