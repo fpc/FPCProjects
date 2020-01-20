@@ -17,6 +17,7 @@ uses
   URIParser,
   fprWebModule,
   fprLog,
+  sha1,
   dcsGlobalSettings,
   cnocOpenIDConnectProvider;
 
@@ -27,6 +28,7 @@ type
   TidAuthenicator = class(IcnocOpenIDConnectLoginCheck, IcnocOpenIDConnectUsedEndpointJSON)
   private
     procedure IsValidMantisLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; var Subject: string; out FailureMessage: string);
+    procedure IsValidForumLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; var Subject: string; out FailureMessage: string);
   public
     procedure IsValidLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; const ARequest: TRequest; var Handled: Boolean; var Subject: string; out FailureMessage: string);
     function ObtainUserInfoEndpoint(const Provider: TcnocOpenIDConnectProvider; const Subject: string): TJSONObject;
@@ -70,6 +72,8 @@ begin
     FailureMessage := 'Please enter a password'
   else if (ARequest.ContentFields.Values['Environment']='Mantis') then
     IsValidMantisLogin(Provider, AUserName, APassword, Subject, FailureMessage)
+  else if (ARequest.ContentFields.Values['Environment']='Forum') then
+    IsValidForumLogin(Provider, AUserName, APassword, Subject, FailureMessage)
   else
     FailureMessage := 'Invalid username or password';
 
@@ -140,6 +144,81 @@ begin
       begin
       FailureMessage := 'Login failed. Received an unknown response from Mantis';
       TfprLog.Log(Format('Received unexpected response from Mantis. Response: [%s], StatusCode: [%d]', [Resp, HTTPClient.ResponseStatusCode]), nil, TLevelUnit.WARN);
+      end;
+  finally
+    HTTPClient.Free;
+  end;
+end;
+
+procedure TidAuthenicator.IsValidForumLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; var Subject: string; out FailureMessage: string);
+var
+  HTTPClient: TFPHTTPClient;
+  RequestData, Buf, Name, Value: string;
+  Resp: RawByteString;
+  Hash: string;
+  i: integer;
+begin
+  HTTPClient := TFPHTTPClient.Create(nil);
+  try
+    Resp := HTTPClient.Get('https://forum.lazarus.freepascal.org/index.php?action=login');
+    if HTTPClient.ResponseStatusCode=200 then
+      begin
+      // Grep the hidden field with the cur_session_id
+      i := 1;
+      repeat
+      i := PosEx('<input type="hidden" name="', Resp, i+1);
+      Buf := Copy(Resp, i+27,80);
+      Name := Copy(Buf, 1, Pos('"', Buf) -1);
+      until (i<1) or (not SameText('hash_password', Name) and not SameText('advanced', Name));
+      if i > 0 then
+        begin
+        i := Pos('value="', Buf);
+        if i > 0 then
+          begin
+          Value := Copy(Buf, i+7, PosEx('"', Buf, i+8)-i-7);
+          end
+        else
+          begin
+          FailureMessage := 'Login failed. Unexpected forum response';
+          TfprLog.Log(Format('Received unexpected response from Forum. Unable to extract sessionid. Buffer: [%s]', [Buf]), nil, TLevelUnit.WARN);
+          Exit;
+          end;
+        end
+      else
+        begin
+        FailureMessage := 'Login failed. Unexpected forum response';
+        TfprLog.Log(Format('Received unexpected response from Forum. Unable to find sessionid. Buffer: [%s]', [Buf]), nil, TLevelUnit.WARN);
+        Exit;
+        end;
+
+      // Hash the password
+      Hash := SHA1Print(SHA1String(LowerCase(AUserName) + APassword));
+      Hash := SHA1Print(SHA1String(Hash + Value));
+
+      // Do the login-request
+      RequestData := Format('user=%s&passwrd=&cookielength=60&%s=%s&hash_passwrd=%s', [AUserName, Name, Value, Hash]);
+      Resp := HTTPClient.FormPost('https://forum.lazarus.freepascal.org/index.php?action=login2', RequestData);
+      if (Resp='') and (HTTPClient.ResponseStatusCode = 302) then
+        begin
+        Subject := 'F_' + LowerCase(AUserName);
+        end
+      else
+        begin
+        if pos('That username does not exist.', Resp) > 0 then
+          FailureMessage := 'Login failed. That username does not exist.'
+        else if pos('Password incorrect', Resp) > 0 then
+          FailureMessage := 'Login failed. Password incorrect.'
+        else
+          begin
+          FailureMessage := 'Login failed for unknown reason.';
+          TfprLog.Log(Format('Received unexpected response from Forum. StatusCode: [%d]', [HTTPClient.ResponseStatusCode]), nil, TLevelUnit.WARN);
+          end;
+        end;
+      end
+    else
+      begin
+      FailureMessage := Format('Login failed. Forum responded with statuscode [%d]', [HTTPClient.ResponseStatusCode]);
+      TfprLog.Log(Format('Received unexpected response from Forum. StatusCode: [%d]', [HTTPClient.ResponseStatusCode]), nil, TLevelUnit.WARN);
       end;
   finally
     HTTPClient.Free;
