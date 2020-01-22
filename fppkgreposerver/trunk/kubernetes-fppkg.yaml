@@ -4,9 +4,14 @@ metadata:
   name: fppkg
 spec:
   ports:
-  - port: 80
+  - name: port-http
+    port: 80
     protocol: TCP
     targetPort: 4200
+  - name: port-https
+    port: 443
+    protocol: TCP
+    targetPort: 4443
   selector:
     app: fppkg
   type: LoadBalancer
@@ -30,6 +35,9 @@ spec:
       - name: buildfiles
         persistentVolumeClaim:
           claimName: persistent-disk-buildfiles
+      - name: nginx-ssl
+        secret:
+          secretName: nginx-ssl-cnoc-nl
       containers:
       # Webclient container
       - name: webclient
@@ -53,23 +61,26 @@ spec:
         - name: Repository_HOST
           value: localhost
         - name: IdentityServerUrl
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: WebClientUrl
-          value: http://fpc.cnoc.nl
+          value: /
         - name: BuildAgentUrl
-          value: http://fpc.cnoc.nl/buildagent
+          value: /buildagent
         - name: PackageManagerUrl
-          value: http://fpc.cnoc.nl/packagemanager
+          value: /packagemanager
         - name: CategoryUrl
-          value: http://fpc.cnoc.nl/category
+          value: /category
         - name: BuildManagerUrl
-          value: http://fpc.cnoc.nl/buildmanager
+          value: /buildmanager
         - name: RepositoryUrl
-          value: http://fpc.cnoc.nl/repository
+          value: /repository
         - name: FppkgRepositoryUrl
-          value: http://fpc.cnoc.nl/fppkgrepository
+          value: /fppkgrepository
         image: quay.io/loesje/webclient
         volumeMounts:
+        - mountPath: "/etc/nginx/ssl"
+          name: nginx-ssl
+          readOnly: true
         - name: buildfiles
           mountPath: /usr/share/nginx/html/buildfiles
         - name: persistent-disk-repo
@@ -79,7 +90,7 @@ spec:
       - name: identityserver
         env:
         - name: HTTP__BaseURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: HTTP__wwwroot
           value: wwwroot
         - name: Credentials__AdminSubjects
@@ -89,7 +100,7 @@ spec:
         - name: Log_file__Level
           value: Trace
         - name: HTTP__AllowCorsOrigin
-          value: http://fpc.cnoc.nl
+          value: https://fpc.cnoc.nl
         image: quay.io/loesje/identityserver
 
       # Packagemanager container
@@ -169,14 +180,14 @@ spec:
           value: http://localhost:8089
 
         - name: Repository_Trunk-Testing__BaseURL
-          value: http://fpc.cnoc.nl/repo/testing/
+          value: https://fpc.cnoc.nl/repo/testing/
         - name: Repository_Trunk-Testing__path
           value: /home/locuser/repo/testing
         - name: Repository_Trunk-Testing__StorageFile
           value: /home/locuser/data/packages-trunk-testing.json
 
         - name: Repository_Trunk-Production__BaseURL
-          value: http://fpc.cnoc.nl/repo/prod/
+          value: https://fpc.cnoc.nl/repo/prod/
         - name: Repository_Trunk-Production__path
           value: /home/locuser/repo/prod
         - name: Repository_Trunk-Production__StorageFile
