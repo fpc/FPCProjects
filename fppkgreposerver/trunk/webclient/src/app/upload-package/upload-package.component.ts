@@ -3,7 +3,7 @@ import { RepositoryService } from '../repository.service';
 import { Package } from '../package';
 import { FPCVersion } from '../fpcversion';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
-import { PackageService } from '../package.service';
+import { CurrentFpcversionService } from '../current-fpcversion.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 export class LogMessage{
@@ -21,6 +21,7 @@ export class UploadPackageComponent implements OnInit {
 
   @Input() package: Package;
   @Output() packageSourceUploadedEvent = new EventEmitter<boolean>();
+  selectedFPCVersion: FPCVersion = null;
 
   fpcversionList : FPCVersion[];
 
@@ -32,7 +33,7 @@ export class UploadPackageComponent implements OnInit {
   constructor(
     private repositoryService: RepositoryService,
     public activeModal: NgbActiveModal,
-    private packageService: PackageService) {}
+    private currentFpcversionService: CurrentFpcversionService) {}
 
   onChange(files) {
     this.files = files;
@@ -74,8 +75,8 @@ export class UploadPackageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.packageService.getFPCVersionList()
-      .subscribe(list => this.fpcversionList = list);
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => { this.selectedFPCVersion = version } );
   }
 
 }

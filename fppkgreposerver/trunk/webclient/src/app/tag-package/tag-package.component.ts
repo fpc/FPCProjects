@@ -4,7 +4,7 @@ import { Package } from '../package';
 import { RepositoryService } from '../repository.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FPCVersion } from '../fpcversion'
-import { PackageService } from '../package.service'
+import { CurrentFpcversionService } from '../current-fpcversion.service';
 
 @Component({
   selector: 'app-tag-package',
@@ -17,19 +17,19 @@ export class TagPackageComponent implements OnInit {
   isError: Boolean = false;
   isBusy: Boolean = false;
   errorMsg: string;
-  fpcversionList: FPCVersion[];
+  selectedFPCVersion: FPCVersion = null;
 
   @Input() package: Package = null;
 
   constructor(
     public activeModal: NgbActiveModal,
-    private _packageService: PackageService,
+    private currentFpcversionService: CurrentFpcversionService,
     private _repositoryService: RepositoryService,
   ) { }
 
   ngOnInit() {
-    this._packageService.getFPCVersionList()
-      .subscribe(list => this.fpcversionList = list);
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => { this.selectedFPCVersion = version } );
   }
 
   tagPackage(fpcversion: FPCVersion) {
