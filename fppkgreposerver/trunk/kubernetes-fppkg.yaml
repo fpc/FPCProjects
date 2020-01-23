@@ -61,7 +61,7 @@ spec:
         - name: Repository_HOST
           value: localhost
         - name: IdentityServerUrl
-          value: https://fpc.cnoc.nl/identityserver
+          value: /identityserver
         - name: WebClientUrl
           value: /
         - name: BuildAgentUrl
