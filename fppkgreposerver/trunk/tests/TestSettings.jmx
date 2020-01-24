@@ -30,18 +30,23 @@
               <stringProp name="Argument.value">/</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
-            <elementProp name="username" elementType="Argument">
-              <stringProp name="Argument.name">username</stringProp>
-              <stringProp name="Argument.value">joost</stringProp>
+            <elementProp name="username_admin" elementType="Argument">
+              <stringProp name="Argument.name">username_admin</stringProp>
+              <stringProp name="Argument.value">Joost</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
-            <elementProp name="password" elementType="Argument">
-              <stringProp name="Argument.name">password</stringProp>
-              <stringProp name="Argument.value">jachtluipaard</stringProp>
+            <elementProp name="password_admin" elementType="Argument">
+              <stringProp name="Argument.name">password_admin</stringProp>
+              <stringProp name="Argument.value">geheim</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
-            <elementProp name="loginenvironment" elementType="Argument">
-              <stringProp name="Argument.name">loginenvironment</stringProp>
+            <elementProp name="subject_admin" elementType="Argument">
+              <stringProp name="Argument.name">subject_admin</stringProp>
+              <stringProp name="Argument.value">M_Joost</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="loginenvironment_admin" elementType="Argument">
+              <stringProp name="Argument.name">loginenvironment_admin</stringProp>
               <stringProp name="Argument.value">Mantis</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
@@ -73,6 +78,26 @@
             <elementProp name="fppkgrepository_path" elementType="Argument">
               <stringProp name="Argument.name">fppkgrepository_path</stringProp>
               <stringProp name="Argument.value">/</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="username_normal" elementType="Argument">
+              <stringProp name="Argument.name">username_normal</stringProp>
+              <stringProp name="Argument.value">Loesje</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="password_normal" elementType="Argument">
+              <stringProp name="Argument.name">password_normal</stringProp>
+              <stringProp name="Argument.value">geheim</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="loginenvironment_normal" elementType="Argument">
+              <stringProp name="Argument.name">loginenvironment_normal</stringProp>
+              <stringProp name="Argument.value">Forum</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="subject_normal" elementType="Argument">
+              <stringProp name="Argument.name">subject_normal</stringProp>
+              <stringProp name="Argument.value">F_loesje</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
           </collectionProp>
