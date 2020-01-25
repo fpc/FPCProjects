@@ -42,6 +42,7 @@ services:
         - BuildManagerUrl=http://localhost:8181
         - RepositoryUrl=http://localhost:8089
         - FppkgRepositoryUrl=http://localhost:8282
+        - redirect_https=no
       depends_on:
         - buildagent_trunk
         - buildagent_304
