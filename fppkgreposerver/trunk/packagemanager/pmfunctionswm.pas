@@ -12,6 +12,7 @@ uses
   fphttpserver,
   fprWebModule,
   fprInterfaceClasses,
+  fprAuthenticationHandler,
   pmPackage;
 
 type
@@ -34,6 +35,9 @@ implementation
 
 Procedure TpmFunctionsWM.ClearRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
 begin
+  if TfprAuthenticationHandler.GetInstance.GetUserRole(FAccessToken) <> 'admin' then
+    raise EHTTP.CreateHelp('You need admin rights to be able to clear the packages-data', 403);
+
   TfprPackageCollection.Instance.Clear;
   AResponse.Content := '{Message: ''Cleared all packages''}';
   AResponse.Code := 200;
