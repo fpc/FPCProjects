@@ -7,7 +7,7 @@
 
   <div class="collapse navbar-collapse" [ngbCollapse]="!isNavbarCollapsed" id="navbarCollapse">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item" *ngIf="isAdmin">
+      <li class="nav-item" *ngIf="isAuthorized">
         <a class="nav-link" routerLink="/build">Build</a>
       </li>
       <li ngbDropdown class="nav-item" *ngIf="isAdmin">

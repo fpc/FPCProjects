@@ -9,7 +9,6 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 })
 export class NavbarComponent implements OnInit {
 
-  isAuthorizedSubscription: Subscription;
   isAuthorized: boolean;
 
   userDataSubscription: Subscription;
@@ -19,7 +18,7 @@ export class NavbarComponent implements OnInit {
   constructor(public oidcSecurityService: OidcSecurityService) { }
 
   ngOnInit() {
-    this.isAuthorizedSubscription = this.oidcSecurityService.getIsAuthorized().subscribe(
+    this.oidcSecurityService.getIsAuthorized().subscribe(
       (isAuthorized: boolean) => {
           this.isAuthorized = isAuthorized;
       });
