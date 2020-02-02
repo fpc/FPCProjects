@@ -23,13 +23,16 @@ export class PackageComponent implements OnInit {
   selectedVersion: any = null;
   categoryList: Category[];
   public currentPackage: Package = null;
+  private sub: string = null;
 
   @Input() set package(selpackage: Package) {
     this.currentPackage = selpackage;
     this.filterPackageVersionList();
+    this.updateRights();
   };
   @Output() packageUpdated = new EventEmitter();
   mayEditPackage: boolean;
+  isAdmin: boolean;
 
 
   constructor(
@@ -78,6 +81,10 @@ export class PackageComponent implements OnInit {
     this.selectedVersion = version;
   }
 
+  private updateRights() {
+    this.mayEditPackage = (this.isAdmin || ((this.currentPackage) && this.currentPackage.ownerid==this.sub));
+  }
+
   filterPackageVersionList() {
     this.packageVersionList = [];
     if ((this.currentPackage) && this.selectedFPCVersion) {
@@ -97,13 +104,19 @@ export class PackageComponent implements OnInit {
         this.selectedFPCVersion = version;
         this.filterPackageVersionList()
        } )
+    this.oidcSecurityService.getIsAuthorized().subscribe(
+      (isAuthorized: boolean) => {
+        this.categoryService.getCategoryList()
+          .subscribe(categoryList => { this.categoryList = categoryList } )
+      }
+    );
     this.oidcSecurityService.getUserData().subscribe(
       (data: any) => {
-        this.mayEditPackage = ((!!data) && (data.role == "admin"));
-        if (this.mayEditPackage) {
-          this.categoryService.getCategoryList()
-            .subscribe(categoryList => { this.categoryList = categoryList } )
+        this.isAdmin = ((!!data) && (data.role == "admin"));
+        if (data) {
+          this.sub = data.sub;
         }
+        this.updateRights();
       }
     );
   }

@@ -59,8 +59,8 @@
 
 
     <p class="card-text"></p>
-    <button class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
-    <button class="btn" (click)="showTagDialog(fpcversion)">Add tag</button>
-    <button class="btn" *ngIf="(currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
+    <button *ngIf="mayEditPackage" class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
+    <button *ngIf="mayEditPackage" class="btn" (click)="showTagDialog(fpcversion)">Add tag</button>
+    <button class="btn" *ngIf="isAdmin && (currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
   </div>
 </div>
