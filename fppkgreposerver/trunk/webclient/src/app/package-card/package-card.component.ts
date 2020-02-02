@@ -9,17 +9,17 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 })
 export class PackageCardComponent implements OnInit {
 
-  @Input() package: any;
+  @Input() package: Package;
   @Input() fpcversion: any;
   selectedVersion: any = null;
-  isAdmin: boolean;
+  isAuthorized: boolean;
 
   constructor(public oidcSecurityService: OidcSecurityService) { }
 
   ngOnInit() {
-    this.oidcSecurityService.getUserData().subscribe(
-      (data: any) => {
-        this.isAdmin = ((!!data) && (data.role == "admin"));
+    this.oidcSecurityService.getIsAuthorized().subscribe(
+      (isAuthorized: boolean) => {
+          this.isAuthorized = isAuthorized;
       }
     );
   }
