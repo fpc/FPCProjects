@@ -160,6 +160,7 @@ var
 begin
   HTTPClient := TFPHTTPClient.Create(nil);
   try
+    HTTPClient.ConnectTimeout := 10000;
     Resp := HTTPClient.Get('https://forum.lazarus.freepascal.org/index.php?action=login');
     if HTTPClient.ResponseStatusCode=200 then
       begin
