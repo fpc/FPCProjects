@@ -1,5 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Router, NavigationEnd, Event } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ActivatedRoute } from '@angular/router';
 import { UploadPackageComponent } from '../upload-package/upload-package.component';
 import { TagPackageComponent } from '../tag-package/tag-package.component';
 import { PackageService } from '../package.service';
@@ -21,6 +23,8 @@ export class PackageComponent implements OnInit {
   selectedFPCVersion: FPCVersion = null;
   packageVersionList: any[] = [];
   selectedVersion: any = null;
+  previousTag: string = null;
+  nextTag: string = null;
   categoryList: Category[];
   public currentPackage: Package = null;
   private sub: string = null;
@@ -40,6 +44,8 @@ export class PackageComponent implements OnInit {
     private _packageService: PackageService,
     private currentFpcversionService: CurrentFpcversionService,
     private categoryService: CategoryService,
+    private route: ActivatedRoute,
+    private router: Router,
     public oidcSecurityService: OidcSecurityService) { }
 
   showUploadSourceDialog() {
@@ -77,8 +83,24 @@ export class PackageComponent implements OnInit {
       .subscribe(fpcPackage => this.packageUpdated.emit());
   }
 
-  selectVersion(version) {
-    this.selectedVersion = version;
+  selectVersion(versionTag) {
+    this.selectedVersion = null;
+    this.packageVersionList.forEach((v, index) => {
+      if (v.tag==versionTag) {
+        if (index>0) {
+          this.previousTag = this.packageVersionList[index-1].tag;
+        } else {
+          this.previousTag = null
+        }
+        this.selectedVersion = v;
+        if (index<(this.packageVersionList.length-1)) {
+          this.nextTag = this.packageVersionList[index+1].tag;
+        } else {
+          this.nextTag = null
+        }
+
+      }
+    });
   }
 
   private updateRights() {
@@ -90,8 +112,13 @@ export class PackageComponent implements OnInit {
     if ((this.currentPackage) && this.selectedFPCVersion) {
       this.packageVersionList = this.currentPackage.packageversionlist.filter(packageVersion => packageVersion.fpcversion===this.selectedFPCVersion.name);
       this.packageVersionList.sort((packageVersionA, packgageversionB) => VersionUtils.compare(packageVersionA.version, packgageversionB.version));
+      const versionTag = this.route.snapshot.paramMap.get('version');
       if (this.packageVersionList.length > 0) {
-        this.selectedVersion = this.packageVersionList[0];
+        if (!versionTag) {
+          this.selectVersion(this.packageVersionList[0].tag);
+        } else {
+          this.selectVersion(versionTag);
+        }
       } else {
         this.selectedVersion = null;
       }
@@ -119,5 +146,11 @@ export class PackageComponent implements OnInit {
         this.updateRights();
       }
     );
+    this.router.events.subscribe(
+      (event: Event) => {
+             if (event instanceof NavigationEnd) {
+                  this.selectVersion(this.route.snapshot.paramMap.get('version'));
+             }
+      });
   }
 }

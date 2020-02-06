@@ -69,6 +69,10 @@ const routes: Routes = [
   },
   { path: 'package/:name',
     canActivate: [AuthGuardService],
+    component: PackagePageComponent
+  },
+  { path: 'package/:name/:version',
+    canActivate: [AuthGuardService],
     component: PackagePageComponent },
 ];
 

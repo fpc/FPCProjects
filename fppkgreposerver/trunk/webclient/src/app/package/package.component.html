@@ -5,12 +5,14 @@
   <div class="card-header">
     <h5 class="text-primary float-left">{{currentPackage.name}}</h5>
     <app-fpc-version-select-box class="float-right"></app-fpc-version-select-box>
-
+    <button *ngIf="mayEditPackage" class="btn btn-primary float-right" (click)="showUploadSourceDialog()">Upload source</button>
+    <button class="btn btn-primary float-right" *ngIf="isAdmin && (currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
+    <button *ngIf="(selectedVersion) && (mayEditPackage)" class="btn btn-primary float-right" (click)="showTagDialog(fpcversion)">Add tag</button>
   </div>
   <div class="card-body">
     <p class="mb-1 font-italic" *ngIf="currentPackage.packagestate!='published'"><span class="text-muted">State: </span>{{currentPackage.packagestate}}</p>
 
-    <p *ngIf="currentPackage.category || mayEditPackage" class="mb-1"><span class="text-muted">Category</span>
+    <p *ngIf="currentPackage.category || mayEditPackage" class="mb-1"><span class="text-muted">Category:</span>
       <app-editable-component appEditableOnEnter (update)="patchPackageCategory()">
         <ng-template appViewMode>{{currentPackage.category}}</ng-template>
         <ng-template appEditMode>
@@ -21,8 +23,8 @@
       </app-editable-component>
     </p>
 
-    <p *ngIf="currentPackage.keywords" class="mb-1"><span class="text-muted">Keywords</span> {{currentPackage.keywords}}</p>
-    <p *ngIf="currentPackage.support || mayEditPackage" class="mb-1"><span class="text-muted">Support</span>
+    <p *ngIf="currentPackage.keywords" class="mb-1"><span class="text-muted">Keywords:</span> {{currentPackage.keywords}}</p>
+    <p *ngIf="currentPackage.support || mayEditPackage" class="mb-1"><span class="text-muted">Support:</span>
       <app-editable-component appEditableOnEnter (update)="patchSupportCategory()">
         <ng-template appViewMode>{{currentPackage.support}}</ng-template>
         <ng-template appEditMode>
@@ -30,6 +32,29 @@
         </ng-template>
       </app-editable-component>
     </p>
+
+    <nav *ngIf="selectedVersion" aria-label="Package version navigation">
+      <ul class="pagination">
+        <li class="page-item" [ngClass]="{'disabled':!previousTag}">
+          <a *ngIf="previousTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{previousTag}}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+          <span *ngIf="!previousTag" class="page-link" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </span>
+        </li>
+        <li *ngFor="let version of packageVersionList" [ngClass]="{'active':version.tag==selectedVersion.tag}" class="page-item"><a routerLink="/package/{{currentPackage.name}}/{{version.tag}}" class="page-link">v{{version.version | version}}</a></li>
+        <li class="page-item" [ngClass]="{'disabled':!nextTag}">
+          <a *ngIf="nextTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{nextTag}}" aria-label="Previous">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+          <span *ngIf="!nextTag" class="page-link" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </span>
+        </li>
+      </ul>
+    </nav>
+
     <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
 
     <div *ngIf="(!selectedVersion)">
@@ -37,30 +62,5 @@
     </div>
 
     <p class="card-text"></p>
-    <p class="card-text"></p>
-
-    <ngb-accordion class="accordion" id="accordionExample">
-      <ngb-panel title="More information about the package" [disabled]="true">
-        <ng-template ngbPanelContent>
-        </ng-template>
-      </ngb-panel>
-      <ngb-panel title="Package versions">
-        <ng-template ngbPanelContent>
-          <ul class="list-group">
-            <button type="button" class="list-group-item list-group-item-action" [class.active]="version==selectedVersion" *ngFor="let version of packageVersionList" (click)="selectVersion(version)">{{version.version | version}}</button>
-          </ul>
-        </ng-template>
-      </ngb-panel>
-      <ngb-panel title="Package dependencies" [disabled]="true">
-        <ng-template ngbPanelContent>
-        </ng-template>
-      </ngb-panel>
-    </ngb-accordion>
-
-
-    <p class="card-text"></p>
-    <button *ngIf="mayEditPackage" class="btn btn-primary" (click)="showUploadSourceDialog()">Upload source</button>
-    <button *ngIf="mayEditPackage" class="btn" (click)="showTagDialog(fpcversion)">Add tag</button>
-    <button class="btn" *ngIf="isAdmin && (currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
   </div>
 </div>

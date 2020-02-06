@@ -1,15 +1,19 @@
-<p class="mb-1" *ngIf="packageVersion.description">{{packageVersion.description}}</p>
 <p class="mb-1"><span class="text-muted">Version</span> {{packageVersion.version | version}}</p>
+<p class="mb-1" *ngIf="packageVersion.description">{{packageVersion.description}}</p>
 <p *ngIf="!packageVersion.description" class="mb-1 text-danger">This package does not have a description.</p>
 <p *ngIf="packageVersion.license" class="mb-1"><span class="text-muted">License: </span>{{packageVersion.license}}</p>
 <p *ngIf="packageVersion.author" class="mb-1"><span class="text-muted">Author: </span>{{packageVersion.author}}</p>
 <p *ngIf="packageVersion.homepageurl" class="mb-1"><span class="text-muted">Site: </span><a href="http://{{packageVersion.homepageurl}}" target="_blank">{{packageVersion.homepageurl}}</a></p>
+<span *ngIf="(package.packagestate!='acceptance')">
+  <span *ngFor="let repository of repositoryList">
+    <p *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">This version is available in the {{repository.name}} repository</p>
+  </span>
+</span>
 
 <button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>
 <span *ngIf="(package.packagestate!='acceptance')">
   <span *ngFor="let repository of repositoryList">
-    <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
-    <span *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">Published in {{repository.name}}</span>
-    <button *ngIf="((packageVersion.tag!='initial') && (publishedVersionPerRepositoryMap[repository.name]) && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]))" class="btn" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+    <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn btn-primary" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
+    <button *ngIf="((packageVersion.tag!='initial') && (publishedVersionPerRepositoryMap[repository.name]) && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]))" class="btn btn-primary" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
   </span>
 </span>
