@@ -268,7 +268,7 @@ begin
     end;
     try
       PackageState := PackageJSON.Get('packagestate', '');
-      if (PackageState<>'published') and (PackageState<>'approved') then
+      if (PackageState<>'published') and (PackageState<>'approved') and (PackageState<>'acceptance') then
         raise Exception.CreateFmt('Package %s can not be build because it''s state is %s', [BuildTask.PackageName, PackageState]);
 
       BuildAgentList := TbmBuildAgentList.Instance;
