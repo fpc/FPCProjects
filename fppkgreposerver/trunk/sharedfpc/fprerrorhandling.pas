@@ -44,8 +44,8 @@ begin
     ExcMessage := StringReplace(AnException.Message, LineEnding, '\n', [rfReplaceAll]);
     AResponse.Content := Format('{"error":{"msg":"%s"}}', [StringReplace(ExcMessage, '"', '\"', [rfReplaceAll])]);
     AResponse.ContentType := 'application/json';
-    AResponse.Code := 200;
-    AResponse.CodeText := 'OK';
+    AResponse.Code := 500;
+    AResponse.CodeText := GetStatusCode(AResponse.Code);
     end;
   TLogger.GetInstance.Trace('Respond with [' + IntToStr(AResponse.Code) + ':' + AResponse.CodeText + ']. Content: [' + Trim(Copy(AResponse.Content,1,100)) + ']');
   handled := True;
