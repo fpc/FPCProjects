@@ -13,6 +13,7 @@ uses
   Classes,
   SysUtils,
   CustApp,
+  opensslsockets,
   TLoggerUnit,
   fprSetupLogging,
   DCSHandler,
