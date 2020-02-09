@@ -23,6 +23,7 @@ uses
   zipper,
   jsonparser,
   TLoggerUnit,
+  TLevelUnit,
   fprLog,
   fprPackageUtils,
   fprBuildAgentResponse,
@@ -227,7 +228,7 @@ begin
     end
   else
     begin
-    TfprLog.Error(Format('Failed to create temporary path [%s].', [TmpPath]));
+    TfprLog.Log(Format('Failed to create temporary path [%s].', [TmpPath]), nil, ERROR);
     raise Exception.Create('Failed to create temporary path');
     end;
 end;
