@@ -7,6 +7,7 @@ uses
   classes,
   sysutils,
   fphttpapp,
+  opensslsockets,
   dcsGlobalSettings,
   fprErrorHandling,
   bmbuildagentwebmodule,

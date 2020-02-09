@@ -10,6 +10,7 @@ uses
   sysutils,
   fphttpapp,
   httproute,
+  opensslsockets,
   dcsGlobalSettings,
   cnocStackJSONHandlerThread,
   csJSONRttiStreamHelper,

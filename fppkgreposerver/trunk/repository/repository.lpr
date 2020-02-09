@@ -10,6 +10,7 @@ uses
   sysutils,
   HTTPDefs,
   fphttpapp,
+  opensslsockets,
   jsonparser,
   TLoggerUnit,
   fprErrorHandling,

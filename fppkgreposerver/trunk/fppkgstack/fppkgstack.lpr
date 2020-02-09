@@ -8,6 +8,7 @@ uses
   pthreads,
   Sysutils,
   Custapp,
+  opensslsockets,
   Generics.Collections,
   cnocStackInternalStack,
   cnocStackBinaryListener,

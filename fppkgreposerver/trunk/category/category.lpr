@@ -9,6 +9,7 @@ uses
   sysutils,
   fphttpapp,
   httproute,
+  opensslsockets,
   cnocStackJSONHandlerThread,
   dcsGlobalSettings,
   fprErrorHandling,

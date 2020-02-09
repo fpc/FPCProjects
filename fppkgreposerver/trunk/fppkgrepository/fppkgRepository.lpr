@@ -11,6 +11,7 @@ uses
   fphttpapp,
   fpjson,
   httproute,
+  opensslsockets,
   dcsGlobalSettings,
   fprErrorHandling,
   fprSetupLogging,
