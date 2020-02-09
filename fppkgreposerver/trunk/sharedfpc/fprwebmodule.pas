@@ -15,6 +15,7 @@ uses
   fpjson,
   fpjsonrtti,
   jsonparser,
+  TLevelUnit,
   cnocOpenIDConnect,
   cnocOIDCIDToken,
   dcsGlobalSettings,
@@ -400,11 +401,19 @@ function TfprWebModule.JSONObjectRestRequest(AnURL: string; IncludeAccessToken: 
 var
   JSonData: TJSONData;
 begin
-  JSonData := ObtainJSONRestRequest(AnURL, IncludeAccessToken, Method, Content );
+  JSonData := ObtainJSONRestRequest(AnURL, IncludeAccessToken, Method, Content);
   try
     Result := Assigned(JSonData) and (JSonData.JSONType in [jtObject, jtArray]);
     if Result then
-      FDeStreamer.JSONToObject(TJSONObject(JSonData), AnObject);
+      try
+        if JSonData.JSONType = jtObject then
+          FDeStreamer.JSONToObject(TJSONObject(JSonData), AnObject)
+        else
+          FDeStreamer.JSONToCollection(TJSONArray(JSonData), AnObject as TCollection);
+      except
+        TfprLog.Log(Format('Failed to serialize received [%s]. Message: [%s], JSON: [%s]', [AnObject.ClassName, JSonData.AsJSON]), nil, ERROR);
+        Result := False;
+      end;
   finally
     JSonData.Free;
   end;
