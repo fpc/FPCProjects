@@ -1,1 +1,1 @@
-<ng-container *ngTemplateOutlet="currentView"></ng-container>  <i (click)="toEditMode()" *ngIf="mode === 'view'" class="fa fa-edit" aria-hidden="true"></i>
+<ng-container *ngTemplateOutlet="currentView"></ng-container>  <i (click)="toEditMode()" *ngIf="(mode === 'view') && allowEdit" class="fa fa-edit" aria-hidden="true"></i>

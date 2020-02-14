@@ -45,6 +45,7 @@ type
   protected
     procedure EnsureLoggedIn(const AccessToken: string);
     procedure EnsureAdmin(const AccessToken: string);
+    procedure EnsureMayEditPackage(const AccessToken: string; const Package: TfprPackage);
   public
     constructor Create(); override;
     Destructor Destroy; override;
@@ -142,6 +143,7 @@ begin
       FPackageStreamer.JSonToPackage(Data, Package);
       Package.OwnerId := TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken);
       Package.PackageState := prspsInitial;
+      Package.Support := 'Community';
 
       if not Package.Validate(ErrStr) then
         Raise EJsonWebException.Create(ErrStr);
@@ -243,11 +245,16 @@ begin
     if not Assigned(Package) then
       raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
 
+    EnsureMayEditPackage(AccessToken, Package);
+
     if Patch.CategoryId<>0 then
       Package.CategoryId := Patch.CategoryId;
 
     if Patch.Support<>'' then
+      begin
+      EnsureAdmin(AccessToken);
       Package.Support := Patch.Support;
+      end;
 
     if length(Patch.KeywordIds)>0 then
       Package.KeywordIds := Patch.KeywordIds;
@@ -304,6 +311,14 @@ begin
     raise EHTTP.CreateHelp('Authentication failed (no accesstoken (bearer) provided)', 403);
   if not TfprAuthenticationHandler.GetInstance.VerifyAccessToken(AccessToken, ErrMessage) then
     raise EHTTP.CreateFmtHelp('Authentication failed (%s)', [ErrMessage], 403);
+end;
+
+procedure TpmPackageWM.EnsureMayEditPackage(const AccessToken: string; const Package: TfprPackage);
+begin
+  EnsureLoggedIn(AccessToken);
+  if (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin') and
+    (TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken) <> Package.OwnerId) then
+    raise EHTTP.CreateFmtHelp('You have no rights to edit package [%s]', [Package.Name], 403);
 end;
 
 end.

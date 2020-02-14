@@ -13,7 +13,7 @@
     <p class="mb-1 font-italic" *ngIf="currentPackage.packagestate!='published'"><span class="text-muted">State: </span>{{currentPackage.packagestate}}</p>
 
     <p *ngIf="currentPackage.category || mayEditPackage" class="mb-1"><span class="text-muted">Category:</span>
-      <app-editable-component appEditableOnEnter (update)="patchPackageCategory()">
+      <app-editable-component [allowEdit]="mayEditPackage" appEditableOnEnter (update)="patchPackageCategory()">
         <ng-template appViewMode>{{currentPackage.category}}</ng-template>
         <ng-template appEditMode>
           <select [(ngModel)]="currentPackage.categoryid">
@@ -24,8 +24,8 @@
     </p>
 
     <p *ngIf="currentPackage.keywords" class="mb-1"><span class="text-muted">Keywords:</span> {{currentPackage.keywords}}</p>
-    <p *ngIf="currentPackage.support || mayEditPackage" class="mb-1"><span class="text-muted">Support:</span>
-      <app-editable-component appEditableOnEnter (update)="patchSupportCategory()">
+    <p *ngIf="currentPackage.support || isAdmin" class="mb-1"><span class="text-muted">Support:</span>
+      <app-editable-component [allowEdit]="isAdmin"  appEditableOnEnter (update)="patchSupportCategory()">
         <ng-template appViewMode>{{currentPackage.support}}</ng-template>
         <ng-template appEditMode>
           <input [(ngModel)]="currentPackage.support" />

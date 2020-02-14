@@ -1,6 +1,6 @@
 // Large parts are copied/based on a blog Netanel Basal from april 2019
 // https://netbasal.com/keeping-it-simple-implementing-edit-in-place-in-angular-4fd92c4dfc70
-import { Component, OnInit, Output, ContentChild, ElementRef, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, ContentChild, ElementRef, EventEmitter, Input } from '@angular/core';
 import { EditModeDirective } from '../edit-mode.directive';
 import { ViewModeDirective } from '../view-mode.directive';
 import { Subject } from 'rxjs/Subject';
@@ -14,6 +14,7 @@ import { filter, take, switchMapTo } from 'rxjs/operators';
 export class EditableComponent implements OnInit {
 
   @Output() update = new EventEmitter();
+  @Input() allowEdit: boolean = true;
   @ContentChild(ViewModeDirective) viewModeTpl: ViewModeDirective;
   @ContentChild(EditModeDirective) editModeTpl: EditModeDirective;
 
@@ -38,8 +39,10 @@ export class EditableComponent implements OnInit {
     Observable.fromEvent(this.element, 'dblclick').pipe(
       //untilDestroyed(this)
     ).subscribe(() => {
-      this.mode = 'edit';
-      this.editMode.next(true);
+      if (this.allowEdit) {
+        this.mode = 'edit';
+        this.editMode.next(true);
+      }
     });
   }
 
@@ -68,7 +71,9 @@ export class EditableComponent implements OnInit {
   }
 
   toEditMode() {
-    this.mode = 'edit';
+    if (this.allowEdit) {
+      this.mode = 'edit';
+    }
   }
 
 }
