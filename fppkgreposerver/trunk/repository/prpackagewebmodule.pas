@@ -538,7 +538,7 @@ begin
     raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
     end;
 
-  RunGit(TmpPath, 'clone git repository', ['clone', RepoPath, 'pkgclone'], CmdRes );
+  RunGit(TmpPath, 'clone git repository', ['clone', ExpandFileName(RepoPath), 'pkgclone'], CmdRes );
   SetGitUserAndEmail(RepoPath);
 end;
 
