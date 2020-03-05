@@ -10,10 +10,11 @@ uses
   process,
   httpdefs,
   FileUtil,
+  DateUtils,
   odataservice,
-  DOM,
-  XMLRead,
   dcsGlobalSettings,
+  csModel,
+  csJSONRttiStreamHelper,
   fpHTTP,
   fphttpclient,
   fpjson,
@@ -22,10 +23,8 @@ uses
   pkgrepos,
   zipper,
   jsonparser,
-  TLoggerUnit,
   TLevelUnit,
   fprLog,
-  fprPackageUtils,
   fprBuildAgentResponse,
   fprFPCVersion,
   fphttpserver,
@@ -41,6 +40,7 @@ type
     function GetFPCVersionCollection: TfprFPCVersionCollection;
     procedure SetGitUserAndEmail(ARepoPath: string);
     function GetPackageRepoPath(APackageName: string): string;
+    function GetAndCheckPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
     function CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
     function AddSourcesToGITRepository(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile): string;
@@ -50,6 +50,7 @@ type
     function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag: string = ''): string;
     procedure DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
     procedure CloneGITPackage(APackageName, TmpPath: string);
+    function ObtainGITLogForPackage(APackageName, Branch: string): TfprPackageRepoLogCollection;
     function GetVersionFromPathInfo(APathInfo: string): TfprFPCVersion;
   public
     constructor Create(AOwner: TComponent); override;
@@ -77,6 +78,7 @@ var
   FPCVersion: TfprFPCVersion;
   s: string;
   IsNew: Boolean;
+  RepoLogCollection: TfprPackageRepoLogCollection;
 begin
   Handled := True;
   PackageName := ARequest.GetNextPathInfo;
@@ -155,6 +157,18 @@ begin
 
       AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
       AResponse.Code := 200;
+      end
+    else if (Command='list') and (ARequest.Method='GET') then
+      begin
+      s := ARequest.GetNextPathInfo;
+      FPCVersion := GetVersionFromPathInfo(s);
+      RepoLogCollection := ObtainGITLogForPackage(PackageName, FPCVersion.GetBranchName);
+      try
+        AResponse.Content := TJSONRttiStreamHelper.ObjectToJSONString(RepoLogCollection, nil, [tcsdfCollectionAsList]);
+        AResponse.Code := 200;
+      finally
+        RepoLogCollection.Free;
+      end;
       end
     else if Command <> '' then
       begin
@@ -289,6 +303,8 @@ var
   CmdRes: string;
   UnZipper: TUnZipper;
   BranchIsNew: Boolean;
+  Package: TFPPackage;
+  CommitMessage: string;
 begin
   BranchIsNew := False;
   TmpPath := GetTempFileName;
@@ -326,11 +342,18 @@ begin
       UnZipper.Free;
     end;
 
+    Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
+    try
+      CommitMessage := 'Version ' + Package.Version.AsString;
+    finally
+      Package.Free;
+    end;
+
     if CheckIfGitHasUnstagedChanges(ClonePath) then
       begin
       RunGit(ClonePath, 'stage all files', ['add', '--all'], CmdRes);
 
-      RunGit(ClonePath, 'commit changes', ['commit', '-m ''' + 'Commit new source-zip' + ''''], CmdRes);
+      RunGit(ClonePath, 'commit changes', ['commit', '-m' + CommitMessage], CmdRes);
 
       if BranchIsNew then
         RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', 'origin', AFPCVersion.GetBranchName], CmdRes)
@@ -530,13 +553,7 @@ procedure TprPackageWM.CloneGITPackage(APackageName, TmpPath: string);
 var
   RepoPath, CmdRes: String;
 begin
-  RepoPath := GetPackageRepoPath(APackageName);
-
-  if not DirectoryExists(RepoPath) then
-    begin
-    TfprLog.Log(Format('Can not find the repository of package [%s] at location [%s]', [APackageName, RepoPath]));
-    raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
-    end;
+  RepoPath := GetAndCheckPackageRepoPath(APackageName);
 
   RunGit(TmpPath, 'clone git repository', ['clone', ExpandFileName(RepoPath), 'pkgclone'], CmdRes );
   SetGitUserAndEmail(RepoPath);
@@ -563,6 +580,45 @@ begin
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
     AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET', '', True);
+end;
+
+function TprPackageWM.ObtainGITLogForPackage(APackageName, Branch: string): TfprPackageRepoLogCollection;
+var
+  Collection: TfprPackageRepoLogCollection;
+  RepoPath, CmdRes: String;
+  LogLines, LogItems: TStringArray;
+  i: Integer;
+  RepoLogItem: TfprPackageRepoLog;
+begin
+  Collection := TfprPackageRepoLogCollection.Create();
+  try
+    RepoPath := GetAndCheckPackageRepoPath(APackageName);
+    RunGit(RepoPath, 'retrieve log for package '+APackageName, ['log', '--pretty=format:%h^%aI^%s', Branch], CmdRes);
+    LogLines := CmdRes.Split(LineEnding);
+    for i := 0 to Length(LogLines) -1 do
+      begin
+      LogItems := LogLines[i].Split('^');
+      RepoLogItem := Collection.Add;
+      RepoLogItem.Hash := LogItems[0];
+      RepoLogItem.AuthorDate := ScanDateTime('yyyy-mm-dd''T''hh:nn:ss', LogItems[1]);
+      RepoLogItem.Description := LogItems[2];
+      end;
+    Result := Collection;
+    Collection:=nil;
+  finally
+    Collection.Free;
+  end;
+end;
+
+function TprPackageWM.GetAndCheckPackageRepoPath(APackageName: string): string;
+begin
+  Result := GetPackageRepoPath(APackageName);
+
+  if not DirectoryExists(Result) then
+    begin
+    TfprLog.Log(Format('Can not find the repository of package [%s] at location [%s]', [APackageName, Result]));
+    raise Exception.CreateFmt('Repository for package %s does not exist.', [APackageName]);
+    end;
 end;
 
 initialization

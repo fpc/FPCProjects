@@ -45,6 +45,21 @@ type
     property DefaultVersion: TfprFPCVersion read GetDefaultVersion;
   end;
 
+  { TfprPackageRepoLog }
+
+  TfprPackageRepoLog = class(TfprInterfacedCollectionItem)
+  private
+    FHash: string;
+    FAuthorDate: TDateTime;
+    FDescription: string;
+  published
+    property Hash: string read FHash write FHash;
+    property AuthorDate: TDateTime read FAuthorDate write FAuthorDate;
+    property Description: string read FDescription write FDescription;
+  end;
+
+  TfprPackageRepoLogCollection = specialize TcnocGCollection<TfprPackageRepoLog>;
+
 implementation
 
 { TfprFPCVersion }
