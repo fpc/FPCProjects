@@ -1,6 +1,8 @@
 unit idIdentityWebmodule;
 
 {$mode objfpc}{$H+}
+// Be carefull, with this define enabled, there is effectively no login-control!
+{ $define OverrideLoginLogic}
 
 interface
 
@@ -113,6 +115,17 @@ var
   RequestData, Location: string;
   Resp: RawByteString;
 begin
+{$ifdef OverrideLoginLogic}
+  if APassword='valid' then
+    begin
+    FailureMessage := '';
+    Subject := 'M_'+AUserName;
+    end
+  else
+    begin
+    FailureMessage := 'Password is not valid';
+    end;
+{$else}
   HTTPClient := TFPHTTPClient.Create(nil);
   try
     RequestData := Format('return=my_view_page.php&username=%s&password=%s&secure_session=on', [AUserName, APassword]);
@@ -122,6 +135,7 @@ begin
       Location := Trim(HTTPClient.ResponseHeaders.Values['Location']);
       if StartsText('https://bugs.freepascal.org/login_cookie_test.php', Location) then
         begin
+        FailureMessage := ''
         Subject := 'M_'+AUserName;
         end
       else if StartsText('https://bugs.freepascal.org/login_page.php', Location) then
@@ -148,6 +162,7 @@ begin
   finally
     HTTPClient.Free;
   end;
+{$endif}
 end;
 
 procedure TidAuthenicator.IsValidForumLogin(const Provider: TcnocOpenIDConnectProvider; const AUserName, APassword: string; var Subject: string; out FailureMessage: string);
@@ -158,6 +173,17 @@ var
   Hash: string;
   i: integer;
 begin
+{$ifdef OverrideLoginLogic}
+  if APassword='valid' then
+    begin
+    FailureMessage := '';
+    Subject := 'M_'+AUserName;
+    end
+  else
+    begin
+    FailureMessage := 'Password is not valid';
+    end;
+{$else}
   HTTPClient := TFPHTTPClient.Create(nil);
   try
     HTTPClient.ConnectTimeout := 10000;
@@ -202,6 +228,7 @@ begin
       if (Resp='') and (HTTPClient.ResponseStatusCode = 302) then
         begin
         Subject := 'F_' + LowerCase(AUserName);
+        FailureMessage := '';
         end
       else
         begin
@@ -224,6 +251,7 @@ begin
   finally
     HTTPClient.Free;
   end;
+{$endif}
 end;
 
 { TidIdentityWM }
