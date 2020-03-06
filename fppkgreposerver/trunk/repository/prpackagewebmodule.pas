@@ -225,6 +225,7 @@ begin
   if ForceDirectories(TmpPath) then
     begin
     try
+      TfprLog.Log(Format('Call git to initialize the new git repository for the [%s] package in [%s].', [APackageName, TmpPath]));
       if RunCommandInDir(TmpPath, 'git', ['init', '--bare'], CmdRes, CmdExit) <> 0 then
         Raise Exception.Create('Failed to execute GIT to create GIT repository');
       if CmdExit <> 0 then
@@ -302,6 +303,7 @@ var
   BranchIsNew: Boolean;
   Package: TFPPackage;
   CommitMessage: string;
+  PackageVersionString: string;
 begin
   BranchIsNew := False;
   TmpPath := GetTempFileName;
@@ -341,7 +343,8 @@ begin
 
     Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
     try
-      CommitMessage := 'Version ' + Package.Version.AsString;
+      PackageVersionString := Package.Version.AsString;
+      CommitMessage := 'Version ' + PackageVersionString;
     finally
       Package.Free;
     end;
@@ -367,6 +370,9 @@ begin
         raise Exception.Create('This archive does not contain any changes compared to the version within this repository');
       end;
 
+    RunGit(ClonePath, 'Add the version as a note to the commit', ['notes','add','-m'+PackageVersionString], CmdRes);
+    RunGit(ClonePath, 'push notes', ['push', 'origin', 'refs/notes/*'], CmdRes);
+
     RunGit(ClonePath, 'get revision', ['rev-parse', 'HEAD'], Result);
     Result := Trim(Result);
   finally
@@ -379,6 +385,7 @@ var
   ExitStatus, i: Integer;
   CommandLine: String;
 begin
+  TfprLog.Log(Format('Call git in [%s], description: [%s].', [curdir, desc]));
   if RunCommandInDir(curdir, 'git', commands, outputstring, ExitStatus, [poStderrToOutPut]) <> 0 then
     begin
     CommandLine := 'git';
@@ -586,19 +593,29 @@ var
   LogLines, LogItems: TStringArray;
   i: Integer;
   RepoLogItem: TfprPackageRepoLog;
+  TagsString: String;
 begin
   Collection := TfprPackageRepoLogCollection.Create();
   try
     RepoPath := GetAndCheckPackageRepoPath(APackageName);
-    RunGit(RepoPath, 'retrieve log for package '+APackageName, ['log', '--pretty=format:%h^%aI^%s', Branch], CmdRes);
-    LogLines := CmdRes.Split(LineEnding);
+    RunGit(RepoPath, 'retrieve log for package '+APackageName, ['log', '--pretty=format:%h^%aI^%s^%D^%N^^', Branch], CmdRes);
+
+    LogLines := CmdRes.Split('^^'+LineEnding);
     for i := 0 to Length(LogLines) -1 do
       begin
-      LogItems := LogLines[i].Split('^');
+      LogItems := Trim(LogLines[i]).Split('^');
       RepoLogItem := Collection.Add;
       RepoLogItem.Hash := LogItems[0];
       RepoLogItem.AuthorDate := ScanDateTime('yyyy-mm-dd''T''hh:nn:ss', LogItems[1]);
       RepoLogItem.Description := LogItems[2];
+      // LogItems[3] looks like: "tag: initial, FPCtrunk"
+      TagsString := Copy(LogItems[3], 6);
+      TagsString := StringReplace(TagsString, ', '+Branch, '', []);
+      TagsString := StringReplace(TagsString, Branch, '', []);
+
+      RepoLogItem.Tags := TagsString;
+      RepoLogItem.Description := LogItems[2];
+      RepoLogItem.Version := Trim(LogItems[4]);
       end;
     Result := Collection;
     Collection:=nil;

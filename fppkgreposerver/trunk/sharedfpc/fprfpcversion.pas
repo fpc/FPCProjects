@@ -52,10 +52,14 @@ type
     FHash: string;
     FAuthorDate: TDateTime;
     FDescription: string;
+    FVersion: string;
+    FTags: string;
   published
     property Hash: string read FHash write FHash;
     property AuthorDate: TDateTime read FAuthorDate write FAuthorDate;
     property Description: string read FDescription write FDescription;
+    property Version: string read FVersion write FVersion;
+    property Tags: string read FTags write FTags;
   end;
 
   TfprPackageRepoLogCollection = specialize TcnocGCollection<TfprPackageRepoLog>;
