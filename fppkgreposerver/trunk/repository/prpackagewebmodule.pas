@@ -74,9 +74,8 @@ var
   PackageObject: TJSONObject;
   Command: string;
   RevHash: string;
-  PackageTag, TagMessage: string;
+  PackageTag, TagMessage, ErrString: string;
   FPCVersion: TfprFPCVersion;
-  s: string;
   IsNew: Boolean;
   RepoLogCollection: TfprPackageRepoLogCollection;
 begin
@@ -132,12 +131,11 @@ begin
       if ARequest.Files.Count <> 1 then
         raise Exception.Create('Missing package in request');
 
-      s := Command;
       FPCVersion := GetVersionFromPathInfo(Command);
 
-      if not CheckUploadedSourceArchive(PackageName, FPCVersion, ARequest.Files.First, s) then
+      if not CheckUploadedSourceArchive(PackageName, FPCVersion, ARequest.Files.First, ErrString) then
         begin
-        raise Exception.Create('Validity check on source failed: ' + s);
+        raise Exception.Create('Validity check on source failed: ' + ErrString);
         end;
 
       IsNew := PackageObject.Get('packagestate', '') = 'new';
@@ -160,8 +158,7 @@ begin
       end
     else if (Command='list') and (ARequest.Method='GET') then
       begin
-      s := ARequest.GetNextPathInfo;
-      FPCVersion := GetVersionFromPathInfo(s);
+      FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
       RepoLogCollection := ObtainGITLogForPackage(PackageName, FPCVersion.GetBranchName);
       try
         AResponse.Content := TJSONRttiStreamHelper.ObjectToJSONString(RepoLogCollection, nil, [tcsdfCollectionAsList]);
