@@ -13,6 +13,7 @@ uses
   opensslsockets,
   jsonparser,
   TLoggerUnit,
+  csModel,
   fprErrorHandling,
   fprSetupLogging,
   dcsGlobalSettings,
@@ -24,6 +25,9 @@ var
   ConfigFileName: String;
 
 begin
+  TcsDescriber.GlobalDefaultExportNameStyle := tcsensLowerCase;
+  TcsDescriber.GloblaDefaultImportNameStyle := tcsinsCaseInsensitive;
+
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   GlobalSettings.AddSetting('packagemanagerurl','Connections','PackageManagerURL','',#0, dcsPHasParameter);
   GlobalSettings.AddSetting('buildmanagerurl','Connections','BuildManagerURL','',#0, dcsPHasParameter);
