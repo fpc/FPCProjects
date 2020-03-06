@@ -1,0 +1,22 @@
+<div class="accordion" id="commitMessage">
+  <div class="card">
+    <div class="card-header" id="commitMessageHeader">
+      <h2 class="mb-0">
+        <button (click)="isCollapsed = !isCollapsed" class="btn btn-link" type="button" [attr.aria-expanded]="!isCollapsed" aria-controls="commitMessageCollapse">
+          Commit history
+        </button>
+      </h2>
+    </div>
+    <div id="commitMessageCollapse" [ngbCollapse]="isCollapsed" class="collapse show" aria-labelledby="commitMessageHeader" data-parent="#commitMessage">
+      <div class="card-body">
+        <ul>
+          <li *ngFor="let logLine of packageLog">
+            {{logLine.authordate|date:"M/d/yy HH:mm"}}: {{logLine.description}}
+            <span class="badge badge-primary" *ngIf="((logLine.tags) && (logLine.tags!='initial'))">{{logLine.version}} Release</span>
+            <button class="btn btn-primary" (click)="requestBuild(logLine.hash)">Request build</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -51,6 +51,7 @@ import { EditableComponent } from './edit-in-place/editable/editable.component';
 import { EditableOnEnterDirective } from './edit-in-place/editable-on-enter.directive';
 import { EditableOnStartDirective } from './edit-in-place/editable-on-start.directive';
 import { AppConfigService } from './app-config.service';
+import { PackageCommitListComponent } from './package-commit-list/package-commit-list.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +84,8 @@ import { AppConfigService } from './app-config.service';
     EditModeDirective,
     EditableComponent,
     EditableOnEnterDirective,
-    EditableOnStartDirective
+    EditableOnStartDirective,
+    PackageCommitListComponent
   ],
   imports: [
     BrowserModule,

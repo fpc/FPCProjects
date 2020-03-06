@@ -4,6 +4,7 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Observable } from 'rxjs/Observable';
 import { FPCVersion } from './fpcversion';
 import { AppConfigService } from './app-config.service';
+import { PackageRepoLog } from './package-repo-log';
 
 @Injectable()
 export class RepositoryService {
@@ -41,6 +42,11 @@ export class RepositoryService {
 
     const url = `${this.repositoryUrl}/package/${packageName}/tagpackage/${fpcversion.name}`;
     return this._http.get<any>(url, {headers: this.getHeaders(), params: {message: tagMessage}});
+  }
+
+  getPackageRepoLog(packageName: string, fpcversion: FPCVersion): Observable<PackageRepoLog[]> {
+    const url = `${this.repositoryUrl}/package/${packageName}/list/${fpcversion.name}`;
+    return this._http.get<PackageRepoLog[]>(url, {headers: this.getHeaders()});
   }
 
 
