@@ -63,7 +63,7 @@ spec:
         - name: IdentityServerUrl
           value: /identityserver
         - name: WebClientUrl
-          value: /
+          value: https://fpc.cnoc.nl
         - name: BuildAgentUrl
           value: /buildagent
         - name: PackageManagerUrl
@@ -76,6 +76,8 @@ spec:
           value: /repository
         - name: FppkgRepositoryUrl
           value: /fppkgrepository
+        - name: redirect_https
+          value: "yes"
         image: quay.io/loesje/webclient
         volumeMounts:
         - mountPath: "/etc/nginx/ssl"
@@ -109,7 +111,7 @@ spec:
         - name: Storage__PackageListFile
           value: /home/locuser/data/packages.json
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         image: quay.io/loesje/packagemanager
         volumeMounts:
         - name: persistent-disk-packagedata
@@ -119,7 +121,7 @@ spec:
       - name: buildmanager
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: Connections__PackageManagerURL
           value: http://localhost:8088
         - name: Connections__RepositoryURL
@@ -141,7 +143,7 @@ spec:
       - name: repository
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
@@ -165,7 +167,7 @@ spec:
       - name: fppkgrepository
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
 
         - name: Log_file__Format
           value: console
@@ -180,34 +182,42 @@ spec:
           value: http://localhost:8089
 
         - name: Repository_Trunk-Testing__BaseURL
-          value: https://fpc.cnoc.nl/repo/testing/
+          value: http://fpc.cnoc.nl/repo/testing/
         - name: Repository_Trunk-Testing__path
           value: /home/locuser/repo/testing
         - name: Repository_Trunk-Testing__StorageFile
           value: /home/locuser/data/packages-trunk-testing.json
 
         - name: Repository_Trunk-Production__BaseURL
-          value: https://fpc.cnoc.nl/repo/prod/
+          value: http://fpc.cnoc.nl/repo/prod/
         - name: Repository_Trunk-Production__path
           value: /home/locuser/repo/prod
         - name: Repository_Trunk-Production__StorageFile
           value: /home/locuser/data/packages-trunk-production.json
 
+        - name: Repository_304-Testing__BaseURL
+          value: http://fpc.cnoc.nl/repo/testing/
         - name: Repository_304-Testing__path
           value: /home/locuser/repo/testing
         - name: Repository_304-Testing__StorageFile
           value: /home/locuser/data/packages-304-testing.json
 
+        - name: Repository_304-Production__BaseURL
+          value: http://fpc.cnoc.nl/repo/prod/
         - name: Repository_304-Production__path
           value: /home/locuser/repo/prod
         - name: Repository_304-Production__StorageFile
           value: /home/locuser/data/packages-304-production.json
 
+        - name: Repository_fixes32-Testing__BaseURL
+          value: http://fpc.cnoc.nl/repo/testing/
         - name: Repository_fixes32-Testing__path
           value: /home/locuser/repo/testing
         - name: Repository_fixes32-Testing__StorageFile
           value: /home/locuser/data/packages-fixes32-testing.json
 
+        - name: Repository_fixes32-Production__BaseURL
+          value: http://fpc.cnoc.nl/repo/prod/
         - name: Repository_fixes32-Production__path
           value: /home/locuser/repo/prod
         - name: Repository_fixes32-Production__StorageFile
@@ -223,7 +233,7 @@ spec:
       - name: category
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
@@ -243,7 +253,7 @@ spec:
       - name: keyword
         env:
         - name: OIDC__OpenIDProviderURL
-          value: http://fpc.cnoc.nl/identityserver
+          value: https://fpc.cnoc.nl/identityserver
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
