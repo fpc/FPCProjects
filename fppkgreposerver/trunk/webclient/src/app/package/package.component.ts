@@ -63,7 +63,7 @@ export class PackageComponent implements OnInit {
 
     modalRef.result.then(modalResult => {
       if (modalResult == 'tagged') {
-        this.packageUpdated.emit();
+        this.updatePackage();
       }
     }, err => {});
   }
@@ -101,6 +101,10 @@ export class PackageComponent implements OnInit {
 
       }
     });
+  }
+
+  updatePackage(){
+    this.packageUpdated.emit();
   }
 
   private updateRights() {

@@ -1,9 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Package } from '../package'
 import { RepositoryService } from '../repository.service';
-import { PackageService } from '../package.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PackageRepoLog } from 'app/package-repo-log';
 import { BuildManagerService } from '../build-manager.service';
+import { TagPackageComponent } from '../tag-package/tag-package.component';
 import { Router }    from '@angular/router';
 import { FPCVersion } from '../fpcversion'
 import { CurrentFpcversionService } from '../current-fpcversion.service';
@@ -17,6 +18,8 @@ export class PackageCommitListComponent implements OnInit {
 
   @Input() packageVersion: any = null;
   @Input() package: Package = null;
+  @Input() mayEditPackage: boolean = false;
+  @Output() packageUpdated = new EventEmitter();
 
   public isCollapsed = true;
   public packageLog : PackageRepoLog[];
@@ -26,6 +29,7 @@ export class PackageCommitListComponent implements OnInit {
     private _repositoryService: RepositoryService,
     private _buildManagerService: BuildManagerService,
     private _router: Router,
+    private _modalService: NgbModal,
     private currentFpcversionService: CurrentFpcversionService
   ) { }
 
@@ -42,5 +46,16 @@ export class PackageCommitListComponent implements OnInit {
   requestBuild(tag) {
     this._buildManagerService.startBuildTask(this.package.name, tag, this.fpcversion.name)
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
+  }
+
+  showTagDialog() {
+    const modalRef = this._modalService.open(TagPackageComponent);
+    modalRef.componentInstance.package = this.package;
+
+    modalRef.result.then(modalResult => {
+      if (modalResult == 'tagged') {
+        this.packageUpdated.emit();
+      }
+    }, err => {});
   }
 }
