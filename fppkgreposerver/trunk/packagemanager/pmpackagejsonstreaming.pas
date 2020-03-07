@@ -140,7 +140,7 @@ begin
   FSerializer := TJSONRttiStreamClass.Create;
   FSerializer.DescriptionStore.Describer.DefaultExportNameStyle := tcsensLowerCase;
   FSerializer.DescriptionStore.Describer.DefaultImportNameStyle := tcsinsLowerCase;
-  FSerializer.DescriptionStore.Describer.Flags := [tcsdfCollectionAsList];
+  FSerializer.DescriptionStore.Describer.Flags := [tcsdfCollectionAsList, tcsdfDisableRetrieveDescriberWhileStreaming];
 
   PackageDescription := FSerializer.DescriptionStore.GetDescription(TfprPackage);
   PackageDescription.Properties.FindByPropertyName('PackageState').OnSetValueAsString := @SetPackageStateAsString;
