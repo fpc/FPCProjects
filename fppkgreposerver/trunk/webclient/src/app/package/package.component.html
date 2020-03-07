@@ -56,12 +56,13 @@
     </nav>
 
     <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
-    <p></p>
-    <app-package-commit-list *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-commit-list>
 
     <div *ngIf="(!selectedVersion)">
       <p *ngIf="(selectedFPCVersion)">This package is not available for FPC-version {{selectedFPCVersion.name}}.</p>
     </div>
+
+    <p></p>
+    <app-package-commit-list [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-commit-list>
 
     <p class="card-text"></p>
   </div>

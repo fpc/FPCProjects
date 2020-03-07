@@ -6,6 +6,7 @@ import { PackageRepoLog } from 'app/package-repo-log';
 import { BuildManagerService } from '../build-manager.service';
 import { Router }    from '@angular/router';
 import { FPCVersion } from '../fpcversion'
+import { CurrentFpcversionService } from '../current-fpcversion.service';
 
 @Component({
   selector: 'app-package-commit-list',
@@ -24,20 +25,18 @@ export class PackageCommitListComponent implements OnInit {
   constructor(
     private _repositoryService: RepositoryService,
     private _buildManagerService: BuildManagerService,
-    private _packageService: PackageService,
-    private _router: Router
+    private _router: Router,
+    private currentFpcversionService: CurrentFpcversionService
   ) { }
 
   ngOnInit() {
-    this._packageService.getFPCVersionList().subscribe(versionlist => {
-      for (var version of versionlist) {
-        if ((this.packageVersion.fpcversion && (version.name == this.packageVersion.fpcversion)) || ((!this.packageVersion.fpcversion) && version.isdefault)) {
-          this.fpcversion = version;
-          this._repositoryService.getPackageRepoLog(this.package.name, version)
-            .subscribe(packageLog => this.packageLog = packageLog);
-        }
-      }
-    })
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => {
+        this.fpcversion = version;
+        this.packageLog = [];
+        this._repositoryService.getPackageRepoLog(this.package.name, version)
+        .subscribe(packageLog => this.packageLog = packageLog);
+  });
   }
 
   requestBuild(tag) {
