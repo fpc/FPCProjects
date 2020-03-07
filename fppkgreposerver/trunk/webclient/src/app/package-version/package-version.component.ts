@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Router }    from '@angular/router';
 import { FPCVersion } from '../fpcversion'
 import { Package } from '../package'
@@ -15,20 +15,11 @@ import { RepPackage } from '../rep-package';
 })
 export class PackageVersionComponent implements OnInit {
 
+  public currentPackage: Package = null;
+
   @Input() packageVersion: any = null;
-  @Input() package: Package = null;
-
-  repositoryList : Repository[];
-  fpcversion: FPCVersion;
-  publishedVersionPerRepositoryMap: Object = {};
-
-  constructor(
-    private _fppkgRepositoryService: FppkgRepositoryService,
-    private _buildManagerService: BuildManagerService,
-    private _packageService: PackageService,
-    private _router: Router) { }
-
-  ngOnInit() {
+  @Input() set package(selpackage: Package) {
+    this.currentPackage = selpackage;
     if (!this.packageVersion.fpcversion) {
       this._packageService.getFPCVersionList().subscribe(versionlist => {
         for (var version of versionlist) {
@@ -50,6 +41,21 @@ export class PackageVersionComponent implements OnInit {
         }
       });
     }
+  };
+  @Output() packageUpdated = new EventEmitter();
+
+  repositoryList : Repository[];
+  fpcversion: FPCVersion;
+  publishedVersionPerRepositoryMap: Object = {};
+
+  constructor(
+    private _fppkgRepositoryService: FppkgRepositoryService,
+    private _buildManagerService: BuildManagerService,
+    private _packageService: PackageService,
+    private _router: Router) { }
+
+  ngOnInit() {
+
   }
 
   initRepositoryList(repoList: Repository[]) {
@@ -58,7 +64,7 @@ export class PackageVersionComponent implements OnInit {
       this._fppkgRepositoryService.getRepPackageList(this.fpcversion.name, repo)
         .subscribe(repPackageList => {
           for (var repPackage of repPackageList) {
-            if (repPackage.name == this.package.name) {
+            if (repPackage.name == this.currentPackage.name) {
               this.publishedVersionPerRepositoryMap[repo.name] = repPackage.tag;
             }
           }
@@ -67,17 +73,17 @@ export class PackageVersionComponent implements OnInit {
   }
 
   publishTag(repository: Repository,tag: string) {
-    this._fppkgRepositoryService.addPackage(this.fpcversion.name, repository.name, this.package.name, tag)
-      .subscribe(); //(pkg => this.packageUpdated.emit());
+    this._fppkgRepositoryService.addPackage(this.fpcversion.name, repository.name, this.currentPackage.name, tag)
+      .subscribe(pkg => this.packageUpdated.emit());
   }
 
   updateTag(repository: Repository,tag: string) {
-    this._fppkgRepositoryService.updatePackage(this.fpcversion.name, repository.name, this.package.name, tag)
-      .subscribe(); //(pkg => this.packageUpdated.emit());
+    this._fppkgRepositoryService.updatePackage(this.fpcversion.name, repository.name, this.currentPackage.name, tag)
+      .subscribe(pkg => this.packageUpdated.emit());
   }
 
   requestBuild(tag) {
-    this._buildManagerService.startBuildTask(this.package.name, tag, this.fpcversion.name)
+    this._buildManagerService.startBuildTask(this.currentPackage.name, tag, this.fpcversion.name)
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
   }
 

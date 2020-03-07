@@ -55,7 +55,7 @@
       </ul>
     </nav>
 
-    <app-package-version *ngIf="selectedVersion" [package]="currentPackage" [packageVersion]="selectedVersion"></app-package-version>
+    <app-package-version *ngIf="selectedVersion" [package]="currentPackage" (packageUpdated)="updatePackage()" [packageVersion]="selectedVersion"></app-package-version>
 
     <div *ngIf="(!selectedVersion)">
       <p *ngIf="(selectedFPCVersion)">This package is not available for FPC-version {{selectedFPCVersion.name}}.</p>
