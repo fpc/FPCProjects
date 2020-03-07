@@ -356,7 +356,7 @@ begin
       RunGit(ClonePath, 'commit changes', ['commit', '-m' + CommitMessage], CmdRes);
 
       if BranchIsNew then
-        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', 'origin', AFPCVersion.GetBranchName], CmdRes)
+        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', '--set-upstream', 'origin', AFPCVersion.GetBranchName], CmdRes)
       else
         RunGit(ClonePath, 'push changes', ['push'], Result);
       end
@@ -364,12 +364,13 @@ begin
       begin
       if BranchIsNew then
         begin
-        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', 'origin', AFPCVersion.GetBranchName], CmdRes)
+        RunGit(ClonePath, 'push branch ' + AFPCVersion.GetBranchName, ['push', '--set-upstream', 'origin', AFPCVersion.GetBranchName], CmdRes)
         end
       else
         raise Exception.Create('This archive does not contain any changes compared to the version within this repository');
       end;
 
+    RunGit(ClonePath, 'fetch notes', ['fetch','origin','refs/notes/*:refs/notes/*'], CmdRes);
     RunGit(ClonePath, 'Add the version as a note to the commit', ['notes','add','-m'+PackageVersionString], CmdRes);
     RunGit(ClonePath, 'push notes', ['push', 'origin', 'refs/notes/*'], CmdRes);
 
