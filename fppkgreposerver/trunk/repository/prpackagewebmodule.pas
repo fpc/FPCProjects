@@ -591,8 +591,8 @@ function TprPackageWM.ObtainGITLogForPackage(APackageName, Branch: string): Tfpr
 var
   Collection: TfprPackageRepoLogCollection;
   RepoPath, CmdRes: String;
-  LogLines, LogItems: TStringArray;
-  i: Integer;
+  LogLines, LogItems, Tags: TStringArray;
+  i, j: Integer;
   RepoLogItem: TfprPackageRepoLog;
   TagsString: String;
 begin
@@ -610,11 +610,16 @@ begin
       RepoLogItem.AuthorDate := ScanDateTime('yyyy-mm-dd''T''hh:nn:ss', LogItems[1]);
       RepoLogItem.Description := LogItems[2];
       // LogItems[3] looks like: "tag: initial, FPCtrunk"
-      TagsString := Copy(LogItems[3], 6);
-      TagsString := StringReplace(TagsString, ', '+Branch, '', []);
-      TagsString := StringReplace(TagsString, Branch, '', []);
-
+      TagsString := '';
+      Tags := LogItems[3].Split(',');
+      for j := 0 to High(Tags) do
+        begin
+        if Copy(Trim(Tags[j]), 1, 4) = 'tag:' then
+          TagsString := TagsString + ', ' + Copy(Trim(Tags[j]),6);
+        end;
+      TagsString := Copy(TagsString, 3);
       RepoLogItem.Tags := TagsString;
+
       RepoLogItem.Description := LogItems[2];
       RepoLogItem.Version := Trim(LogItems[4]);
       end;
