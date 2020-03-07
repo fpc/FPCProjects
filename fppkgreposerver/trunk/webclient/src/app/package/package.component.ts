@@ -51,7 +51,7 @@ export class PackageComponent implements OnInit {
   showUploadSourceDialog() {
     const modalRef = this._modalService.open(UploadPackageComponent);
     modalRef.componentInstance.package = this.currentPackage;
-    modalRef.componentInstance.packageSourceUploadedEvent.subscribe(event => this.packageUpdated.emit());
+    modalRef.componentInstance.packageSourceUploadedEvent.subscribe(event => this.updatePackage());
 
     this._packageService.getPackage(this.currentPackage.name)
       .subscribe(fpcPackage => this.currentPackage = fpcPackage);
@@ -70,17 +70,17 @@ export class PackageComponent implements OnInit {
 
   approvePackage() {
     this._packageService.approvePackage(this.currentPackage.name)
-      .subscribe(fpcPackage => this.packageUpdated.emit());
+      .subscribe(fpcPackage => this.updatePackage());
   }
 
   patchPackageCategory() {
     this._packageService.patchPackageCategory(this.currentPackage)
-      .subscribe(fpcPackage => this.packageUpdated.emit());
+      .subscribe(fpcPackage => this.updatePackage());
   }
 
   patchSupportCategory() {
     this._packageService.patchSupportCategory(this.currentPackage)
-      .subscribe(fpcPackage => this.packageUpdated.emit());
+      .subscribe(fpcPackage => this.updatePackage());
   }
 
   selectVersion(versionTag) {

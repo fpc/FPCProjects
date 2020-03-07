@@ -16,8 +16,17 @@ import { CurrentFpcversionService } from '../current-fpcversion.service';
 })
 export class PackageCommitListComponent implements OnInit {
 
-  @Input() packageVersion: any = null;
-  @Input() package: Package = null;
+  public currentPackage: Package = null;
+  @Input() set package(selpackage: Package) {
+    this.currentPackage = selpackage;
+    this.currentFpcversionService.getCurrentVersion()
+      .subscribe(version => {
+        this.fpcversion = version;
+        this.packageLog = [];
+        this._repositoryService.getPackageRepoLog(this.currentPackage.name, version)
+        .subscribe(packageLog => this.packageLog = packageLog);
+      });
+  };
   @Input() mayEditPackage: boolean = false;
   @Output() packageUpdated = new EventEmitter();
 
@@ -34,23 +43,16 @@ export class PackageCommitListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.currentFpcversionService.getCurrentVersion()
-      .subscribe(version => {
-        this.fpcversion = version;
-        this.packageLog = [];
-        this._repositoryService.getPackageRepoLog(this.package.name, version)
-        .subscribe(packageLog => this.packageLog = packageLog);
-  });
   }
 
   requestBuild(tag) {
-    this._buildManagerService.startBuildTask(this.package.name, tag, this.fpcversion.name)
+    this._buildManagerService.startBuildTask(this.currentPackage.name, tag, this.fpcversion.name)
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
   }
 
   showTagDialog() {
     const modalRef = this._modalService.open(TagPackageComponent);
-    modalRef.componentInstance.package = this.package;
+    modalRef.componentInstance.package = this.currentPackage;
 
     modalRef.result.then(modalResult => {
       if (modalResult == 'tagged') {
