@@ -48,6 +48,8 @@ spec:
           value: buildagent-service
         - name: Buildagent_trunk_HOST
           value: buildagent-service
+        - name: Buildagent_320_HOST
+          value: buildagent-service
         - name: Buildmanager_HOST
           value: localhost
         - name: HOST
@@ -208,6 +210,20 @@ spec:
           value: /home/locuser/repo/prod
         - name: Repository_304-Production__StorageFile
           value: /home/locuser/data/packages-304-production.json
+
+        - name: Repository_320-Testing__BaseURL
+          value: http://fpc.cnoc.nl/repo/testing/
+        - name: Repository_320-Testing__path
+          value: /home/locuser/repo/testing
+        - name: Repository_320-Testing__StorageFile
+          value: /home/locuser/data/packages-320-testing.json
+
+        - name: Repository_320-Production__BaseURL
+          value: http://fpc.cnoc.nl/repo/prod/
+        - name: Repository_320-Production__path
+          value: /home/locuser/repo/prod
+        - name: Repository_320-Production__StorageFile
+          value: /home/locuser/data/packages-320-production.json
 
         - name: Repository_fixes32-Testing__BaseURL
           value: http://fpc.cnoc.nl/repo/testing/

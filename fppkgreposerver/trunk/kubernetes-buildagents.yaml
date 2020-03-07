@@ -10,6 +10,9 @@ spec:
   - name: v304
     port: 9090
     protocol: TCP
+  - name: v320
+    port: 9393
+    protocol: TCP
   selector:
     app: buildagents
 ---
@@ -117,6 +120,49 @@ spec:
           value: https://fpc.cnoc.nl/buildagent304
         - name:  Agent__FPCVersion
           value: 3.0.4
+        - name: Log_file__Format
+          value: console
+        - name: Log_file__Level
+          value: Trace
+        - name: HTTP__AllowCorsOrigin
+          value: https://fpc.cnoc.nl
+        - name: BuildFiles__Location
+          value: /home/locuser/buildfiles
+        - name: BuildFiles__URL
+          value: http://fpc.cnoc.nl/buildfiles/
+        image: quay.io/loesje/buildagent
+        volumeMounts:
+        - name: buildfiles
+          mountPath: /home/locuser/buildfiles
+
+      - name: buildagent-320
+        env:
+        - name: HTTP__Port
+          value: "9393"
+        - name: TestEnv_x86_64_linux_3.2.0__FPCSourcePath
+          value: /home/locuser/svn/fpc
+        - name: TestEnv_x86_64_linux_3.2.0__PristineEnvironmentPath
+          value: /home/locuser/buildenv/pristine/x86_64-linux-3_2_0/
+        - name: TestEnv_x86_64_linux_3.2.0__BuildPath
+          value: /home/locuser/buildenv/build/
+        - name: TestEnv_x86_64_linux_3.2.0__StartCompiler
+          value: ppcx64_3.0.2
+        - name: TestEnv_x86_64_linux_3.2.0__FppkgCfgTemplate
+          value: /home/locuser/templates/fppkg.cfg.template
+        - name: TestEnv_x86_64_linux_3.2.0__RemoteMirrors
+          value: http://fpc.cnoc.nl/repo/testing/mirrors.xml
+        - name: TestEnv_x86_64_linux_3.2.0__FPCSVNUrl
+          value: https://svn.freepascal.org/svn/fpc/tags/release_3_2_0_rc1
+        - name: OIDC__OpenIDProviderURL
+          value: https://fpc.cnoc.nl/identityserver
+        - name: Connections__BuildManagerURL
+          value: https://fppkg/buildmanager
+        - name: Agent__Name
+          value: Default
+        - name: Agent__URL
+          value: https://fpc.cnoc.nl/buildagent320
+        - name:  Agent__FPCVersion
+          value: 3.2.0
         - name: Log_file__Format
           value: console
         - name: Log_file__Level
