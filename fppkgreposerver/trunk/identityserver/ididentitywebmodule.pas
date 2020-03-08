@@ -135,7 +135,7 @@ begin
       Location := Trim(HTTPClient.ResponseHeaders.Values['Location']);
       if StartsText('https://bugs.freepascal.org/login_cookie_test.php', Location) then
         begin
-        FailureMessage := ''
+        FailureMessage := '';
         Subject := 'M_'+AUserName;
         end
       else if StartsText('https://bugs.freepascal.org/login_page.php', Location) then
