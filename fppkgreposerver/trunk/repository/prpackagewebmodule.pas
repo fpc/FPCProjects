@@ -47,7 +47,7 @@ type
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
     function CheckIfGitBranchExists(const curdir, BranchName: string): Boolean;
     function CheckIfGitHasUnstagedChanges(const curdir: string): Boolean;
-    function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag: string = ''): string;
+    function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag: string = ''; Hash: string = ''): string;
     procedure DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
     procedure CloneGITPackage(APackageName, TmpPath: string);
     function ObtainGITLogForPackage(APackageName, Branch: string): TfprPackageRepoLogCollection;
@@ -116,9 +116,11 @@ begin
       if TagMessage = '' then
         raise Exception.Create('Missing message');
 
+      RevHash := ARequest.QueryFields.Values['hash'];
+
       FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
 
-      PackageTag := TagPackage(PackageName, TagMessage, FPCVersion);
+      PackageTag := TagPackage(PackageName, TagMessage, FPCVersion, '', RevHash);
 
       AResponse.Content := '{"tag": "'+PackageTag+'"}';
       AResponse.Code := 200;
@@ -429,7 +431,7 @@ begin
 end;
 
 function TprPackageWM.TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion;
-  GITTag: string): string;
+  GITTag: string; Hash: string = ''): string;
 var
   TmpPath: string;
   ClonePath: string;
@@ -447,7 +449,17 @@ begin
   ForceDirectories(TmpPath);
   try
     CloneGITPackage(PackageName, TmpPath);
-    RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', FPCVersion.GetBranchName], CmdRes);
+
+    if Hash <> '' then
+      begin
+      RunGit(ClonePath, 'check if branch ' + FPCVersion.GetBranchName + ' + contains commit ' + Hash, ['branch', '-r', '--contains', Hash], CmdRes);
+      if Trim(CmdRes) <> 'origin/' + FPCVersion.GetBranchName then
+        raise EHTTPServer.CreateFmtHelp('The given commit does not match with the FPC-version [%s] ([%s] branch)', [FPCVersion.Name, FPCVersion.GetBranchName], 400);
+
+      RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', Hash], CmdRes);
+      end
+    else
+      RunGit(ClonePath, 'switch to branch ' + FPCVersion.Name, ['checkout', FPCVersion.GetBranchName], CmdRes);
 
     Package := LoadManifestFromFile(ConcatPaths([ClonePath, 'manifest.xml']));
     try
