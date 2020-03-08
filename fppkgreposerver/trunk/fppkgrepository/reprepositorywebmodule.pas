@@ -46,7 +46,7 @@ type
     function RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository; AccessToken: string): TJSONData;
   protected
     procedure RebuildPackage(APackage: TrepPackage; AFPCVersion: string; AManifest: TXMLDocument; APackagesNode: TDOMElement;
-      ARepositoryURL, ABuildAgentURL, ARepoTempPath: string; AccessToken: string);
+      ARepositoryURL, ABuildAgentURL, ARepoTempPath: string; AccessToken: string; ExportCategoryAndSupport: Boolean);
     function DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData; override;
     function HandleRepositoryRequest(const FPCVersionStr, RepName, ExtraParam, AccessToken: string): TJSONData;
     procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
@@ -188,7 +188,7 @@ begin
           begin
           Package := MasterRepository.PackageList.Items[i];
           if not Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
-            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken)
+            RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken, ARepository.ExportCategoryAndSupport)
           end;
         end;
 
@@ -197,7 +197,7 @@ begin
         begin
         Package := ARepository.PackageList.Items[i];
 
-        RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken);
+        RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken, ARepository.ExportCategoryAndSupport);
         end;
 
       TfprLog.Log('Create the manifest (packages.xml)');
@@ -268,7 +268,7 @@ end;
 
 procedure TrepRepositoryHander.RebuildPackage(APackage: TrepPackage; AFPCVersion: string;
   AManifest: TXMLDocument; APackagesNode: TDOMElement; ARepositoryURL, ABuildAgentURL,
-  ARepoTempPath: string; AccessToken: string);
+  ARepoTempPath: string; AccessToken: string; ExportCategoryAndSupport: Boolean);
 var
   HTTPClient: TFPHTTPClient;
   BytesStream: TBytesStream;
@@ -351,20 +351,28 @@ begin
             PackageNode := PackagePackagesNode.ChildNodes[0];
             PackageNode := PackageNode.CloneNode(True, AManifest);
 
-            PMPackage := TfprStackClientSingleton.Instance.specialize Call<TfprPackage>('PMPackage', '{"name": "package", "method": "GET", "package":"' + APackage.Name + '"}');
-            try
-              NodeElement := PackageNode.OwnerDocument.CreateElement('category');
-              NodeElement.TextContent := PMPackage.Category;
-              PackageNode.AppendChild(NodeElement);
+            if ExportCategoryAndSupport then
+              begin
+              PMPackage := TfprStackClientSingleton.Instance.specialize Call<TfprPackage>('PMPackage', '{"name": "package", "method": "GET", "package":"' + APackage.Name + '"}');
+              try
+                if PMPackage.Category <> '' then
+                  begin
+                  NodeElement := PackageNode.OwnerDocument.CreateElement('category');
+                  NodeElement.TextContent := PMPackage.Category;
+                  PackageNode.AppendChild(NodeElement);
+                  end;
 
-              NodeElement := PackageNode.OwnerDocument.CreateElement('support');
-              NodeElement.TextContent := PMPackage.Support;
-              PackageNode.AppendChild(NodeElement);
-            finally
-              PMPackage.Free;
-            end;
+                if PMPackage.Support <> '' then
+                  begin
+                  NodeElement := PackageNode.OwnerDocument.CreateElement('support');
+                  NodeElement.TextContent := PMPackage.Support;
+                  PackageNode.AppendChild(NodeElement);
+                  end;
+              finally
+                PMPackage.Free;
+              end;
+              end;
             APackagesNode.AppendChild(PackageNode);
-
           finally
             PackageManifest.Free;
           end;

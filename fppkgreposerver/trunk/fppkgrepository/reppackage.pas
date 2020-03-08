@@ -47,6 +47,7 @@ type
     FPackageList: TrepPackageList;
     FPath: string;
     FStorageFile: string;
+    FExportCategoryAndSupport: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -59,6 +60,9 @@ type
     property Contact: string read FContact write FContact;
     property FPCVersion: string read FFPCVersion write FFPCVersion;
     property StorageFile: string read FStorageFile write FStorageFile;
+    // Older versions of fppkg (3.2.0-rc1 and below) choke on repositories with
+    // category, support of keywords elements
+    property ExportCategoryAndSupport: Boolean read FExportCategoryAndSupport write FExportCategoryAndSupport;
   published
     property Name: string read FName write FName;
     property NeedAdminRights: Boolean read FNeedAdminRights write FNeedAdminRights;
@@ -197,6 +201,7 @@ begin
 
     Repo.MasterRepositoryName := Settings.GetSettingAsString('MasterRepository-'+SettingTemplate.Values[i]);
     Repo.NeedAdminRights := Settings.GetSettingAsBoolean('NeedAdminRights-'+SettingTemplate.Values[i]);
+    Repo.ExportCategoryAndSupport := Settings.GetSettingAsBoolean('ExportCategoryAndSupport-'+SettingTemplate.Values[i]);
     Repo.Path := Settings.GetSettingAsString('Path-'+SettingTemplate.Values[i]);
     Repo.BaseURL := Settings.GetSettingAsString('BaseURL-'+SettingTemplate.Values[i]);
     Repo.Contact := Settings.GetSettingAsString('Contact-'+SettingTemplate.Values[i]);

@@ -52,6 +52,7 @@ begin
   GlobalSettings.AddSettingTemplate('Repository_', 'BaseURL', 'BaseURL-', '');
   GlobalSettings.AddSettingTemplate('Repository_', 'Contact', 'Contact-', '');
   GlobalSettings.AddSettingTemplate('Repository_', 'StorageFile', 'StorageFile-', '');
+  GlobalSettings.AddSettingTemplate('Repository_', 'ExportCategoryAndSupport', 'ExportCategoryAndSupport-', '');
 
   AddLoggingSettings;
 
