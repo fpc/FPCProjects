@@ -33,37 +33,62 @@
       </app-editable-component>
     </p>
 
-    <nav *ngIf="selectedVersion" aria-label="Package version navigation">
-      <ul class="pagination">
-        <li class="page-item" [ngClass]="{'disabled':!previousTag}">
-          <a *ngIf="previousTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{previousTag}}" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-          <span *ngIf="!previousTag" class="page-link" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </span>
-        </li>
-        <li *ngFor="let version of packageVersionList" [ngClass]="{'active':version.tag==selectedVersion.tag}" class="page-item"><a routerLink="/package/{{currentPackage.name}}/{{version.tag}}" class="page-link">v{{version.version | version}}</a></li>
-        <li class="page-item" [ngClass]="{'disabled':!nextTag}">
-          <a *ngIf="nextTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{nextTag}}" aria-label="Previous">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-          <span *ngIf="!nextTag" class="page-link" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </span>
-        </li>
-      </ul>
-    </nav>
+    <div class="accordion" id="packageInfo">
+      <div class="card">
+        <div class="card-header" id="versionInfoHeader">
+          <h2 class="mb-0">
+            <button (click)="isVersionCollapsed = !isVersionCollapsed" class="btn btn-link" type="button" [attr.aria-expanded]="!isVersionCollapsed" aria-controls="versionInfoCollapse">
+              Version information
+            </button>
+          </h2>
+        </div>
+        <div id="versionInfoCollapse" [ngbCollapse]="isVersionCollapsed" class="collapse show" aria-labelledby="versionInfoHeader" data-parent="#packageInfo">
+          <div class="card-body">
+            <nav *ngIf="selectedVersion" aria-label="Package version navigation">
+              <ul class="pagination">
+                <li class="page-item" [ngClass]="{'disabled':!previousTag}">
+                  <a *ngIf="previousTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{previousTag}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                  <span *ngIf="!previousTag" class="page-link" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </span>
+                </li>
+                <li *ngFor="let version of packageVersionList" [ngClass]="{'active':version.tag==selectedVersion.tag}" class="page-item"><a routerLink="/package/{{currentPackage.name}}/{{version.tag}}" class="page-link">v{{version.version | version}}</a></li>
+                <li class="page-item" [ngClass]="{'disabled':!nextTag}">
+                  <a *ngIf="nextTag" class="page-link" routerLink="/package/{{currentPackage.name}}/{{nextTag}}" aria-label="Previous">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                  <span *ngIf="!nextTag" class="page-link" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </span>
+                </li>
+              </ul>
+            </nav>
 
-    <app-package-version *ngIf="selectedVersion" [package]="currentPackage" (packageUpdated)="updatePackage()" [packageVersion]="selectedVersion"></app-package-version>
+            <app-package-version *ngIf="selectedVersion" [package]="currentPackage" (packageUpdated)="updatePackage()" [packageVersion]="selectedVersion"></app-package-version>
 
-    <div *ngIf="(!selectedVersion)">
-      <p *ngIf="(selectedFPCVersion)">This package is not available for FPC-version {{selectedFPCVersion.name}}.</p>
+            <div *ngIf="(!selectedVersion)">
+              <p *ngIf="(selectedFPCVersion)">This package is not available for FPC-version {{selectedFPCVersion.name}}.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" id="uploadInfoHeader">
+          <h2 class="mb-0">
+            <button (click)="isUploadsCollapsed = !isUploadsCollapsed" class="btn btn-link" type="button" [attr.aria-expanded]="!isUploadsCollapsed" aria-controls="uploadInfoCollapse">
+              Upload history
+            </button>
+          </h2>
+        </div>
+        <div id="uploadInfoCollapse" [ngbCollapse]="isUploadsCollapsed" class="collapse show" aria-labelledby="uploadInfoHeader" data-parent="#packageInfo">
+          <div class="card-body">
+            <app-package-commit-list [mayEditPackage]="mayEditPackage" (packageUpdated)="updatePackage()" [package]="currentPackage"></app-package-commit-list>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <p></p>
-    <app-package-commit-list [mayEditPackage]="mayEditPackage" (packageUpdated)="updatePackage()" [package]="currentPackage"></app-package-commit-list>
-
-    <p class="card-text"></p>
   </div>
 </div>

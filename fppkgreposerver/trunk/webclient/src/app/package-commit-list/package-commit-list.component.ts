@@ -30,7 +30,6 @@ export class PackageCommitListComponent implements OnInit {
   @Input() mayEditPackage: boolean = false;
   @Output() packageUpdated = new EventEmitter();
 
-  public isCollapsed = true;
   public packageLog : PackageRepoLog[];
   fpcversion: FPCVersion;
 

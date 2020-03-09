@@ -1,24 +1,9 @@
 <app-tag-package id="tagPackageModal" [package]="currentPackage" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></app-tag-package>
-<div class="accordion" id="commitMessage">
-  <div class="card">
-    <div class="card-header" id="commitMessageHeader">
-      <h2 class="mb-0">
-        <button (click)="isCollapsed = !isCollapsed" class="btn btn-link" type="button" [attr.aria-expanded]="!isCollapsed" aria-controls="commitMessageCollapse">
-          Commit history
-        </button>
-      </h2>
-    </div>
-    <div id="commitMessageCollapse" [ngbCollapse]="isCollapsed" class="collapse show" aria-labelledby="commitMessageHeader" data-parent="#commitMessage">
-      <div class="card-body">
-        <ul class="list-group">
-          <li class="list-group-item" *ngFor="let logLine of packageLog">
-            {{logLine.authordate|date:"M/d/yy HH:mm:ss"}}: {{logLine.description}}
-            <span class="badge badge-primary" *ngIf="((logLine.tags) && (logLine.tags!='initial'))">{{logLine.version}} Release</span>
-            <button class="btn btn-primary float-right" (click)="requestBuild(logLine.hash)">Request build</button>
-            <button *ngIf="mayEditPackage" class="btn btn-primary float-right" (click)="showTagDialog(fpcversion)">Add tag</button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+<ul class="list-group">
+  <li class="list-group-item" *ngFor="let logLine of packageLog">
+    {{logLine.authordate|date:"M/d/yy HH:mm:ss"}}: {{logLine.description}}
+    <span class="badge badge-primary" *ngIf="((logLine.tags) && (logLine.tags!='initial'))">{{logLine.version}} Release</span>
+    <button class="btn btn-primary float-right" (click)="requestBuild(logLine.hash)">Request build</button>
+    <button *ngIf="mayEditPackage" class="btn btn-primary float-right" (click)="showTagDialog(fpcversion)">Add tag</button>
+  </li>
+</ul>

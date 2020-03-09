@@ -27,6 +27,7 @@ export class PackageComponent implements OnInit {
   nextTag: string = null;
   categoryList: Category[];
   public currentPackage: Package = null;
+  public isUploadsCollapsed = true;
   private sub: string = null;
 
   @Input() set package(selpackage: Package) {
@@ -37,6 +38,7 @@ export class PackageComponent implements OnInit {
   @Output() packageUpdated = new EventEmitter();
   mayEditPackage: boolean;
   isAdmin: boolean;
+
 
 
   constructor(
