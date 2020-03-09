@@ -8,7 +8,7 @@
     "start_checksession": true,
     "silent_renew": true,
     "_silent_renew_url": "https://localhost:44311/silent-renew.html",
-    "post_login_route": "/home",
+    "post_login_route": "/",
     "forbidden_route": "http://localhost:4200/forbidden",
     "unauthorized_route": "http://localhost:4200/unauthorized/unauthorized",
     "log_console_warning_active": true,
