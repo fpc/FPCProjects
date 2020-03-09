@@ -16,6 +16,8 @@ import { CurrentFpcversionService } from '../current-fpcversion.service';
 })
 export class PackageCommitListComponent implements OnInit {
 
+  highestTaggedVersion: string = '';
+
   public currentPackage: Package = null;
   @Input() set package(selpackage: Package) {
     this.currentPackage = selpackage;
@@ -23,14 +25,24 @@ export class PackageCommitListComponent implements OnInit {
       .subscribe(version => {
         this.fpcversion = version;
         this.packageLog = [];
+        var tagNotSet = true;
         this._repositoryService.getPackageRepoLog(this.currentPackage.name, version)
-        .subscribe(packageLog => this.packageLog = packageLog);
+        .subscribe(packageLog => this.packageLog = packageLog.map(logLine => {
+          if ((logLine.tags) && (logLine.tags != 'initial')) {
+            tagNotSet = false;
+            if (!this.highestTaggedVersion) {
+              this.highestTaggedVersion = logLine.version;
+            }
+          }
+          logLine.allowTag = tagNotSet;
+          return logLine;
+        }));
       });
   };
   @Input() mayEditPackage: boolean = false;
   @Output() packageUpdated = new EventEmitter();
 
-  public packageLog : PackageRepoLog[];
+  public packageLog: PackageRepoLog[];
   fpcversion: FPCVersion;
 
   constructor(

@@ -4,4 +4,5 @@ export class PackageRepoLog {
   description: string;
   version: string;
   tags: string;
+  allowTag: boolean;
 }
