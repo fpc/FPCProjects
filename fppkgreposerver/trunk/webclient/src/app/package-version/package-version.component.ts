@@ -42,6 +42,7 @@ export class PackageVersionComponent implements OnInit {
       });
     }
   };
+  @Input() mayEditPackage: boolean = false;
   @Output() packageUpdated = new EventEmitter();
 
   repositoryList : Repository[];
