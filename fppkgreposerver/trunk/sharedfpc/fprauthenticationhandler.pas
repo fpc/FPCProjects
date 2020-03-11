@@ -50,9 +50,13 @@ end;
 function TfprAuthenticationHandler.GetUserRole(const AccessToken: string): string;
 var
   JSonData: TJSONData;
+  Message: string;
 begin
   if AccessToken='' then
     raise EJsonWebException.CreateHelp('Authentication token is missing', 403);
+
+  if not VerifyAccessToken(AccessToken, Message) then
+    raise EJsonWebException.CreateFmtHelp('Authentication token not valid: [%s]', [Message], 403);
 
   if FOIDCProvider.UserinfoEndpoint='' then
     FOIDCProvider.RetrieveEndpoints;
