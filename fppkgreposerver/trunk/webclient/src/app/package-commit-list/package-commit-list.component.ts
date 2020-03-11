@@ -16,9 +16,8 @@ import { CurrentFpcversionService } from '../current-fpcversion.service';
 })
 export class PackageCommitListComponent implements OnInit {
 
-  highestTaggedVersion: string = '';
-
   public currentPackage: Package = null;
+  public latestUploadIsTaggeable: boolean = false;
   @Input() set package(selpackage: Package) {
     this.currentPackage = selpackage;
     this.currentFpcversionService.getCurrentVersion()
@@ -26,18 +25,29 @@ export class PackageCommitListComponent implements OnInit {
         this.fpcversion = version;
         this.packageLog = [];
         var tagNotSet = true;
+        var highestTaggedVersion = null;
         if (version) {
           this._repositoryService.getPackageRepoLog(this.currentPackage.name, version)
-          .subscribe(packageLog => this.packageLog = packageLog.map(logLine => {
-            if ((logLine.tags) && (logLine.tags != 'initial')) {
-              tagNotSet = false;
-              if (!this.highestTaggedVersion) {
-                this.highestTaggedVersion = logLine.version;
-              }
+          .subscribe(packageLog => {
+            this.packageLog = packageLog
+              .map(logLine => {
+                if ((logLine.tags) && (logLine.tags != 'initial')) {
+                  tagNotSet = false;
+                  if (!highestTaggedVersion) {
+                    highestTaggedVersion = logLine.version;
+                  }
+                }
+                logLine.allowTag = tagNotSet;
+                return logLine;
+              }).map(logLine => {
+                if (logLine.version == highestTaggedVersion) {
+                  logLine.allowTag = false;
+                };
+                return logLine;
+              });
+              this.latestUploadIsTaggeable = (((packageLog.length) > 0) && (packageLog[0].allowTag));
             }
-            logLine.allowTag = tagNotSet;
-            return logLine;
-          }));
+          );
         }
       });
   };
