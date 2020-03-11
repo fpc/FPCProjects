@@ -30,6 +30,7 @@ uses
   fprCopyTree,
   fprErrorHandling,
   fprGCollection,
+  fprAuthenticationHandler,
   cnocStackJSONHandlerThread,
   repPackage,
   cnocStackHandlerThread,
@@ -150,6 +151,9 @@ var
   VersionCollection: TfprFPCVersionCollection;
 begin
   Result := nil;
+  if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin' then
+    raise EHTTPClient.CreateHelp('Only admins can rebuild repositories.', 403);
+
   TfprLog.Log(Format('Rebuild repository [%s] for fpc-version [%s]', [ARepository.Name, AFPCVersion.FPCVersion]));
   if Arepository.Path='' then
     raise EHTTPClient.CreateFmtHelp('Path of repository %s is not defined.', [ARepository.Name], 500);
