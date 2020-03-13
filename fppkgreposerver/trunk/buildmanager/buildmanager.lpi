@@ -19,17 +19,6 @@
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <CommandLineParams Value="-e"/>
-      </local>
-      <environment>
-        <UserOverrides Count="4">
-          <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:4200/identityserver"/>
-          <Variable1 Name="Connections__PackageManagerURL" Value="http://localhost:4200/packagemanager"/>
-          <Variable2 Name="Connections__RepositoryURL" Value="http://localhost:4200/repository"/>
-          <Variable3 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
-        </UserOverrides>
-      </environment>
       <FormatVersion Value="2"/>
       <Modes Count="2">
         <Mode0 Name="default"/>
