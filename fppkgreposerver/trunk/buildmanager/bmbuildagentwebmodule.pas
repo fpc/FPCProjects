@@ -150,7 +150,7 @@ begin
     HostResolver := THostResolver.Create(nil);
     try
       if not HostResolver.NameLookup(s) then
-        raise Exception.CreateFmt('Could not find hostname %s', [s]);
+        raise Exception.CreateFmt('Could not find the hostname for HostNameToEnableMapping [%s]', [s]);
       for i := 0 to HostResolver.AddressCount -1 do
         begin
         s := HostAddrToStr(HostResolver.Addresses[i]);

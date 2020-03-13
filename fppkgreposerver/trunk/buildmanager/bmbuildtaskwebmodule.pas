@@ -327,7 +327,14 @@ begin
     HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
     BytesStream := TBytesStream.Create;
     try
-      HTTPClient.Get(URL, BytesStream);
+      try
+        HTTPClient.HTTPMethod('GET', URL, BytesStream, [200, 500]);
+      except
+        on E: Exception do
+          raise EHTTPServer.CreateFmtHelp('Failed to download the package from the repository: %s', [E.Message], 500);
+      end;
+      if HTTPClient.ResponseStatusCode=500 then
+        raise EHTTPServer.CreateFmtHelp('Failed to download the package from the repository: %s', [StringOf(BytesStream.Bytes)], 500);
       SourceZIP := BytesStream.Bytes;
       SetLength(SourceZIP, BytesStream.Size);
     finally
