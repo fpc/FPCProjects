@@ -22,6 +22,7 @@ uses
   DCSHTTPRestServer,
   fpWeb,
   fprErrorHandling,
+  fprSerializer,
   fprLog,
   fprJSONRTTI;
 
@@ -64,7 +65,9 @@ type
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
     procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
+    class function ObtainJSONRestRequestStream(AnURL, Description: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TBytesStream;
     class function ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+    generic class function ObtainCollectionItemRestRequest<T: TCollectionItem>(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): T;
   end;
 
 implementation
@@ -331,38 +334,69 @@ begin
     end;
 end;
 
-class function TfprWebModule.ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+class function TfprWebModule.ObtainJSONRestRequestStream(AnURL, Description: string; AccessToken: String; Method: string; Content: TStream): TBytesStream;
 var
   HTTPClient: TFPHTTPClient;
-  MemStream: TMemoryStream;
-  JSONParser: TJSONParser;
+  MemStream: TBytesStream;
+  JSONData: TJSONData;
   s: string;
 begin
   HTTPClient := TFPHTTPClient.Create(nil);
   try
     if AccessToken <> '' then
       HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
-    MemStream := TMemoryStream.Create;
+    MemStream := TBytesStream.Create;
     try
       HTTPClient.RequestBody := Content;
-      HTTPClient.HTTPMethod(Method, AnURL, MemStream, [200]);
-      MemStream.Seek(0, soBeginning);
+      HTTPClient.HTTPMethod(Method, AnURL, MemStream, [200, 500]);
 
-      SetLength(s, MemStream.Size);
-      MemStream.Read(s[1], MemStream.Size);
-      MemStream.Seek(0, soBeginning);
+      if HTTPClient.ResponseStatusCode=500 then
+        begin
+        // Extract the error from the response. When it is a JSON-response,
+        // try to obtain the error.message property. If that fails, use the
+        // complete response.
+        s := StringOf(MemStream.Bytes);
+        try
+          JSONData := GetJSON(s);
+        except
+          // Eat exception. The response is not parseable.
+          JSONData := nil;
+        end;
+        if Assigned(JSONData) and (JSONData is TJSONObject) then
+          begin
+          JSONData := TJSONObject(JSONData).Get('error', TJSONObject(nil));
+          if Assigned(JSONData) then
+            s := TJSONObject(JSONData).Get('msg', '');
+          end;
+        raise EJsonWebException.CreateFmtHelp('%s: %s', [Description, s], 500);
+        end;
 
-      JSONParser := TJSONParser.Create(MemStream, []);
-      try
-        Result := JSONParser.Parse;
-      finally
-        JSONParser.Free;
-      end;
+      MemStream.Seek(0, soBeginning);
+      Result := MemStream;
+      MemStream := nil;
     finally
       MemStream.Free;
     end;
   finally
     HTTPClient.Free;
+  end;
+end;
+
+class function TfprWebModule.ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+var
+  MemStream: TBytesStream;
+  JSONParser: TJSONParser;
+begin
+  MemStream := ObtainJSONRestRequestStream(AnURL, Format('Received an 500-error code from [%s]', [AnURL]), AccessToken, Method, Content);
+  try
+    JSONParser := TJSONParser.Create(MemStream, []);
+    try
+      Result := JSONParser.Parse;
+    finally
+      JSONParser.Free;
+    end;
+  finally
+    MemStream.Free;
   end;
 end;
 
@@ -525,6 +559,26 @@ procedure TfprWebModule.DoAfterResponse(AResponse: TResponse);
 begin
   inherited DoAfterResponse(AResponse);
   TfprLog.LogTrace('Respond with [' + IntToStr(AResponse.Code) + ':' + AResponse.CodeText + ']', AResponse.Content);
+end;
+
+generic class function TfprWebModule.ObtainCollectionItemRestRequest<T>(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): T;
+var
+  JSONData: TJSONObject;
+  Obj: T;
+begin
+  JSONData := ObtainJSONRestRequest(AnURL, AccessToken, Method, Content) as TJSONObject;
+  try
+    Obj := T.Create(nil);
+    try
+      TfprSerializerSingleton.Instance.JSONToObject(JSONData, Obj);
+      Result := Obj;
+      Obj := nil;
+    finally
+      Obj.Free;
+    end;
+  finally
+    JSONData.Free;
+  end;
 end;
 
 end.
