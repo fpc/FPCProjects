@@ -11,38 +11,38 @@ uses
   fpHTTP,
   fphttpclient,
   fphttpserver,
+  httproute,
   fpWeb,
   jsonparser,
   fpjson,
   fpjsonrtti,
   dcsGlobalSettings,
+  fprWebHandler,
   fprWebModule,
   fprBuildTask,
   fprBuildAgentResponse,
+  fprErrorHandling,
   bmBuildAgentWebmodule;
 
 type
 
   { TbmBuildTaskWM }
 
-  TbmBuildTaskWM = class(TfprWebModule)
-    procedure DataModuleCreate(Sender: TObject);
-    procedure DataModuleDestroy(Sender: TObject);
-    Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  TbmBuildTaskWM = class(TfprWebHandler, IRouteInterface)
+  protected
+    function DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData; override;
   private
     FBuildTaskList: TfprBuildTaskList;
-    Procedure HandleNewBuildRequest(ARequest: TRequest; AResponse: TResponse);
+    function HandleNewBuildRequest(ARequest: TRequest; AccessToken: string; JSONContent: TJSONData): TJSONData;
     function RequestBuild(BuildAgent: TbmBuildAgent; SourceZIP: TBytes; PackageName, AccessToken: string): TfprSubBuildTask;
     function RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageName, AccessToken, TAGName,
       FPCVersion: string): TfprSubBuildTask;
     function GetSourceZip(TaskResponse: string): TBytes;
   public
+    constructor Create; override;
+    destructor Destroy; override;
     procedure SetSubBuildTask(UniqueString, AccessToken: string; Failed: Boolean; Log: string);
-
   end;
-
-var
-  bmBuildTaskWM: TbmBuildTaskWM;
 
 implementation
 
@@ -66,8 +66,6 @@ type
     constructor Create(ABuildURL, AnAccessToken, AnUniqueString: string; ARequestContent: TBytes; AWebModule: TbmBuildTaskWM);
     procedure Execute; override;
   end;
-
-{$R *.lfm}
 
 { TbmBuildTaskThread }
 
@@ -178,10 +176,11 @@ end;
 
 { TbmBuildTaskWM }
 
-procedure TbmBuildTaskWM.DataModuleCreate(Sender: TObject);
+constructor TbmBuildTaskWM.Create();
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
+  inherited;
   FBuildTaskList := TfprBuildTaskList.Create(True);
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
@@ -189,45 +188,49 @@ begin
     AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT', '', True);
 end;
 
-procedure TbmBuildTaskWM.DataModuleDestroy(Sender: TObject);
+destructor TbmBuildTaskWM.Destroy();
 begin
   FBuildTaskList.Free;
+  inherited;
 end;
 
-Procedure TbmBuildTaskWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+function TbmBuildTaskWM.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
 var
   UniqueString: string;
+  AuthorizationToken, AccessToken: string;
   BuildTask: TfprCustomBuildTask;
 begin
+  AuthorizationToken := ARequest.Authorization;
+  if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+    AccessToken := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7)
+  else
+    AccessToken := '';
+
   if ARequest.Method = 'POST' then
-    HandleNewBuildRequest(ARequest, AResponse)
+    Result := HandleNewBuildRequest(ARequest, AccessToken, JSONContent)
   else
     begin
-    UniqueString := ARequest.GetNextPathInfo;
+    UniqueString := ARequest.RouteParams['uniquestring'];
     if UniqueString <> '' then
       begin
       BuildTask := FBuildTaskList.FindByUniqueString(UniqueString);
       if Assigned(BuildTask) then
         begin
-        AResponse.Content := ObjectToJSONContentString(BuildTask);
-        AResponse.Code := 200;
+        Result := ObjectToJSON(BuildTask);
         end
       else
         begin
-        AResponse.Code := 404;
-        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        raise EHTTPServer.CreateFmtHelp('Buildtask [%s] does not exist.', [UniqueString], 404);
         end;
       end
     else
       begin
-      AResponse.Content := ObjectToJSONContentString(FBuildTaskList);
-      AResponse.Code := 200;
+      Result := ObjectToJSON(FBuildTaskList);
       end;
     end;
-  Handled := True;
 end;
 
-Procedure TbmBuildTaskWM.HandleNewBuildRequest(ARequest: TRequest; AResponse: TResponse);
+function TbmBuildTaskWM.HandleNewBuildRequest(ARequest: TRequest; AccessToken: string; JSONContent: TJSONData): TJSONData;
 var
   BuildTask: TfprBuildTask;
   PackageJSON: TJSONObject;
@@ -250,22 +253,7 @@ begin
       Raise Exception.Create('No PackageManaterURL configured');
     PackageURL := PackageURL + '/package/'+BuildTask.PackageName;
 
-    try
-      PackageJSON := ObtainJSONRestRequest(PackageURL, True) as TJSONObject;
-    Except
-      on E: Exception do
-        begin
-        if E is EHTTPClient then
-          begin
-          // Probably.... 404
-          AResponse.Code := 404;
-          AResponse.CodeText := GetStatusCode(AResponse.Code);
-          Exit;
-          end
-        else
-          Raise;
-        end;
-    end;
+    PackageJSON := TfprWebModule.ObtainJSONRestRequest(PackageURL, AccessToken) as TJSONObject;
     try
       PackageState := PackageJSON.Get('packagestate', '');
       if (PackageState<>'published') and (PackageState<>'approved') and (PackageState<>'acceptance') then
@@ -279,11 +267,11 @@ begin
       if BuildAgentList.Count = 0 then
         raise Exception.Create('There are no buildagents registered, unable to build package.');
 
-      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, FAccessToken, BuildTask.Tag, BuildTask.FPCVersion));
+      BuildTask.SubTasks.Add(RequestSourceBuild(BuildAgentList.Items[0], BuildTask.PackageName, AccessToken, BuildTask.Tag, BuildTask.FPCVersion));
 
       BuildTask.State := btsBuilding;
 
-      AResponse.Content := ObjectToJSONContentString(BuildTask);
+      Result := ObjectToJSON(BuildTask);
 
       FBuildTaskList.Add(BuildTask);
       BuildTask := nil;
@@ -334,7 +322,7 @@ begin
           raise EHTTPServer.CreateFmtHelp('Failed to download the package from the repository: %s', [E.Message], 500);
       end;
       if HTTPClient.ResponseStatusCode=500 then
-        raise EHTTPServer.CreateFmtHelp('Failed to download the package from the repository: %s', [StringOf(BytesStream.Bytes)], 500);
+        raise EJsonWebException.CreateFmtHelp('Failed to download the package from the repository: %s', [StringOf(BytesStream.Bytes)], 500);
       SourceZIP := BytesStream.Bytes;
       SetLength(SourceZIP, BytesStream.Size);
     finally
@@ -469,7 +457,5 @@ begin
     end;
 end;
 
-initialization
-  RegisterHTTPModule('buildtask', TbmBuildTaskWM);
 end.
 

@@ -7,6 +7,7 @@ uses
   classes,
   sysutils,
   fphttpapp,
+  httproute,
   opensslsockets,
   dcsGlobalSettings,
   fprErrorHandling,
@@ -19,6 +20,7 @@ var
   GlobalSettings: TDCSGlobalSettings;
   IdleHandler: TbmIdleEventsHander;
   ConfigFileName: String;
+  BuildTaskWM: TbmBuildTaskWM;
 begin
   Randomize;
 
@@ -50,17 +52,23 @@ begin
     end;
   end;
 
-
   IdleHandler := TbmIdleEventsHander.Create;
   try
+    BuildTaskWM := TbmBuildTaskWM.Create;
+    try
+      HTTPRouter.RegisterRoute('/buildtask', rmPost, BuildTaskWM);
+      HTTPRouter.RegisterRoute('/buildtask/:uniquestring', rmAll, BuildTaskWM);
+      HTTPRouter.RegisterRoute('/buildtask', rmAll, BuildTaskWM);
 
-    Application.Port:=8181;
-    Application.OnShowRequestException := @fprOnShowRequestException;
-    Application.OnAcceptIdle := @IdleHandler.HandleOnIdleEvents;
-    Application.AcceptIdleTimeout := 200;
-    Application.Initialize;
-    Application.Run;
-
+      Application.Port:=8181;
+      Application.OnShowRequestException := @fprOnShowRequestException;
+      Application.OnAcceptIdle := @IdleHandler.HandleOnIdleEvents;
+      Application.AcceptIdleTimeout := 200;
+      Application.Initialize;
+      Application.Run;
+    finally
+      BuildTaskWM.Free;
+    end;
   finally
     IdleHandler.Free;
   end;
