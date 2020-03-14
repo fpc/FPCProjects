@@ -126,8 +126,6 @@ end;
 function TrepRepositoryHander.GetFPCVersionCollection(const AccessToken: string): TfprFPCVersionCollection;
 begin
   Result := TfprFPCVersionCollection.Instance;
-  if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', AccessToken, Result) then
-    raise Exception.Create('Failed to get FPC version list');
 end;
 
 function TrepRepositoryHander.RebuildRepository(AFPCVersion: TrepFPCVersion; ARepository: TrepRepository; AccessToken: string): TJSONData;
