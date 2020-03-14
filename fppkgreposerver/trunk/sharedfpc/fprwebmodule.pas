@@ -67,6 +67,7 @@ type
     procedure AddCorsOrigin(Origin, Methods, Headers: string; Credentials: Boolean);
     class function ObtainJSONRestRequestStream(AnURL, Description: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TBytesStream;
     class function ObtainJSONRestRequest(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): TJSONData;
+    class procedure JSONRestRequest(AnURL: string; AccessToken: string; AnObject: TObject; Method: string = 'GET'; Content: TStream = nil);
     generic class function ObtainCollectionItemRestRequest<T: TCollectionItem>(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): T;
   end;
 
@@ -574,19 +575,25 @@ end;
 
 generic class function TfprWebModule.ObtainCollectionItemRestRequest<T>(AnURL: string; AccessToken: String; Method: string = 'GET'; Content: TStream = nil): T;
 var
-  JSONData: TJSONObject;
   Obj: T;
 begin
-  JSONData := ObtainJSONRestRequest(AnURL, AccessToken, Method, Content) as TJSONObject;
+  Obj := T.Create(nil);
   try
-    Obj := T.Create(nil);
-    try
-      TfprSerializerSingleton.Instance.JSONToObject(JSONData, Obj);
-      Result := Obj;
-      Obj := nil;
-    finally
-      Obj.Free;
-    end;
+    JSONRestRequest(AnUrl, AccessToken, Obj, Method, Content);
+    Result := Obj;
+    Obj := nil;
+  finally
+    Obj.Free;
+  end;
+end;
+
+class procedure TfprWebModule.JSONRestRequest(AnURL: string; AccessToken: string; AnObject: TObject; Method: string; Content: TStream);
+var
+  JSONData: TJSONData;
+begin
+  JSONData := ObtainJSONRestRequest(AnURL, AccessToken, Method, Content);
+  try
+    TfprSerializerSingleton.Instance.JSONToObject(JSONData, AnObject);
   finally
     JSONData.Free;
   end;

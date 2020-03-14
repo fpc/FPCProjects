@@ -7,6 +7,7 @@ interface
 uses
   Classes,
   SysUtils,
+  HTTPDefs,
   dcsGlobalSettings,
   fprGCollection,
   fprInterfacedCollection;
@@ -33,6 +34,7 @@ type
 
   TfprFPCVersionCollection = class(TfprGenFPCVersionCollection)
   private
+    FLoaded: Boolean;
     class var FFPCVersionCollection: TfprFPCVersionCollection;
     function GetDefaultVersion: TfprFPCVersion;
     class function GetInstance: TfprFPCVersionCollection; static;
@@ -41,6 +43,7 @@ type
     class destructor Destroy;
     class property Instance: TfprFPCVersionCollection read GetInstance;
     procedure LoadFromSettings;
+    procedure RetrieveFromPackagemanager;
     function FindVersion(AName: string): TfprFPCVersion;
     property DefaultVersion: TfprFPCVersion read GetDefaultVersion;
   end;
@@ -65,6 +68,9 @@ type
   TfprPackageRepoLogCollection = specialize TcnocGCollection<TfprPackageRepoLog>;
 
 implementation
+
+uses
+  fprWebModule;
 
 { TfprFPCVersion }
 
@@ -121,12 +127,15 @@ begin
     FPCVersion.URLPrefix := Settings.GetSettingAsString('FPCVersionURLPrefix-'+SettingTemplate.Values[i]);;
     FPCVersion.IsDefault := Settings.GetSettingAsBoolean('FPCVersionIsDefault-'+SettingTemplate.Values[i]);;
     end;
+  FLoaded := True;
 end;
 
 function TfprFPCVersionCollection.FindVersion(AName: string): TfprFPCVersion;
 var
   i: Integer;
 begin
+  if not FLoaded then
+    RetrieveFromPackagemanager();
   Result := nil;
   for i := 0 to Count -1 do
     begin
@@ -136,6 +145,13 @@ begin
       Exit;
       end;
     end;
+end;
+
+procedure TfprFPCVersionCollection.RetrieveFromPackagemanager;
+begin
+  Self.Clear;
+  TfprWebModule.JSONRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', '', Self);
+  FLoaded := true;
 end;
 
 end.
