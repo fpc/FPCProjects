@@ -19,8 +19,10 @@ uses
   cnocStackHandlerThread,
   fprErrorHandling,
   fprWebHandler,
-  fprWebModule,
   fprAuthenticationHandler,
+  fprWebModule,
+  fprSerializer,
+  fprInterfaceClasses,
   repPackage;
 
 type
@@ -33,11 +35,12 @@ type
     procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
   private
     function HandlePackageRequest(FPCVersionStr, RepName, PackageName, Method: string; const JSONContent: TJSONData; AccessToken: string): TJSONData;
+    procedure CheckIfPackageExistsAndIsEditable(APackageName, AccessToken: string);
   protected
     function HandleNewPackageRequest(ARepository: TrepRepository; AJSONContent: TJSONData;
       AccessToken: string): TJSONData;
     function HandleGetPackageRequest(APackageName: string; ARepository: TrepRepository): TJSONData;
-    function HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository): TJSONData;
+    function HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository; AccessToken: string): TJSONData;
   public
     constructor Create; override;
   end;
@@ -111,19 +114,23 @@ begin
     if Method = 'POST' then
       Result := HandleNewPackageRequest(Repository, JSONContent, AccessToken)
     else if Method = 'PUT' then
-      Result := HandleUpdatePackageRequest(PackageName, JSONContent, Repository)
+      Result := HandleUpdatePackageRequest(PackageName, JSONContent, Repository, AccessToken)
     end;
 end;
 
 function TrepPackageHander.HandleNewPackageRequest(ARepository: TrepRepository; AJSONContent: TJSONData; AccessToken: string): TJSONData;
 var
   Package: TrepPackage;
-  PackageURL: String;
+  Message: String;
 begin
   Result := nil;
   if ARepository.NeedAdminRights then
+    begin
     if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin' then
       raise EHTTPClient.CreateHelp('Only admins can add packages to this repository.', 403);
+    end
+  else if not TfprAuthenticationHandler.GetInstance.VerifyAccessToken(AccessToken, Message) then
+    raise EHTTPClient.CreateFmtHelp('Authentication validation failed: %s.', [Message], 403);
 
   Package := TrepPackage.Create(nil);
   try
@@ -139,23 +146,7 @@ begin
     if Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
       raise Exception.CreateFmt('Package %s does already exist', [Package.Name]);
 
-    PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+Package.Name;
-
-    try
-      TfprWebModule.ObtainJSONRestRequest(PackageURL, AccessToken);
-    Except
-      on E: Exception do
-        begin
-        if E is EHTTPClient then
-          begin
-          // Probably.... 404
-          raise Exception.CreateFmt('Package %s does not exist', [Package.Name]);
-          Exit;
-          end
-        else
-          Raise E;
-        end;
-    end;
+    CheckIfPackageExistsAndIsEditable(Package.Name, AccessToken);
 
     Result := ObjectToJSON( Package );
 
@@ -235,7 +226,7 @@ begin
     Result := ProcessRepository(ARepository);
 end;
 
-function TrepPackageHander.HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository): TJSONData;
+function TrepPackageHander.HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository; AccessToken: string): TJSONData;
 var
   Package, IntPackage: TrepPackage;
 begin
@@ -261,6 +252,8 @@ begin
     if Package.Tag = '' then
       raise Exception.Create('Missing package-tag');
 
+    CheckIfPackageExistsAndIsEditable(Package.Name, AccessToken);
+
     IntPackage.Tag := Package.Tag;
 
     Result := ObjectToJSON( IntPackage );
@@ -269,6 +262,36 @@ begin
   end;
   if ARepository.StorageFile <> '' then
     ARepository.SaveToFile;
+end;
+
+procedure TrepPackageHander.CheckIfPackageExistsAndIsEditable(APackageName, AccessToken: string);
+var
+  PMPackage: TfprPackage;
+  PackageURL, Message: String;
+begin
+  PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+APackageName;
+  try
+    PMPackage := TfprWebModule.specialize ObtainCollectionItemRestRequest<TfprPackage>(PackageURL, AccessToken);
+    try
+      if (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken)<>'admin') and
+        (TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken) <> PMPackage.OwnerId) then
+        raise EJsonWebException.CreateHelp('You are not allowed to add this package to the repository', 403);
+    finally
+      PMPackage.Free;
+    end;
+  Except
+    on E: Exception do
+      begin
+      if E is EHTTPClient then
+        begin
+        // Probably.... 404
+        raise Exception.CreateFmt('Package %s does not exist', [APackageName]);
+        Exit;
+        end
+      else
+        Raise;
+      end;
+  end;
 end;
 
 end.
