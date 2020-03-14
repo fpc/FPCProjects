@@ -451,7 +451,7 @@
               <boolProp name="Assertion.assume_success">true</boolProp>
               <intProp name="Assertion.test_type">1</intProp>
               <stringProp name="Assertion.scope">variable</stringProp>
-              <stringProp name="Scope.variable">Bearer</stringProp>
+              <stringProp name="Scope.variable">Bearer_normal</stringProp>
             </ResponseAssertion>
             <hashTree/>
           </hashTree>
