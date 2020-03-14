@@ -267,7 +267,7 @@ end;
 procedure TrepPackageHander.CheckIfPackageExistsAndIsEditable(APackageName, AccessToken: string);
 var
   PMPackage: TfprPackage;
-  PackageURL, Message: String;
+  PackageURL: String;
 begin
   PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+APackageName;
   try
