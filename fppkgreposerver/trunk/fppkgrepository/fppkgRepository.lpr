@@ -82,6 +82,7 @@ begin
       GStackClient.AddHandler('repository', RepositoryHandler);
 
       HTTPRouter.RegisterRoute('/package/:fpcversion/:repository/:package', PackageHandler);
+      HTTPRouter.RegisterRoute('/package/*', PackageHandler);
       GStackClient.AddHandler('package', PackageHandler);
 
       HTTPRouter.RegisterRoute('/functions/:function', FunctionsHandler);
