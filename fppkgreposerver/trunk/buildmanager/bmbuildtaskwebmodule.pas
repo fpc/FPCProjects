@@ -304,32 +304,17 @@ function TbmBuildTaskWM.RequestSourceBuild(BuildAgent: TbmBuildAgent; PackageNam
 var
   URL: string;
   SourceZIP: TBytes;
-  HTTPClient: TFPHTTPClient;
   BytesStream: TBytesStream;
 begin
   URL := TDCSGlobalSettings.GetInstance.GetSettingAsString('repositoryurl');
   URL := URL + '/package/'+PackageName+'/'+TAGName;
 
-  HTTPClient := TFPHTTPClient.Create(nil);
+  BytesStream := TfprWebModule.ObtainJSONRestRequestStream(URL, 'Failed to download the package from the repository', AccessToken, 'GET');
   try
-    HTTPClient.RequestHeaders.Values['authorization'] := 'Bearer ' + AccessToken;
-    BytesStream := TBytesStream.Create;
-    try
-      try
-        HTTPClient.HTTPMethod('GET', URL, BytesStream, [200, 500]);
-      except
-        on E: Exception do
-          raise EHTTPServer.CreateFmtHelp('Failed to download the package from the repository: %s', [E.Message], 500);
-      end;
-      if HTTPClient.ResponseStatusCode=500 then
-        raise EJsonWebException.CreateFmtHelp('Failed to download the package from the repository: %s', [StringOf(BytesStream.Bytes)], 500);
-      SourceZIP := BytesStream.Bytes;
-      SetLength(SourceZIP, BytesStream.Size);
-    finally
-      BytesStream.Free;
-    end;
+    SourceZIP := BytesStream.Bytes;
+    SetLength(SourceZIP, BytesStream.Size);
   finally
-    HTTPClient.Free;
+    BytesStream.Free;
   end;
 
   URL := BuildAgent.URL + 'createsourcearchive?cputarget=x86_64&ostarget=linux&fpcversion='+BuildAgent.FPCVersion+'&chunked=false';
