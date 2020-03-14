@@ -542,7 +542,7 @@ begin
 
     ClonePath := ConcatPaths([TmpPath, 'pkgclone']);
     ArchiveName := ConcatPaths([TmpPath, 'package.zip']);
-    RunGit(ClonePath, 'archive git repository', ['archive', '--output', ArchiveName, '--format', 'zip', ATag], CmdRes );
+    RunGit(ClonePath, 'download package-archive from git', ['archive', '--output', ArchiveName, '--format', 'zip', ATag], CmdRes );
 
     FS := TFileStream.Create(ArchiveName, fmOpenRead);
     try
