@@ -348,7 +348,17 @@ begin
     MemStream := TBytesStream.Create;
     try
       HTTPClient.RequestBody := Content;
-      HTTPClient.HTTPMethod(Method, AnURL, MemStream, [200, 500]);
+
+      TfprLog.Log(Format('Request URL [%s]/[%s] for [%s]', [Method, AnURL, Description]), nil);
+      try
+        HTTPClient.HTTPMethod(Method, AnURL, MemStream, [200, 500]);
+      except
+        on E: Exception do
+          begin
+          TfprLog.Log(Format('Request [%s]/[%s] for [%s] failed: %s', [Method, AnURL, Description, E.Message]), nil, WARN);
+          raise;
+          end;
+      end;
 
       if HTTPClient.ResponseStatusCode=500 then
         begin
@@ -356,6 +366,7 @@ begin
         // try to obtain the error.message property. If that fails, use the
         // complete response.
         s := StringOf(MemStream.Bytes);
+        TfprLog.Log(Format('Request [%s]/[%s] for [%s] returned statuscode 500: %s', [Method, AnURL, Description, s]), nil, WARN);
         try
           JSONData := GetJSON(s);
         except
