@@ -29,6 +29,7 @@ services:
         - Buildagent_304_HOST=buildagent_304
         - Buildagent_trunk_HOST=buildagent_trunk
         - Buildagent_fixes32_HOST=buildagent_fixes32
+        - Buildagent_320_HOST=buildagent_320
         - Buildmanager_HOST=buildmanager
         - Fppkgrepository_HOST=fppkgrepository
         - Identityserver_HOST=identityserver
@@ -47,6 +48,7 @@ services:
         - buildagent_trunk
         - buildagent_304
         - buildagent_fixes32
+        - buildagent_320
         - identityserver
         - fppkgrepository
         - repository
@@ -166,6 +168,26 @@ services:
         - TestEnv_x86_64_linux_3.0.4__AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
         - TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug=true
         - TestEnv_x86_64_linux_3.0.4__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
+
+  buildagent_320:
+    image: 'quay.io/loesje/buildagent:latest'
+    build:
+      context: .
+      dockerfile: docker-buildagent.dockerfile
+    container_name: buildagent_320
+    depends_on:
+      - buildmanager
+    volumes:
+      - buildfiles:/home/locuser/buildfiles
+    environment:
+      - TestEnv_x86_64_linux_3.2.0__FPCSourcePath=/home/locuser/svn/fpc
+      - TestEnv_x86_64_linux_3.2.0__PristineEnvironmentPath=/home/locuser/buildenv/pristine/x86_64-linux-3_2_0/
+      - TestEnv_x86_64_linux_3.2.0__BuildPath=/home/locuser/buildenv/build/
+      - TestEnv_x86_64_linux_3.2.0__StartCompiler=ppcx64_3.0.2
+      - TestEnv_x86_64_linux_3.2.0__FppkgCfgTemplate=/home/locuser/templates/fppkg.cfg.template
+      - TestEnv_x86_64_linux_3.2.0__RemoteMirrors=http://webclient/repo/testing/mirrors.xml
+      - TestEnv_x86_64_linux_3.2.0__AdditionalPackages=lazmkunit
+      - TestEnv_x86_64_linux_3.2.0__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_2_0_rc1
 
   fppkgrepository:
       image: 'quay.io/loesje/fppkgrepository:latest'
