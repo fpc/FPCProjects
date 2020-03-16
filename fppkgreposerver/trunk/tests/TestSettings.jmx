@@ -37,7 +37,7 @@
             </elementProp>
             <elementProp name="password_admin" elementType="Argument">
               <stringProp name="Argument.name">password_admin</stringProp>
-              <stringProp name="Argument.value">geheim</stringProp>
+              <stringProp name="Argument.value">valid</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="subject_admin" elementType="Argument">
@@ -87,7 +87,7 @@
             </elementProp>
             <elementProp name="password_normal" elementType="Argument">
               <stringProp name="Argument.name">password_normal</stringProp>
-              <stringProp name="Argument.value">geheim</stringProp>
+              <stringProp name="Argument.value">valid</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="loginenvironment_normal" elementType="Argument">
