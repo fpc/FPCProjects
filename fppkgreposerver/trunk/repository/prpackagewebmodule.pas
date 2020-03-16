@@ -25,7 +25,9 @@ uses
   jsonparser,
   TLevelUnit,
   fprLog,
+  fprSerializer,
   fprBuildAgentResponse,
+  fprInterfaceClasses,
   fprFPCVersion,
   fphttpserver,
   fprWebModule;
@@ -42,7 +44,7 @@ type
     function GetPackageRepoPath(APackageName: string): string;
     function GetAndCheckPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
-    function CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
+    function CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
     function AddSourcesToGITRepository(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile): string;
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
     function CheckIfGitBranchExists(const curdir, BranchName: string): Boolean;
@@ -70,8 +72,7 @@ Procedure TprPackageWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AR
 var
   PackageName: string;
   PackageURL: string;
-  PackageJSON: TJSONData;
-  PackageObject: TJSONObject;
+  PackageObject: TfprPackage;
   Command: string;
   RevHash: string;
   PackageTag, TagMessage, ErrString: string;
@@ -85,7 +86,7 @@ begin
   PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+PackageName;
 
   try
-    PackageJSON := ObtainJSONRestRequest(PackageURL, True);
+    PackageObject := specialize ObtainCollectionItemRestRequest<TfprPackage>(PackageURL, '');
   Except
     on E: Exception do
       begin
@@ -100,85 +101,88 @@ begin
         Raise;
       end;
   end;
-  if PackageJSON.JSONType = jtObject then
+  if assigned(PackageObject) then
     begin
-    PackageObject := PackageJSON as TJSONObject;
-    Command := ARequest.GetNextPathInfo;
-    if Command = 'tagpackage' then
-      begin
-      if (PackageObject.Get('ownerid', '') <> FSubjectId) and (GetUserRole<>'admin') then
-        raise Exception.Create('You have not enough rights to add a tag for this package');
-
-      if (PackageObject.Get('packagestate', '') <> 'approved') and (PackageObject.Get('packagestate', '') <> 'published') then
-        raise Exception.Create('To be able to add tags package has to be approved or published.');
-
-      TagMessage := ARequest.QueryFields.Values['message'];
-      if TagMessage = '' then
-        raise Exception.Create('Missing message');
-
-      RevHash := ARequest.QueryFields.Values['hash'];
-
-      FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
-
-      PackageTag := TagPackage(PackageName, TagMessage, FPCVersion, '', RevHash);
-
-      AResponse.Content := '{"tag": "'+PackageTag+'"}';
-      AResponse.Code := 200;
-      end
-    else if ARequest.Method='POST' then
-      begin
-      if (PackageObject.Get('ownerid', '') <> FSubjectId) and (GetUserRole<>'admin') then
-        raise Exception.Create('You have not enough rights to upload sources for this package');
-
-      if ARequest.Files.Count <> 1 then
-        raise Exception.Create('Missing package in request');
-
-      FPCVersion := GetVersionFromPathInfo(Command);
-
-      if not CheckUploadedSourceArchive(PackageName, FPCVersion, ARequest.Files.First, ErrString) then
+    try
+      Command := ARequest.GetNextPathInfo;
+      if Command = 'tagpackage' then
         begin
-        raise Exception.Create('Validity check on source failed: ' + ErrString);
-        end;
+        if (PackageObject.OwnerId <> FSubjectId) and (GetUserRole<>'admin') then
+          raise Exception.Create('You have not enough rights to add a tag for this package');
 
-      IsNew := PackageObject.Get('packagestate', '') = 'new';
-      if IsNew then
-        begin
-        TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
-        AddGITRepositoryForNewPackage(PackageName);
-        end;
+        if not (PackageObject.PackageState in [prspsApproved, prspsPublished]) then
+          raise Exception.Create('To be able to add tags package has to be approved or published.');
 
-      RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
+        TagMessage := ARequest.QueryFields.Values['message'];
+        if TagMessage = '' then
+          raise Exception.Create('Missing message');
 
-      if IsNew then
-        begin
-        TagPackage(PackageName, 'Initial version', FPCVersion, 'initial');
-        TfprLog.Log(Format('Package [%s] is new. Create an initial tag.', [PackageName]));
-        end;
+        RevHash := ARequest.QueryFields.Values['hash'];
 
-      AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
-      AResponse.Code := 200;
-      end
-    else if (Command='list') and (ARequest.Method='GET') then
-      begin
-      FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
-      RepoLogCollection := ObtainGITLogForPackage(PackageName, FPCVersion.GetBranchName);
-      try
-        AResponse.Content := TJSONRttiStreamHelper.ObjectToJSONString(RepoLogCollection, nil, [tcsdfCollectionAsList]);
+        FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
+
+        PackageTag := TagPackage(PackageName, TagMessage, FPCVersion, '', RevHash);
+
+        AResponse.Content := '{"tag": "'+PackageTag+'"}';
         AResponse.Code := 200;
-      finally
-        RepoLogCollection.Free;
-      end;
-      end
-    else if Command <> '' then
-      begin
-      DownloadTAGSource(AResponse, PackageName, Command);
-      AResponse.Code := 200;
-      end
-    else
-      begin
-      AResponse.Code := 405;
-      end;
-    AResponse.CodeText := GetStatusCode(AResponse.Code);
+        end
+      else if ARequest.Method='POST' then
+        begin
+        if (PackageObject.OwnerId <> FSubjectId) and (GetUserRole<>'admin') then
+          raise Exception.Create('You have not enough rights to upload sources for this package');
+
+        if ARequest.Files.Count <> 1 then
+          raise Exception.Create('Missing package in request');
+
+        FPCVersion := GetVersionFromPathInfo(Command);
+
+        if not CheckUploadedSourceArchive(PackageObject, FPCVersion, ARequest.Files.First, ErrString) then
+          begin
+          raise Exception.Create('Validity check on source failed: ' + ErrString);
+          end;
+
+        IsNew := PackageObject.PackageState = prspsInitial;
+        if IsNew then
+          begin
+          TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
+          AddGITRepositoryForNewPackage(PackageName);
+          end;
+
+        RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
+
+        if IsNew then
+          begin
+          TagPackage(PackageName, 'Initial version', FPCVersion, 'initial');
+          TfprLog.Log(Format('Package [%s] is new. Create an initial tag.', [PackageName]));
+          end;
+
+        AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
+        AResponse.Code := 200;
+        end
+      else if (Command='list') and (ARequest.Method='GET') then
+        begin
+        FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
+        RepoLogCollection := ObtainGITLogForPackage(PackageName, FPCVersion.GetBranchName);
+        try
+          AResponse.Content := TJSONRttiStreamHelper.ObjectToJSONString(RepoLogCollection, nil, [tcsdfCollectionAsList]);
+          AResponse.Code := 200;
+        finally
+          RepoLogCollection.Free;
+        end;
+        end
+      else if Command <> '' then
+        begin
+        DownloadTAGSource(AResponse, PackageName, Command);
+        AResponse.Code := 200;
+        end
+      else
+        begin
+        AResponse.Code := 405;
+        end;
+      AResponse.CodeText := GetStatusCode(AResponse.Code);
+    finally
+      PackageObject.Free;
+    end;
     end
   else
     raise Exception.Create('Invalid response from PackageManager.');
@@ -247,13 +251,16 @@ begin
     end;
 end;
 
-function TprPackageWM.CheckUploadedSourceArchive(APackageName: string; AFPCVersion: TfprFPCVersion;
-  AFile: TUploadedFile; out ErrorStr: string): Boolean;
+function TprPackageWM.CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
 var
   BuildAgentResponseList: TfprBuildAgentResponseList;
   BuildAgentResponse: TfprBuildAgentResponse;
-  s: TJSONUnicodeStringType;
+  PackageManifestJSONObject: TJSONObject;
+  VersionJSONObject: TJSONObject;
+  Version: TFPVersion;
   URL: string;
+  s: TJSONUnicodeStringType;
+  i: Integer;
 begin
   Result := True;
   try
@@ -276,12 +283,34 @@ begin
         ErrorStr := 'Manifest-creation failed. (' + BuildAgentResponse.Message + ')';
         Exit;
         end;
-      s := ((BuildAgentResponse.Manifest as TJSONArray).Items[0] as TJSONObject).Get('name', '');
-      if not SameText(APackageName, s) then
+      PackageManifestJSONObject := ((BuildAgentResponse.Manifest as TJSONArray).Items[0] as TJSONObject);
+      s := PackageManifestJSONObject.AsJSON;
+      s := PackageManifestJSONObject.Get('name', '');
+      if not SameText(APackage.Name, s) then
         begin
-        ErrorStr := Format('Package-name of source archive (%s) does not match package-name (%s).', [s, APackageName]);
+        ErrorStr := Format('Package-name of source archive (%s) does not match package-name (%s).', [s, APackage.Name]);
         Result := False;
         end;
+
+      // Check version of package, it may not be lower then existing versions for
+      // the same fpc-version.
+      VersionJSONObject := PackageManifestJSONObject.Get('version', TJSONObject(nil));
+      Version := TFPVersion.Create;
+      try
+        TfprSerializerSingleton.Instance.JSONToObject(VersionJSONObject, Version);
+        for i := 0 to APackage.PackageVersionList.Count -1 do
+          begin
+          if (APackage.PackageVersionList.Items[i].FPCVersion=AFPCVersion.Name) and
+            (APackage.PackageVersionList.Items[i].Version.CompareVersion(Version) >= 0) then
+            begin
+            ErrorStr := Format('The version [%s] of package [%s] in the source archive is lower then the current release [%s].', [Version.AsString, APackage.Name, APackage.PackageVersionList.Items[i].Version.AsString]);
+            Result := False;
+            end;
+          end;
+      finally
+        Version.Free;
+      end;
+
     finally
       BuildAgentResponseList.Free;
     end;
