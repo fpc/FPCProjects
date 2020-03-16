@@ -21,6 +21,8 @@ var
   Node1: TDOMNode;
   JA: TJSONArray;
   JO: TJSONObject;
+  JI: TJSONObject;
+  i: Integer;
 begin
   try
     JA := TJSONArray.Create;
@@ -37,7 +39,15 @@ begin
         Node1 := PackageNode.FirstChild;
         while Assigned(Node1) do
           begin
-          JO.Add(Node1.NodeName, Node1.TextContent);
+          if Node1.NodeName = 'version' then
+            begin
+            JI := TJSONObject.Create();
+            for i := 0 to Node1.Attributes.Length -1 do
+              JI.Add(Node1.Attributes.Item[i].NodeName, StrToIntDef(Node1.Attributes.Item[i].NodeValue, -1));
+            JO.Add(Node1.NodeName, JI);
+            end
+          else
+            JO.Add(Node1.NodeName, Node1.TextContent);
           Node1 := Node1.NextSibling;
           end;
         PackageNode := PackageNode.NextSibling;
