@@ -26,6 +26,7 @@ uses
   TLevelUnit,
   fprLog,
   fprSerializer,
+  fprErrorHandling,
   fprBuildAgentResponse,
   fprInterfaceClasses,
   fprFPCVersion,
@@ -138,7 +139,7 @@ begin
 
         if not CheckUploadedSourceArchive(PackageObject, FPCVersion, ARequest.Files.First, ErrString) then
           begin
-          raise Exception.Create('Validity check on source failed: ' + ErrString);
+          raise EJsonWebException.CreateHelp('Validity check on source failed: ' + ErrString, 400);
           end;
 
         IsNew := PackageObject.PackageState = prspsInitial;
@@ -284,7 +285,6 @@ begin
         Exit;
         end;
       PackageManifestJSONObject := ((BuildAgentResponse.Manifest as TJSONArray).Items[0] as TJSONObject);
-      s := PackageManifestJSONObject.AsJSON;
       s := PackageManifestJSONObject.Get('name', '');
       if not SameText(APackage.Name, s) then
         begin
@@ -640,6 +640,15 @@ begin
   Collection := TfprPackageRepoLogCollection.Create();
   try
     RepoPath := GetAndCheckPackageRepoPath(APackageName);
+    // Check of fpc-version branch exists at all:
+    try
+      RunGit(RepoPath, 'check if package ' + APackageName + ' is available for branch ' + Branch, ['show-ref', '--verify', '--quiet', 'refs/heads/' + Branch], CmdRes);
+    except
+      Result := Collection;
+      Collection := nil;
+      Exit;
+    end;
+
     RunGit(RepoPath, 'retrieve log for package '+APackageName, ['log', '--pretty=format:%h^%aI^%s^%D^%N^^', Branch], CmdRes);
 
     LogLines := CmdRes.Split('^^'+LineEnding);
