@@ -90,6 +90,8 @@ function TfprFPCVersionCollection.GetDefaultVersion: TfprFPCVersion;
 var
   i: Integer;
 begin
+  if not FLoaded then
+    RetrieveFromPackagemanager();
   Result := nil;
   for i := 0 to Count -1 do
     begin
