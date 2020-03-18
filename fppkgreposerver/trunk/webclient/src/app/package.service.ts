@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { shareReplay } from 'rxjs/operators';
+import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Package } from './package';
 import { FPCVersion } from './fpcversion';
 import { AppConfigService } from './app-config.service';
@@ -11,7 +12,8 @@ import { AppConfigService } from './app-config.service';
 export class PackageService {
 
   private packageManagerURL: string;
-  private _getPackageList: Observable<Package[]>;
+  private _packageList: Observable<Package[]>;
+  private _reload = new BehaviorSubject<void>(null);
   private _getFPCVersionList: Observable<FPCVersion[]>;
 
   constructor(
@@ -19,6 +21,9 @@ export class PackageService {
     private appConfigService: AppConfigService,
     private _securityService: OidcSecurityService) {
       this.packageManagerURL = this.appConfigService.PackageManagerUrl;
+      this._securityService.getIsAuthorized().subscribe(isAuthorized => {
+        this._reload.next(null)
+      });
     }
 
   getHeaders(): HttpHeaders {
@@ -33,11 +38,22 @@ export class PackageService {
     return authheaders;
   }
 
-  getPackageList (): Observable<Package[]> {
-    if (!this._getPackageList) {
-      this._getPackageList = this.http.get<Package[]>(`${this.packageManagerURL}/package`, {headers: this.getHeaders()}).pipe(shareReplay());
+  private requestPackageList() {
+    return this.http.get<Package[]>(`${this.packageManagerURL}/package`, {headers: this.getHeaders()}).pipe(
+      map(response => response)
+    );
+  }
+
+  public getPackageList (): Observable<Package[]> {
+    // Extensive explanation can be found here:
+    // https://blog.thoughtram.io/angular/2018/03/05/advanced-caching-with-rxjs.html
+    if (!this._packageList) {
+      this._packageList = this._reload.pipe(
+        switchMap(_ => this.requestPackageList()),
+        shareReplay(1)
+      )
     }
-    return this._getPackageList;
+    return this._packageList;
   }
 
   getFPCVersionList (): Observable<FPCVersion[]> {
