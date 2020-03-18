@@ -59,16 +59,26 @@ implementation
 { TpmPackageWM }
 
 function TpmPackageWM.HandlePackageRequest(const PackageName, SubObject, Method, Data, AccessToken: string): TJSONData;
+var
+  FilterMethod: TpmPackageJSonStreamingFilter;
 begin
   if (PackageName = '') and (Method = 'GET') then
     begin
     // Return list of all packages
-    FPackageStreamer.FilterOutOldVersions := True;
-    Result := FPackageStreamer.PackageCollectionToJSon(TfprPackageCollection.Instance, True);
+    FPackageStreamer.FilterOnOwnerSubject := '';
+    if AccessToken='' then
+      FilterMethod := pmfPublic
+    else if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) = 'admin' then
+      FilterMethod := pmfAll
+    else
+      begin
+      FilterMethod := pmfOwnedOrApproved;
+      FPackageStreamer.FilterOnOwnerSubject := TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken);
+      end;
+    Result := FPackageStreamer.PackageCollectionToJSon(TfprPackageCollection.Instance, True, FilterMethod);
     end
   else
     begin
-    FPackageStreamer.FilterOutOldVersions := False;
     case SubObject of
       '':
         begin

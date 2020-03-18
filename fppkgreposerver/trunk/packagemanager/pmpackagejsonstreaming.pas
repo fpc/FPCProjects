@@ -24,16 +24,23 @@ type
 
   { TpmPackageJSonStreaming }
 
+  TpmPackageJSonStreamingFilter = (
+    pmfPublic,
+    pmfAll,
+    pmfOwnedOrApproved
+  );
   TpmPackageJSonStreaming = class
   private
-    FFilterOutOldVersions: Boolean;
     FStackClient: TcnocStackBinaryClient;
 
     FSerializer: TJSONRttiStreamClass;
+    FFilterOnOwnerSubject: string;
 
     function SetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; const AValue: string): boolean;
     function GetPackageStateAsString(AnInstance: TObject; ADescription: TcsStreamDescription; out AValue: string): boolean;
     function DoFilterPackageVersions(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
+    function DoFilterPublicPackage(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
+    function DoFilterOwnedPackage(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -43,12 +50,12 @@ type
     procedure JSonToPackage(AJSonStr: String; APackage: TfprPackage);
     procedure JSonToPatchPackage(AJSonStr: String; APatchPackage: TpmPatchPackage);
 
-    function PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+    function PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean; Filter: TpmPackageJSonStreamingFilter): TJSONData;
     function PackageCollectionToJSonString(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): string;
     procedure SavePackageCollectionToFile(APackageList: TfprPackageCollection; Filename: string);
     procedure JSonToPackageCollection(AJSonStr: string; APackageList: TfprPackageCollection);
     property StackClient: TcnocStackBinaryClient read FStackClient write FStackClient;
-    property FilterOutOldVersions: Boolean read FFilterOutOldVersions write FFilterOutOldVersions;
+    property FilterOnOwnerSubject: string read FFilterOnOwnerSubject write FFilterOnOwnerSubject;
   end;
 
 implementation
@@ -110,7 +117,7 @@ function TpmPackageJSonStreaming.PackageCollectionToJSonString(APackageList: Tfp
 var
   JSONData: TJSONData;
 begin
-  JSONData := PackageCollectionToJSon(APackageList, ReleasedVersionInformationOnly);
+  JSONData := PackageCollectionToJSon(APackageList, ReleasedVersionInformationOnly, pmfAll);
   try
     Result := JSONData.AsJSON;
   finally
@@ -118,12 +125,16 @@ begin
   end;
 end;
 
-function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean): TJSONData;
+function TpmPackageJSonStreaming.PackageCollectionToJSon(APackageList: TfprPackageCollection; ReleasedVersionInformationOnly: Boolean; Filter: TpmPackageJSonStreamingFilter): TJSONData;
 var
   DescriptionTag: string;
 begin
   if ReleasedVersionInformationOnly then
-    DescriptionTag := 'ReleasedVersionInformationOnly'
+    case Filter of
+      pmfAll: DescriptionTag := 'ReleasedVersionInformationOnly';
+      pmfPublic: DescriptionTag := 'PublicReleasedVersionInformationOnly';
+      pmfOwnedOrApproved: DescriptionTag := 'OwnedReleasedVersionInformationOnly';
+    end
   else
     DescriptionTag := '';
   Result := FSerializer.ObjectToJSON(APackageList, DescriptionTag) as TJSONArray;
@@ -156,6 +167,13 @@ begin
 
   PackageCollDescription.ListDescription.DefaultSubObjectDescription := PackageDescription;
   FilteredPackageCollDescription.ListDescription.DefaultSubObjectDescription := FilteredPackageDescription;
+
+
+  FilteredPackageCollDescription := FSerializer.DescriptionStore.CloneDescription(TfprPackageCollection, 'ReleasedVersionInformationOnly', 'PublicReleasedVersionInformationOnly');
+  FilteredPackageCollDescription.ListDescription.OnFilter := @DoFilterPublicPackage;
+
+  FilteredPackageCollDescription := FSerializer.DescriptionStore.CloneDescription(TfprPackageCollection, 'ReleasedVersionInformationOnly', 'OwnedReleasedVersionInformationOnly');
+  FilteredPackageCollDescription.ListDescription.OnFilter := @DoFilterOwnedPackage;
 end;
 
 destructor TpmPackageJSonStreaming.Destroy;
@@ -251,6 +269,22 @@ end;
 function TpmPackageJSonStreaming.PackageVersionToJSon(APackageVersion: TfprPackageVersion): TJSONData;
 begin
   Result := FSerializer.ObjectToJSON(APackageVersion);
+end;
+
+function TpmPackageJSonStreaming.DoFilterPublicPackage(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
+var
+  Package: TfprPackage;
+begin
+  Package := ADescription.GetValueAsObject(AnInstance) as TfprPackage;
+  Result := Package.PackageState=prspsPublished;
+end;
+
+function TpmPackageJSonStreaming.DoFilterOwnedPackage(AnInstance: TObject; ADescription: TcsStreamDescription): boolean;
+var
+  Package: TfprPackage;
+begin
+  Package := ADescription.GetValueAsObject(AnInstance) as TfprPackage;
+  Result := (Package.PackageState in [prspsPublished, prspsApproved]) or (FFilterOnOwnerSubject=Package.OwnerId);
 end;
 
 end.
