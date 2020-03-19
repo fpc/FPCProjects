@@ -40,6 +40,7 @@ type
     function HandlePackageVersion(const PackageName, Method, Data, AccessToken: string): TJSONData;
     function HandlePackage(PackageName, Method, Data, AccessToken: string): TJSONData;
     function HandlePackageApprove(const PackageName, Method, AccessToken: string): TJSONData;
+    function HandlePackagePublish(const PackageName, Method, AccessToken: string): TJSONData;
     function HandlePatchPackage(const PackageName, Data, AccessToken: string): TJSONData;
     procedure SavePackageList;
   protected
@@ -91,6 +92,10 @@ begin
       'approve':
         begin
         Result := HandlePackageApprove(PackageName, Method, AccessToken);
+        end;
+      'publish':
+        begin
+        Result := HandlePackagePublish(PackageName, Method, AccessToken);
         end
     else
       begin
@@ -329,6 +334,31 @@ begin
   if (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin') and
     (TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken) <> Package.OwnerId) then
     raise EHTTP.CreateFmtHelp('You have no rights to edit package [%s]', [Package.Name], 403);
+end;
+
+function TpmPackageWM.HandlePackagePublish(const PackageName, Method, AccessToken: string): TJSONData;
+var
+  Package: TfprPackage;
+begin
+  if Method = 'PUT' then
+    begin
+    Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
+    if not Assigned(Package) then
+      raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
+
+    EnsureMayEditPackage(AccessToken, Package);
+
+    if Package.PackageState <> prspsApproved then
+      raise Exception.Create('Only packages in Approved state can be set to published.');
+
+    Package.PackageState := prspsPublished;
+
+    SavePackageList;
+
+    Result := FPackageStreamer.PackageToJSon(Package);
+    end
+  else
+    raise EHTTP.CreateFmtHelp('Method %s not supported', [Method], 405);
 end;
 
 end.
