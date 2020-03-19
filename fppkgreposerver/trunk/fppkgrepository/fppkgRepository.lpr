@@ -22,11 +22,14 @@ uses
   repFunctionsHandler,
   cnocStackJSONHandlerThread,
   cnocStackMessageTypes,
-  cnocStackbinaryclient;
+  cnocStackbinaryclient,
+  cnocStackHandlerThread;
 
 var
   GlobalSettings: TDCSGlobalSettings;
   configfilename: string;
+
+  GStackClient: TcnocStackHandlerThread;
 
   RepositoryHandler: TrepRepositoryHander;
   PackageHandler: TrepPackageHander;

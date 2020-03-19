@@ -55,9 +55,6 @@ type
     constructor Create; override;
   end;
 
-var
-  GStackClient: TcnocStackHandlerThread;
-
 implementation
 
 { TrepRepositoryHander }

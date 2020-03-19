@@ -23,6 +23,7 @@ uses
   fprWebModule,
   fprSerializer,
   fprInterfaceClasses,
+  fprStackClient,
   repPackage;
 
 type
@@ -121,7 +122,7 @@ end;
 function TrepPackageHander.HandleNewPackageRequest(ARepository: TrepRepository; AJSONContent: TJSONData; AccessToken: string): TJSONData;
 var
   Package: TrepPackage;
-  Message: String;
+  Message, PackageName: String;
 begin
   Result := nil;
   if ARepository.NeedAdminRights then
@@ -151,12 +152,15 @@ begin
     Result := ObjectToJSON( Package );
 
     Package.Collection := ARepository.PackageList;
+    PackageName := Package.Name;
     Package := nil;
   finally
     Package.Free;
   end;
   if ARepository.StorageFile <> '' then
     ARepository.SaveToFile;
+
+  TfprStackClientSingleton.Instance.Call('PMPackage', '{"name": "package", "subobject": "publish", "method": "PUT", "package":"' + PackageName + '"}', AccessToken).Free;
 end;
 
 function TrepPackageHander.HandleGetPackageRequest(APackageName: string; ARepository: TrepRepository): TJSONData;
