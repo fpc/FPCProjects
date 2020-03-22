@@ -6,14 +6,13 @@
 <p *ngIf="packageVersion.homepageurl" class="mb-1"><span class="text-muted">Site: </span><a href="http://{{packageVersion.homepageurl}}" target="_blank">{{packageVersion.homepageurl}}</a></p>
 <span *ngIf="(currentPackage.packagestate!='acceptance')">
   <span *ngFor="let repository of repositoryList">
-    <p *ngIf="(packageVersion.tag==publishedVersionPerRepositoryMap[repository.name])">This version is available in the {{repository.name}} repository</p>
+    <p *ngIf="((publishedVersionPerRepositoryMap[repository.name]) && (packageVersion.tag==publishedVersionPerRepositoryMap[repository.name].tag))">This is the current version in the {{repository.name}} repository</p>
   </span>
 </span>
-
 <button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>
-<span *ngIf="(mayEditPackage) && (currentPackage.packagestate!='acceptance')">
+<span *ngIf="(mayEditPackage) && (currentPackage.packagestate!='acceptance') && (packageVersion.tag!='initial')">
   <span *ngFor="let repository of repositoryList">
-    <button *ngIf="((packageVersion.tag!='initial') && (!(publishedVersionPerRepositoryMap[repository.name])))" class="btn btn-primary" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
-    <button *ngIf="((packageVersion.tag!='initial') && (publishedVersionPerRepositoryMap[repository.name]) && (packageVersion.tag!=publishedVersionPerRepositoryMap[repository.name]))" class="btn btn-primary" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+    <button *ngIf="(!(publishedVersionPerRepositoryMap[repository.name]))" class="btn btn-primary" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
+    <button *ngIf="((publishedVersionPerRepositoryMap[repository.name]) && (compareVersion(publishedVersionPerRepositoryMap[repository.name].version.version, packageVersion.version)>0))" class="btn btn-primary" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
   </span>
 </span>

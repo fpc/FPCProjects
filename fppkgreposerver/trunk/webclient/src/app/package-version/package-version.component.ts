@@ -7,6 +7,7 @@ import { FppkgRepositoryService } from '../fppkg-repository.service';
 import { PackageService } from '../package.service';
 import { BuildManagerService } from '../build-manager.service';
 import { RepPackage } from '../rep-package';
+import { VersionUtils, Version } from '../version';
 
 @Component({
   selector: 'app-package-version',
@@ -18,6 +19,7 @@ export class PackageVersionComponent implements OnInit {
   public currentPackage: Package = null;
 
   @Input() packageVersion: any = null;
+  @Input() packageVersionList: any[] = [];
   @Input() set package(selpackage: Package) {
     this.currentPackage = selpackage;
     if (!this.packageVersion.fpcversion) {
@@ -66,7 +68,14 @@ export class PackageVersionComponent implements OnInit {
         .subscribe(repPackageList => {
           for (var repPackage of repPackageList) {
             if (repPackage.name == this.currentPackage.name) {
-              this.publishedVersionPerRepositoryMap[repo.name] = repPackage.tag;
+
+              let _version = this.packageVersionList.find(v => v.tag==repPackage.tag)
+              let _obj = {
+                tag: repPackage.tag,
+                version: _version
+              }
+              this.publishedVersionPerRepositoryMap[repo.name] = _obj;
+
             }
           }
         });
@@ -87,5 +96,10 @@ export class PackageVersionComponent implements OnInit {
     this._buildManagerService.startBuildTask(this.currentPackage.name, tag, this.fpcversion.name)
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
   }
+
+  compareVersion(val1: Version, val2: Version) {
+    return VersionUtils.compare(val1, val2)
+  }
+
 
 }
