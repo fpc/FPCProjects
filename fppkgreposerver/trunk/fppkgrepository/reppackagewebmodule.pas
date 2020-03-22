@@ -233,8 +233,17 @@ end;
 function TrepPackageHander.HandleUpdatePackageRequest(APackageName: string; AJSONContent: TJSONData; ARepository: TrepRepository; AccessToken: string): TJSONData;
 var
   Package, IntPackage: TrepPackage;
+  Message: string;
 begin
   Result := nil;
+  if ARepository.NeedAdminRights then
+    begin
+    if TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken) <> 'admin' then
+      raise EHTTPClient.CreateHelp('Only admins can updat packages in this repository.', 403);
+    end
+  else if not TfprAuthenticationHandler.GetInstance.VerifyAccessToken(AccessToken, Message) then
+    raise EHTTPClient.CreateFmtHelp('Authentication validation failed: %s.', [Message], 403);
+
   if APackageName='' then
     raise EJsonWebException.CreateHelp('Missing package name', 404);
 
