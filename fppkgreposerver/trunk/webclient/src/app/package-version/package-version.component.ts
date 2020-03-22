@@ -8,6 +8,7 @@ import { PackageService } from '../package.service';
 import { BuildManagerService } from '../build-manager.service';
 import { RepPackage } from '../rep-package';
 import { VersionUtils, Version } from '../version';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 
 @Component({
   selector: 'app-package-version',
@@ -50,15 +51,21 @@ export class PackageVersionComponent implements OnInit {
   repositoryList : Repository[];
   fpcversion: FPCVersion;
   publishedVersionPerRepositoryMap: Object = {};
+  isAdmin: Boolean;
 
   constructor(
     private _fppkgRepositoryService: FppkgRepositoryService,
     private _buildManagerService: BuildManagerService,
     private _packageService: PackageService,
-    private _router: Router) { }
+    private _router: Router,
+    private _oidcSecurityService: OidcSecurityService) { }
 
   ngOnInit() {
-
+    this._oidcSecurityService.getUserData().subscribe(
+      (data: any) => {
+        this.isAdmin = ((!!data) && (data.role == "admin"));
+      }
+    );
   }
 
   initRepositoryList(repoList: Repository[]) {

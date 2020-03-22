@@ -12,7 +12,9 @@
 <button class="btn btn-primary" (click)="requestBuild(packageVersion.tag)">Request build</button>
 <span *ngIf="(mayEditPackage) && (currentPackage.packagestate!='acceptance') && (packageVersion.tag!='initial')">
   <span *ngFor="let repository of repositoryList">
-    <button *ngIf="(!(publishedVersionPerRepositoryMap[repository.name]))" class="btn btn-primary" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
-    <button *ngIf="((publishedVersionPerRepositoryMap[repository.name]) && (compareVersion(publishedVersionPerRepositoryMap[repository.name].version.version, packageVersion.version)>0))" class="btn btn-primary" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+    <span *ngIf="((!repository.needadminrights) || (isAdmin))">
+      <button *ngIf="(!(publishedVersionPerRepositoryMap[repository.name]))" class="btn btn-primary" (click)="publishTag(repository, packageVersion.tag)">publish to {{repository.name}}</button>
+      <button *ngIf="((publishedVersionPerRepositoryMap[repository.name]) && (compareVersion(publishedVersionPerRepositoryMap[repository.name].version.version, packageVersion.version)>0))" class="btn btn-primary" (click)="updateTag(repository, packageVersion.tag)">Update {{repository.name}}</button>
+      </span>
   </span>
 </span>
