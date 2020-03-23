@@ -20,6 +20,7 @@ export class TagPackageComponent implements OnInit {
   selectedFPCVersion: FPCVersion = null;
 
   @Input() package: Package = null;
+  @Input() revHash: string = null;
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -39,7 +40,7 @@ export class TagPackageComponent implements OnInit {
     }
     this.isError = false;
     this.isBusy = true;
-    this._repositoryService.tagPackage(this.package.name, this.tagMessage, fpcversion)
+    this._repositoryService.tagPackage(this.package.name, this.tagMessage, fpcversion, this.revHash)
       .subscribe(
         (response) => {
           this.isBusy = false;

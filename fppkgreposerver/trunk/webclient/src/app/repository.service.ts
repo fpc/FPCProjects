@@ -38,10 +38,14 @@ export class RepositoryService {
     return this._http.request(req);
   }
 
-  tagPackage(packageName, tagMessage: string, fpcversion: FPCVersion): Observable<any> {
+  tagPackage(packageName, tagMessage: string, fpcversion: FPCVersion, revHash: string): Observable<any> {
 
     const url = `${this.repositoryUrl}/package/${packageName}/tagpackage/${fpcversion.name}`;
-    return this._http.get<any>(url, {headers: this.getHeaders(), params: {message: tagMessage}});
+    let _params={message: tagMessage};
+    if (revHash) {
+      _params['hash'] = revHash;
+    }
+    return this._http.get<any>(url, {headers: this.getHeaders(), params: _params});
   }
 
   getPackageRepoLog(packageName: string, fpcversion: FPCVersion): Observable<PackageRepoLog[]> {

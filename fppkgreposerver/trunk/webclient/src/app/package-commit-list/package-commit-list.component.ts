@@ -73,9 +73,10 @@ export class PackageCommitListComponent implements OnInit {
       .subscribe(buildTask => this._router.navigate([`buildtask/${buildTask.uniquestring}`]))
   }
 
-  showTagDialog() {
+  showTagDialog(revHash) {
     const modalRef = this._modalService.open(TagPackageComponent);
     modalRef.componentInstance.package = this.currentPackage;
+    modalRef.componentInstance.revHash = revHash;
 
     modalRef.result.then(modalResult => {
       if (modalResult == 'tagged') {
