@@ -4,6 +4,6 @@
     {{logLine.authordate|date:"M/d/yy HH:mm:ss"}}: {{logLine.description}}
     <span class="badge badge-primary" *ngIf="((logLine.tags) && (logLine.tags!='initial'))">{{logLine.version}} Release</span>
     <button class="btn btn-primary float-right" (click)="requestBuild(logLine.hash)">Request build</button>
-    <button *ngIf="mayEditPackage && (currentPackage.packagestate != 'acceptance') && (logLine.allowTag)" class="btn btn-primary float-right" (click)="showTagDialog(logLine.hash)" title="Create version {{logLine.version}} based on these uploaded sources">Tag</button>
+    <button *ngIf="mayEditPackage && (logLine.allowTag)" class="btn btn-primary float-right" (click)="showTagDialog(logLine.hash)" title="Create version {{logLine.version}} based on these uploaded sources">Tag</button>
   </li>
 </ul>
