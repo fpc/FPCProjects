@@ -111,7 +111,7 @@ begin
         if (PackageObject.OwnerId <> FSubjectId) and (GetUserRole<>'admin') then
           raise Exception.Create('You have not enough rights to add a tag for this package');
 
-        if not (PackageObject.PackageState in [prspsApproved, prspsPublished]) then
+        if (PackageObject.PackageState in [prspsRevoked]) then
           raise Exception.Create('To be able to add tags package has to be approved or published.');
 
         TagMessage := ARequest.QueryFields.Values['message'];
@@ -142,7 +142,11 @@ begin
           raise EJsonWebException.CreateHelp('Validity check on source failed: ' + ErrString, 400);
           end;
 
-        IsNew := PackageObject.PackageState = prspsInitial;
+        IsNew := not DirectoryExists(GetPackageRepoPath(PackageName));
+
+        if IsNew and (PackageObject.PackageState <> prspsInitial) then
+          raise Exception.CreateFmt('There is no repository for package %s, while the package is not new anymore.', [PackageName]);
+
         if IsNew then
           begin
           TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
@@ -150,12 +154,6 @@ begin
           end;
 
         RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
-
-        if IsNew then
-          begin
-          TagPackage(PackageName, 'Initial version', FPCVersion, 'initial');
-          TfprLog.Log(Format('Package [%s] is new. Create an initial tag.', [PackageName]));
-          end;
 
         AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
         AResponse.Code := 200;
@@ -225,8 +223,6 @@ var
 begin
   GITRepositoriesPath := TDCSGlobalSettings.GetInstance.GetSettingAsString('GITRepositoriesPath');
   PackageRepoPath := GetPackageRepoPath(APackageName);
-  if DirectoryExists(PackageRepoPath) then
-    raise Exception.CreateFmt('A repository for package %s already exists, while the package is new.', [APackageName]);
 
   TmpPath := GetTempFileName(GITRepositoriesPath, '__newpackage_'+APackageName+'_');
   if ForceDirectories(TmpPath) then
