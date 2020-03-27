@@ -149,6 +149,8 @@ function TpmPackageWM.HandlePackage(PackageName, Method, Data, AccessToken: stri
 var
   Package: TfprPackage;
   ErrStr: string;
+  BackupCollection: TfprPackageCollection;
+  PackageBackupFile: RawByteString;
 begin
   if Method = 'POST' then
     begin
@@ -173,6 +175,33 @@ begin
     finally
       Package.Free;
     end;
+    SavePackageList;
+    end
+  else if Method = 'DELETE' then
+    begin
+    EnsureAdmin(AccessToken);
+    Package := TfprPackageCollection.Instance.FindPackageByName(PackageName);
+    if not Assigned(Package) then
+      raise EHTTP.CreateFmtHelp('Package %s not found', [PackageName], 404);
+
+    if not (Package.PackageState in [prspsInitial, prspsAcceptance, prspsApproved]) then
+      raise Exception.CreateFmt('The package [%s] has been published, and can not be removed anymore.', [403]);
+
+    TfprLog.Log(Format('Make backup of package [%s] before deletion.', [PackageName]));
+    BackupCollection := TfprPackageCollection.Create();
+    try
+      Package.Collection := BackupCollection;
+      ForceDirectories(TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageBackupPath'));
+      PackageBackupFile := ConcatPaths([TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageBackupPath'), PackageName+'_'+FormatDateTime('yyyymmddhhnn', Now)+'.json']);
+      FPackageStreamer.SavePackageCollectionToFile(BackupCollection, PackageBackupFile);
+
+      Result := FPackageStreamer.PackageToJSon(Package);
+    finally
+      BackupCollection.Free;
+    end;
+
+    TfprStackClientSingleton.Instance.Client.SendMessage(smtToStack, 'PRPackage', [], 0, '{"method":"DELETE", "name":"package", "package":"'+PackageName+'"}', [AccessToken]);
+
     SavePackageList;
     end
   else if Method = 'GET' then
@@ -220,6 +249,7 @@ procedure TpmPackageWM.SavePackageList;
 var
   PackageListFile: String;
 begin
+  TfprLog.Log('Save package-list');
   PackageListFile := TDCSGlobalSettings.GetInstance.GetSettingAsString('PackageListFile');
   if (PackageListFile <> '') then
     FPackageStreamer.SavePackageCollectionToFile(TfprPackageCollection.Instance, PackageListFile);
@@ -237,7 +267,7 @@ begin
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
-    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT, PATCH', '', True);
+    AddCorsOrigin(GlobalSettings.GetSettingAsString('AllowCorsOrigin'), 'POST, GET, PUT, PATCH, DELETE', '', True);
 end;
 
 Destructor TpmPackageWM.Destroy;
