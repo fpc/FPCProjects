@@ -17,6 +17,7 @@ uses
   csJSONRttiStreamHelper,
   fpHTTP,
   fphttpclient,
+  httproute,
   fpjson,
   fpmkunit,
   fprepos,
@@ -24,175 +25,129 @@ uses
   zipper,
   jsonparser,
   TLevelUnit,
+  cnocStackMessageTypes,
+  cnocStackHandlerThread,
+  cnocStackJSONHandlerThread,
   fprLog,
   fprSerializer,
   fprErrorHandling,
   fprBuildAgentResponse,
+  fprAuthenticationHandler,
   fprInterfaceClasses,
   fprFPCVersion,
   fphttpserver,
+  fprWebHandler,
   fprWebModule;
 
 type
 
   { TprPackageWM }
 
-  TprPackageWM = class(TfprWebModule)
-    Procedure DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+  TprPackageWM = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
+  protected
+    FPackageObject: TfprPackage;
+
+    function DoHandleRawRequest(ARequest: TRequest; AResponse: TResponse): Boolean; override;
+
+    function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; override;
+    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
+
+    function HandleRepositoryRequest(
+      Method,
+      PackageName,
+      Command,
+      FPCVersionStr,
+      TagMessage,
+      RevHash,
+      AccessToken: string;
+      Files: TUploadedFiles): TJSONData;
   private
-    function GetFPCVersionCollection: TfprFPCVersionCollection;
+    function GetFPCVersionCollection(AccessToken: string): TfprFPCVersionCollection;
     procedure SetGitUserAndEmail(ARepoPath: string);
     function GetPackageRepoPath(APackageName: string): string;
     function GetAndCheckPackageRepoPath(APackageName: string): string;
     procedure AddGITRepositoryForNewPackage(APackageName: string);
-    function CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
+    function CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; AccessToken: string; out ErrorStr: string): Boolean;
     function AddSourcesToGITRepository(APackageName: string; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile): string;
     procedure RunGit(const curdir:string; const desc: string; const commands:array of string;out outputstring:string);
     function CheckIfGitBranchExists(const curdir, BranchName: string): Boolean;
     function CheckIfGitHasUnstagedChanges(const curdir: string): Boolean;
-    function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag: string = ''; Hash: string = ''): string;
+    function TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion; GITTag, AccessToken: string; Hash: string = ''): string;
     procedure DownloadTAGSource(AResponse: TResponse; APackageName, ATag: string);
     procedure CloneGITPackage(APackageName, TmpPath: string);
     function ObtainGITLogForPackage(APackageName, Branch: string): TfprPackageRepoLogCollection;
-    function GetVersionFromPathInfo(APathInfo: string): TfprFPCVersion;
+    function GetVersionFromPathInfo(APathInfo, AccessToken: string): TfprFPCVersion;
+    function GetAccessToken(var ARequest: TRequest): String;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(); override;
 
   end;
 
-var
-  prPackageWM: TprPackageWM;
-
 implementation
-
-{$R *.lfm}
 
 { TprPackageWM }
 
-Procedure TprPackageWM.DataModuleRequest(Sender: TObject; ARequest: TRequest; AResponse: TResponse; Var Handled: Boolean);
+function TprPackageWM.HandleRepositoryRequest(
+  Method,
+  PackageName,
+  Command,
+  FPCVersionStr,
+  TagMessage,
+  RevHash,
+  AccessToken: string;
+  Files: TUploadedFiles): TJSONData;
 var
-  PackageName: string;
-  PackageURL: string;
-  PackageObject: TfprPackage;
-  Command: string;
-  RevHash: string;
-  PackageTag, TagMessage, ErrString: string;
+  PackageTag, ErrString: string;
   FPCVersion: TfprFPCVersion;
   IsNew: Boolean;
   RepoLogCollection: TfprPackageRepoLogCollection;
 begin
-  Handled := True;
-  PackageName := ARequest.GetNextPathInfo;
-
-  PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+PackageName;
-
-  try
-    PackageObject := specialize ObtainCollectionItemRestRequest<TfprPackage>(PackageURL, '');
-  Except
-    on E: Exception do
-      begin
-      if E is EHTTPClient then
-        begin
-        // Probably.... 404
-        AResponse.Code := 404;
-        AResponse.CodeText := GetStatusCode(AResponse.Code);
-        Exit;
-        end
-      else
-        Raise;
-      end;
-  end;
-  if assigned(PackageObject) then
+  if assigned(FPackageObject) then
     begin
     try
-      Command := ARequest.GetNextPathInfo;
       if Command = 'tagpackage' then
         begin
-        if (PackageObject.OwnerId <> FSubjectId) and (GetUserRole<>'admin') then
+        if (FPackageObject.OwnerId <> TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken)) and (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken)<>'admin') then
           raise Exception.Create('You have not enough rights to add a tag for this package');
 
-        if (PackageObject.PackageState in [prspsRevoked]) then
+        if (FPackageObject.PackageState in [prspsRevoked]) then
           raise Exception.Create('To be able to add tags package has to be approved or published.');
 
-        TagMessage := ARequest.QueryFields.Values['message'];
         if TagMessage = '' then
           raise Exception.Create('Missing message');
 
-        RevHash := ARequest.QueryFields.Values['hash'];
+        FPCVersion := GetVersionFromPathInfo(FPCVersionStr, AccessToken);
 
-        FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
+        PackageTag := TagPackage(PackageName, TagMessage, FPCVersion, '', AccessToken, RevHash);
 
-        PackageTag := TagPackage(PackageName, TagMessage, FPCVersion, '', RevHash);
-
-        AResponse.Content := '{"tag": "'+PackageTag+'"}';
-        AResponse.Code := 200;
+        Result := TJSONObject.Create(['tag', PackageTag]);
         end
-      else if ARequest.Method='POST' then
+      else if (Command='list') and (Method='GET') then
         begin
-        if (PackageObject.OwnerId <> FSubjectId) and (GetUserRole<>'admin') then
-          raise Exception.Create('You have not enough rights to upload sources for this package');
-
-        if ARequest.Files.Count <> 1 then
-          raise Exception.Create('Missing package in request');
-
-        FPCVersion := GetVersionFromPathInfo(Command);
-
-        if not CheckUploadedSourceArchive(PackageObject, FPCVersion, ARequest.Files.First, ErrString) then
-          begin
-          raise EJsonWebException.CreateHelp('Validity check on source failed: ' + ErrString, 400);
-          end;
-
-        IsNew := not DirectoryExists(GetPackageRepoPath(PackageName));
-
-        if IsNew and (PackageObject.PackageState <> prspsInitial) then
-          raise Exception.CreateFmt('There is no repository for package %s, while the package is not new anymore.', [PackageName]);
-
-        if IsNew then
-          begin
-          TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
-          AddGITRepositoryForNewPackage(PackageName);
-          end;
-
-        RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
-
-        AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
-        AResponse.Code := 200;
-        end
-      else if (Command='list') and (ARequest.Method='GET') then
-        begin
-        FPCVersion := GetVersionFromPathInfo(ARequest.GetNextPathInfo);
+        FPCVersion := GetVersionFromPathInfo(FPCVersionStr, AccessToken);
         RepoLogCollection := ObtainGITLogForPackage(PackageName, FPCVersion.GetBranchName);
         try
-          AResponse.Content := TJSONRttiStreamHelper.ObjectToJSONString(RepoLogCollection, nil, [tcsdfCollectionAsList]);
-          AResponse.Code := 200;
+          Result := TJSONRttiStreamHelper.ObjectToJSON(RepoLogCollection, nil, [tcsdfCollectionAsList]);
         finally
           RepoLogCollection.Free;
         end;
         end
-      else if Command <> '' then
-        begin
-        DownloadTAGSource(AResponse, PackageName, Command);
-        AResponse.Code := 200;
-        end
       else
-        begin
-        AResponse.Code := 405;
-        end;
-      AResponse.CodeText := GetStatusCode(AResponse.Code);
+        raise EJsonWebException.CreateHelp('Not clear what to do', 500);
     finally
-      PackageObject.Free;
+      FPackageObject.Free;
     end;
     end
   else
-    raise Exception.Create('Invalid response from PackageManager.');
+    raise EJsonWebException.CreateHelp('Invalid response from PackageManager.', 500);
 end;
 
-function TprPackageWM.GetFPCVersionCollection: TfprFPCVersionCollection;
+function TprPackageWM.GetFPCVersionCollection(AccessToken: string): TfprFPCVersionCollection;
 begin
   Result := TfprFPCVersionCollection.Instance;
   if Result.Count = 0 then
     begin
-    if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', True, Result) then
+    if not JSONObjectRestRequest(IncludeHTTPPathDelimiter(TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl'))+'fpcversion', AccessToken, Result) then
       raise Exception.Create('Failed to get FPC version list');
     end;
 end;
@@ -248,7 +203,7 @@ begin
     end;
 end;
 
-function TprPackageWM.CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; out ErrorStr: string): Boolean;
+function TprPackageWM.CheckUploadedSourceArchive(APackage: TfprPackage; AFPCVersion: TfprFPCVersion; AFile: TUploadedFile; AccessToken: string; out ErrorStr: string): Boolean;
 var
   BuildAgentResponseList: TfprBuildAgentResponseList;
   BuildAgentResponse: TfprBuildAgentResponse;
@@ -261,12 +216,12 @@ var
 begin
   Result := True;
   try
-    URL := RetrieveBuildAgentURL(AFPCVersion.Name);
+    URL := RetrieveBuildAgentURL(AFPCVersion.Name, AccessToken);
     AFile.Stream.Seek(0, soFromBeginning);
     URL := URL + 'manifest?cputarget=x86_64&ostarget=linux&fpcversion='+AFPCVersion.Name+'&chunked=false';
     BuildAgentResponseList := TfprBuildAgentResponseList.Create;
     try
-      if not JSONObjectRestRequest(URL, True, BuildAgentResponseList, 'POST', AFile.Stream) then
+      if not JSONObjectRestRequest(URL, AccessToken, BuildAgentResponseList, 'POST', AFile.Stream) then
         begin
         Result := False;
         ErrorStr := 'Call to buildagent failed.';
@@ -456,7 +411,7 @@ begin
 end;
 
 function TprPackageWM.TagPackage(PackageName, TagMessage: string; FPCVersion: TfprFPCVersion;
-  GITTag: string; Hash: string = ''): string;
+  GITTag, AccessToken: string; Hash: string = ''): string;
 var
   TmpPath: string;
   ClonePath: string;
@@ -529,7 +484,7 @@ begin
 
     StrStream := TStringStream.Create(TagAdded);
     try
-      ResponseJSON := ObtainJSONRestRequest(NotifyPackageManagerTagAddedURL, True, 'POST', StrStream);
+      ResponseJSON := TfprWebModule.ObtainJSONRestRequest(NotifyPackageManagerTagAddedURL, AccessToken, 'POST', StrStream);
       try
         if ResponseJSON.JSONType <> jtObject then
           raise Exception.Create('Invalid response from package-manager while adding tag.');
@@ -601,23 +556,23 @@ begin
   SetGitUserAndEmail(RepoPath);
 end;
 
-function TprPackageWM.GetVersionFromPathInfo(APathInfo: string): TfprFPCVersion;
+function TprPackageWM.GetVersionFromPathInfo(APathInfo, AccessToken: string): TfprFPCVersion;
 begin
   if APathInfo='' then
-    Result := GetFPCVersionCollection.DefaultVersion
+    Result := GetFPCVersionCollection(AccessToken).DefaultVersion
   else
     begin
-    Result := GetFPCVersionCollection.FindVersion(APathInfo);
+    Result := GetFPCVersionCollection(AccessToken).FindVersion(APathInfo);
     if not Assigned(Result) then
       raise Exception.CreateFmt('Unknown FPC-Version [%s]', [APathInfo]);
     end;
 end;
 
-constructor TprPackageWM.Create(AOwner: TComponent);
+constructor TprPackageWM.Create();
 var
   GlobalSettings: TDCSGlobalSettings;
 begin
-  inherited Create(AOwner);
+  inherited Create();
 
   GlobalSettings := TDCSGlobalSettings.GetInstance;
   if GlobalSettings.GetSettingAsString('AllowCorsOrigin') <> '' then
@@ -687,7 +642,130 @@ begin
     end;
 end;
 
-initialization
-  RegisterHTTPModule('package', TprPackageWM);
+function TprPackageWM.DoHandleRequest(ARequest: TRequest; JSONContent: TJSONData): TJSONData;
+var
+  AccessToken: String;
+begin
+  AccessToken := GetAccessToken(ARequest);
+
+  Result := HandleRepositoryRequest(
+    ARequest.Method,
+    ARequest.RouteParams['packagename'],
+    ARequest.RouteParams['command'],
+    ARequest.RouteParams['fpcversion'],
+    ARequest.QueryFields.Values['message'],
+    ARequest.QueryFields.Values['hash'],
+    AccessToken,
+    ARequest.Files);
+end;
+
+procedure TprPackageWM.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+begin
+  inherited DoRespondToJSONMessage(IncomingMessage, JSONData, AResponse, Handled);
+end;
+
+function TprPackageWM.DoHandleRawRequest(ARequest: TRequest; AResponse: TResponse): Boolean;
+var
+  AccessToken,
+  PackageName,
+  PackageURL: String;
+
+var
+  ErrString, RevHash: string;
+  FPCVersion: TfprFPCVersion;
+  IsNew: Boolean;
+  Command: string;
+begin
+  Result := False;
+  AccessToken := GetAccessToken(ARequest);
+
+  PackageName := ARequest.RouteParams['packagename'];
+  PackageURL := TDCSGlobalSettings.GetInstance.GetSettingAsString('packagemanagerurl') + '/package/'+PackageName;
+  Command := ARequest.RouteParams['command'];
+  try
+    // To my regret FPackageObject is used in DoHandleRawRequest and in
+    // DoHandleRequest. That's why the code to free it is so damn complex.
+    FPackageObject := TfprWebModule.specialize ObtainCollectionItemRestRequest<TfprPackage>(PackageURL, AccessToken);
+  Except
+    on E: Exception do
+      begin
+      if E is EHTTPClient then
+        begin
+        // Probably.... 404
+        AResponse.Code := 404;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        Result := True;
+        Exit;
+        end
+      else
+        Raise;
+      end;
+  end;
+
+  if assigned(FPackageObject) then
+    begin
+    try
+      if ARequest.Method = 'POST' then
+        begin
+        if (FPackageObject.OwnerId <> TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken)) and (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken)<>'admin') then
+          raise Exception.Create('You have not enough rights to upload sources for this package');
+
+        if ARequest.Files.Count <> 1 then
+          raise Exception.Create('Missing package in request');
+
+        FPCVersion := GetVersionFromPathInfo(Command, AccessToken);
+
+        if not CheckUploadedSourceArchive(FPackageObject, FPCVersion, ARequest.Files.First, AccessToken, ErrString) then
+          begin
+          raise EJsonWebException.CreateHelp('Validity check on source failed: ' + ErrString, 400);
+          end;
+
+        IsNew := not DirectoryExists(GetPackageRepoPath(PackageName));
+
+        if IsNew and (FPackageObject.PackageState <> prspsInitial) then
+          raise Exception.CreateFmt('There is no repository for package %s, while the package is not new anymore.', [PackageName]);
+
+        if IsNew then
+          begin
+          TfprLog.Log(Format('Package [%s] is new. Create a repository for it.', [PackageName]));
+          AddGITRepositoryForNewPackage(PackageName);
+          end;
+
+        RevHash := AddSourcesToGITRepository(PackageName, FPCVersion, ARequest.Files.First);
+
+        AResponse.Content := '{"sourcehash": "'+RevHash+'"}';
+        AResponse.Code := 200;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        Result := True;
+        end
+      else if (Command <> '') and (Command <> 'list') and (Command <> 'tagpackage') then
+        begin
+        DownloadTAGSource(AResponse, FPackageObject.Name, Command);
+        AResponse.Code := 200;
+        AResponse.CodeText := GetStatusCode(AResponse.Code);
+        Result := True;
+        end
+    finally
+      if Result then
+        FPackageObject.Free;
+    end;
+    end
+  else
+    raise EJsonWebException.CreateHelp('Invalid response from PackageManager.', 500);
+end;
+
+function TprPackageWM.GetAccessToken(var ARequest: TRequest): String;
+var
+  AccessToken: String;
+  AuthorizationToken: String;
+begin
+  AuthorizationToken := ARequest.Authorization;
+  if copy(AuthorizationToken, 1, 7) = 'Bearer ' then
+    AccessToken := copy(AuthorizationToken, 8, length(AuthorizationToken) - 7)
+  else
+    AccessToken := '';
+  Result := AccessToken;
+end;
+
 end.
 

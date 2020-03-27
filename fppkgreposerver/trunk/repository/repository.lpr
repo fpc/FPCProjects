@@ -9,10 +9,12 @@ uses
   classes,
   sysutils,
   HTTPDefs,
+  httproute,
   fphttpapp,
   opensslsockets,
   jsonparser,
   TLoggerUnit,
+  cnocStackJSONHandlerThread,
   csModel,
   fprErrorHandling,
   fprSetupLogging,
@@ -23,6 +25,8 @@ uses
 var
   GlobalSettings: TDCSGlobalSettings;
   ConfigFileName: String;
+  GStackClient: TcnocStackJSONHandlerThread;
+  PackageHandler: TprPackageWM;
 
 begin
   TcsDescriber.GlobalDefaultExportNameStyle := tcsensLowerCase;
@@ -37,6 +41,9 @@ begin
   GlobalSettings.AddSetting('GITRepositoriesPath', 'GIT', 'RepositoriesPath', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('GITUserName', 'GIT', 'UserName', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('GITEmail', 'GIT', 'Email', '', #0, dcsPHasParameter);
+
+  GlobalSettings.AddSetting('StackHost', 'Stack', 'host', 'stackhost', 's', dcsPHasParameter);
+  GlobalSettings.AddSetting('StackPort', 'Stack', 'port', 'stackport', #0, dcsPHasParameter);
 
   AddLoggingSettings;
 
@@ -58,11 +65,30 @@ begin
   if TLogger.GetInstance().GetAllAppenders().Count > 0 then
     TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance().GetAllAppenders.Items[0]);
 
-  Application.OnShowRequestException := @fprOnShowRequestException;
+  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['PMPackage']);
+  try
+    PackageHandler := TprPackageWM.Create();
+    try
+      HTTPRouter.RegisterRoute('/package/:packagename/:command/:fpcversion', rmAll, PackageHandler);
+      HTTPRouter.RegisterRoute('/package/:packagename/:command', rmAll, PackageHandler);
+      HTTPRouter.RegisterRoute('/package/:packagename', rmAll, PackageHandler);
+      HTTPRouter.RegisterRoute('/package', rmAll, PackageHandler);
+      GStackClient.AddHandler('package', PackageHandler);
 
-  Application.Port:=8089;
-  Application.Threaded := False;
-  Application.Initialize;
-  Application.Run;
+      Application.Port:=8089;
+      Application.OnShowRequestException := @fprOnShowRequestException;
+      Application.Initialize;
+      Application.Run;
+
+      GStackClient.Terminate;
+      GStackClient.WaitFor;
+    finally
+      PackageHandler.Free;
+    end;
+  finally
+    GStackClient.Free;
+  end;
+
+
 end.
 

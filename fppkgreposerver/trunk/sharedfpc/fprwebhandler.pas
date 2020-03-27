@@ -45,6 +45,7 @@ type
     function RetrieveBuildAgentURL(FPCVersion: string; AccessToken: string): string;
     procedure JSONContentStringToObject(AContentString: string; AnObject: TObject);
     function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; virtual;
+    function DoHandleRawRequest(ARequest : TRequest; AResponse : TResponse): Boolean; virtual;
     procedure HandleCors(ARequest: TRequest; AResponse: TResponse; out StopProcessing: Boolean); virtual;
     procedure RespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
     procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); virtual;
@@ -112,6 +113,8 @@ begin
   TfprLog.LogTrace('Received [' +ARequest.Method+ '] request.', ARequest.PathInfo + ':' + ARequest.Query, ARequest);
 
   HandleCors(ARequest, AResponse, StopProcessing);
+  if not StopProcessing then
+    StopProcessing := DoHandleRawRequest(ARequest, AResponse);
   if not StopProcessing then
     begin
     JSONContent:=nil;
@@ -410,6 +413,11 @@ procedure TfprWebHandler.DoRespondToJSONMessage(const IncomingMessage: PcnocStac
 begin
   // Do nothing
   AResponse := nil;
+end;
+
+function TfprWebHandler.DoHandleRawRequest(ARequest: TRequest; AResponse: TResponse): Boolean;
+begin
+  Result := False;
 end;
 
 end.

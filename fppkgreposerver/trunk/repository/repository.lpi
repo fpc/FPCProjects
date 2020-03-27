@@ -23,7 +23,7 @@
         <CommandLineParams Value="-e"/>
       </local>
       <environment>
-        <UserOverrides Count="7">
+        <UserOverrides Count="9">
           <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:5000"/>
           <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
           <Variable2 Name="Connections__PackageManagerURL" Value="http://localhost:8088"/>
@@ -31,6 +31,8 @@
           <Variable4 Name="GIT__RepositoriesPath" Value="gitrepos"/>
           <Variable5 Name="GIT__UserName" Value="FPPKG Repository server"/>
           <Variable6 Name="GIT__Email" Value="noreply@cnoc.nl"/>
+          <Variable7 Name="Stack__host" Value="localhost"/>
+          <Variable8 Name="Stack__port" Value="5425"/>
         </UserOverrides>
       </environment>
       <FormatVersion Value="2"/>
@@ -41,7 +43,7 @@
             <CommandLineParams Value="-e"/>
           </local>
           <environment>
-            <UserOverrides Count="7">
+            <UserOverrides Count="9">
               <Variable0 Name="OIDC__OpenIDProviderURL" Value="http://localhost:5000"/>
               <Variable1 Name="HTTP__AllowCorsOrigin" Value="http://localhost:4200"/>
               <Variable2 Name="Connections__PackageManagerURL" Value="http://localhost:8088"/>
@@ -49,6 +51,8 @@
               <Variable4 Name="GIT__RepositoriesPath" Value="gitrepos"/>
               <Variable5 Name="GIT__UserName" Value="FPPKG Repository server"/>
               <Variable6 Name="GIT__Email" Value="noreply@cnoc.nl"/>
+              <Variable7 Name="Stack__host" Value="localhost"/>
+              <Variable8 Name="Stack__port" Value="5425"/>
             </UserOverrides>
           </environment>
         </Mode1>
