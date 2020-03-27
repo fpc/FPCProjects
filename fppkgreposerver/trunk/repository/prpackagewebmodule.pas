@@ -43,14 +43,14 @@ type
 
   { TprPackageWM }
 
-  TprPackageWM = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONRespondToMessage)
+  TprPackageWM = class(TfprWebHandler, IRouteInterface, IcnocStackHandler, IcnocStackJSONHandleMessage)
   protected
     FPackageObject: TfprPackage;
 
     function DoHandleRawRequest(ARequest: TRequest; AResponse: TResponse): Boolean; override;
 
     function DoHandleRequest(ARequest : TRequest; JSONContent: TJSONData): TJSONData; override;
-    procedure DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean); override;
+    procedure HandleJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; var Handled: Boolean);
 
     function HandleRepositoryRequest(
       Method,
@@ -659,9 +659,32 @@ begin
     ARequest.Files);
 end;
 
-procedure TprPackageWM.DoRespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out AResponse: TJSONData; var Handled: Boolean);
+procedure TprPackageWM.HandleJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; var Handled: Boolean);
+var
+  AccessToken: String;
+  PackageName, PackageRepoPath: String;
 begin
-  inherited DoRespondToJSONMessage(IncomingMessage, JSONData, AResponse, Handled);
+  AccessToken := IncomingMessage^.GetExtAccessKey(0);
+  Handled := False;
+
+  if JSONData.get('method', '')='DELETE' then
+    begin
+    PackageName := JSONData.Get('package','');
+    if (PackageName='') then
+      raise EJsonWebException.CreateHelp('No package provided', 400);
+
+    if (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken)<>'admin') then
+      raise EJsonWebException.CreateFmtHelp('You have not enough rights to delete the [%s] package', [PackageName], 403);
+
+    PackageRepoPath := GetPackageRepoPath(PackageName);
+    if not DirectoryExists(PackageRepoPath) then
+      raise EJsonWebException.CreateFmtHelp('Can not delete package [%s] because it is not found.', [PackageName], 403);
+
+    RenameFile(PackageRepoPath, ChangeFileExt(PackageRepoPath, '')+'_'+FormatDateTime('yyyymmddhhnn', Now)+'.bck');
+
+    Handled := True;
+    Exit;
+    end;
 end;
 
 function TprPackageWM.DoHandleRawRequest(ARequest: TRequest; AResponse: TResponse): Boolean;

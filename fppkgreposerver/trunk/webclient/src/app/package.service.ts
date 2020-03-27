@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -71,6 +71,13 @@ export class PackageService {
   approvePackage(name: string): Observable<Package> {
     const url = `${this.packageManagerURL}/package/${name}/approve`;
     return this.http.put<Package>(url, null, {headers: this.getHeaders()});
+  }
+
+  removePackage(name: string): Observable<any> {
+    const url = `${this.packageManagerURL}/package/${name}`;
+    return this.http.delete<Package>(url, {headers: this.getHeaders()}).pipe(
+      tap(_ => this._reload.next(null))
+    );
   }
 
   addPackage(newPackage: Package): Observable<Package> {

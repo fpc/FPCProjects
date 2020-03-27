@@ -75,6 +75,11 @@ export class PackageComponent implements OnInit {
       .subscribe(fpcPackage => this.updatePackage());
   }
 
+  removePackage() {
+    this._packageService.removePackage(this.currentPackage.name)
+      .subscribe(_ => this.router.navigate([`/`]));
+  }
+
   patchPackageCategory() {
     this._packageService.patchPackageCategory(this.currentPackage)
       .subscribe(fpcPackage => this.updatePackage());

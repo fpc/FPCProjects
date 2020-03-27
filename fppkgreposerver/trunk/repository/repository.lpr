@@ -65,7 +65,7 @@ begin
   if TLogger.GetInstance().GetAllAppenders().Count > 0 then
     TLogger.GetInstance('cnocOIDC').AddAppender(TLogger.GetInstance().GetAllAppenders.Items[0]);
 
-  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['PMPackage']);
+  GStackClient := TcnocStackJSONHandlerThread.Create(GlobalSettings.GetSettingAsString('StackHost'), StrToIntDef(GlobalSettings.GetSettingAsString('StackPort'), 0), ['PRPackage']);
   try
     PackageHandler := TprPackageWM.Create();
     try

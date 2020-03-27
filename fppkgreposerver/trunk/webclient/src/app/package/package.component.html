@@ -7,6 +7,7 @@
     <app-fpc-version-select-box class="float-right"></app-fpc-version-select-box>
     <button *ngIf="mayEditPackage" class="btn btn-primary float-right" (click)="showUploadSourceDialog()">Upload source</button>
     <button class="btn btn-primary float-right" *ngIf="isAdmin && (currentPackage.packagestate=='acceptance')" (click)="approvePackage()">Approve</button>
+    <button class="btn btn-primary float-right" *ngIf="isAdmin && ((currentPackage.packagestate=='acceptance') || (currentPackage.packagestate=='approved') || (currentPackage.packagestate=='new'))" (click)="removePackage()">Remove</button>
     <button *ngIf="(mayEditPackage) && (currentPackage.packagestate != 'acceptance') && (commitListChild.latestUploadIsTaggeable)" class="btn btn-primary float-right" (click)="showTagDialog(fpcversion)" title="Create a new version based on the latest uploaded sources">Tag latest upload</button>
   </div>
   <div class="card-body">

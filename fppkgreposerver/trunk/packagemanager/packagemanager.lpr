@@ -43,6 +43,7 @@ begin
   GlobalSettings.AddSetting('OpenIDProviderURL', 'OIDC', 'OpenIDProviderURL', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('AllowCorsOrigin', 'HTTP', 'AllowCorsOrigin', '', #0, dcsPHasParameter);
   GlobalSettings.AddSetting('PackageListFile', 'Storage', 'PackageListFile', '', #0, dcsPHasParameter);
+  GlobalSettings.AddSetting('PackageBackupPath', 'Storage', 'PackageBackupPath', '', #0, dcsPHasParameter);
 
   GlobalSettings.AddSettingTemplate('FPCVersion_', 'Name', 'FPCVersionName-', '');
   GlobalSettings.AddSettingTemplate('FPCVersion_', 'IsDefault', 'FPCVersionIsDefault-', 'false');
