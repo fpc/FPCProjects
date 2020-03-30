@@ -112,6 +112,8 @@ spec:
         env:
         - name: Storage__PackageListFile
           value: /home/locuser/data/packages.json
+        - name: Storage__PackageBackupPath
+          value: /home/locuser/data/deleted
         - name: OIDC__OpenIDProviderURL
           value: https://fpc.cnoc.nl/identityserver
         image: quay.io/loesje/packagemanager
@@ -160,6 +162,10 @@ spec:
           value: FPPKG Repository server
         - name: GIT__Email
           value: noreply@cnoc.nl
+        - name: Stack__host
+          value: localhost
+        - name: Stack__port
+          value: "5425"
         image: quay.io/loesje/repository
         volumeMounts:
         - name: persistent-disk-gitrepos
