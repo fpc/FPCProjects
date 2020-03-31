@@ -289,6 +289,8 @@ begin
       if (TfprAuthenticationHandler.GetInstance.GetUserRole(AccessToken)<>'admin') and
         (TfprAuthenticationHandler.GetInstance.GetSubject(AccessToken) <> PMPackage.OwnerId) then
         raise EJsonWebException.CreateHelp('You are not allowed to add this package to the repository', 403);
+      if (PMPackage.PackageState in [prspsInitial, prspsAcceptance, prspsRevoked]) then
+        raise EJsonWebException.CreateFmtHelp('This package''s state [%s] forbids publishing', [CfprPackageStateString[PMPackage.PackageState]], 403);
     finally
       PMPackage.Free;
     end;
