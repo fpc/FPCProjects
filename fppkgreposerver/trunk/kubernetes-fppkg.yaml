@@ -177,11 +177,6 @@ spec:
         - name: OIDC__OpenIDProviderURL
           value: https://fpc.cnoc.nl/identityserver
 
-        - name: Log_file__Format
-          value: console
-        - name: Log_file__Level
-          value: Trace
-
         - name: Connections__PackageManagerURL
           value: http://localhost:8088
         - name: Connections__BuildManagerURL
