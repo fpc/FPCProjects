@@ -187,7 +187,10 @@ begin
           begin
           Package := MasterRepository.PackageList.Items[i];
           if not Assigned(ARepository.PackageList.FindPackage(Package.Name)) then
+            begin
+            TfprLog.Log(Format('Rebuild package [%d]/[%d]: [%s]', [i, MasterRepository.PackageList.Count, Package.Name]));
             RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken, ARepository.ExportCategoryAndSupport)
+            end;
           end;
         end;
 
@@ -195,7 +198,7 @@ begin
       for i := 0 to ARepository.PackageList.Count -1 do
         begin
         Package := ARepository.PackageList.Items[i];
-
+        TfprLog.Log(Format('Rebuild package [%d]/[%d]: [%s]', [i, ARepository.PackageList.Count, Package.Name]));
         RebuildPackage(Package, AFPCVersion.FPCVersion, Manifest, PackagesNode, RepositoryURL, BuildAgentURL, RepoTempPath, AccessToken, ARepository.ExportCategoryAndSupport);
         end;
 
@@ -281,7 +284,6 @@ var
   PMPackage: TfprPackage;
   NodeElement: TDOMElement;
 begin
-  TfprLog.Log(Format('Rebuild package [%s]', [APackage.Name]));
   try
     HTTPClient := TFPHTTPClient.Create(nil);
     try
