@@ -9,6 +9,7 @@ uses
   dcsGlobalSettings,
   TLoggerUnit,
   TAppenderUnit,
+  TPatternLayoutUnit,
   TEventLogAppenderUnit,
   TConsoleAppenderUnit,
   TLevelUnit,
@@ -41,6 +42,7 @@ var
   LogFilename: string;
   LogDirectory, LogLevel: string;
   Appender: TAppender;
+  Layout: TPatternLayout;
   LogMaxFilesize: Longint;
   LogMaxFileCount: LongInt;
 
@@ -54,7 +56,9 @@ begin
     LogFormat := GlobalSettings.GetSettingAsString('LogFormat_'+TemplateList.Values[i]);
     if SameText(LogFormat, 'Console') then
       begin
-      Appender  := TConsoleAppender.Create();
+      // The layout will leak...
+      Layout := TPatternLayout.Create('%d{yyyy/mm/dd hh:nn:ss:zzz} [%p] %L: %m%n');
+      Appender  := TConsoleAppender.Create( Layout );
       TLogger.GetInstance().AddAppender(Appender)
       end
     else if SameText(LogFormat, 'File') then
