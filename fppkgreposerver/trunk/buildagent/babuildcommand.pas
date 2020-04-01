@@ -446,12 +446,16 @@ end;
 procedure TbaCustomBuildCommand.FillCommandBasedOnRequest(ARequest: TRequest);
 var
   fs: TFileStream;
+  l: Integer;
 begin
   Inherited;
+  l := length(ARequest.Content);
+  if l = 0 then
+    raise EHTTP.CreateHelp('No zip-file in content of request', 400);
   FTempArchiveFileName := GetTempFileName;
   fs := TFileStream.Create(FTempArchiveFileName, fmCreate);
   try
-    fs.WriteBuffer(ARequest.Content[1], length(ARequest.Content));
+    fs.WriteBuffer(ARequest.Content[1], l);
   finally
     fs.Free;
   end;
