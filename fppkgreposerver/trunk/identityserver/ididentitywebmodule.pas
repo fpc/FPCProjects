@@ -275,6 +275,8 @@ begin
   FProvider.LoginTemplate.FileName := 'logintemplate.html';
   FProvider.LogoutTemplate.FileName := 'logouttemplate.html';
 
+  FProvider.TokenExpiration := SecsPerHour * 2;
+
   FAuthenticator := TidAuthenicator.Create;
   FProvider.AddContentProvider(FAuthenticator);
 
