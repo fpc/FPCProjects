@@ -15,6 +15,7 @@ WORKDIR /home/locuser/svn
 
 COPY buildagent/buildagent /home/locuser
 COPY buildagent/config/ppcx64_3.0.2 /home/locuser/bin
+COPY buildagent/config/ppcx64_3.0.4 /home/locuser/bin
 COPY buildagent/config/fppkg.cfg.template /home/locuser/templates
 COPY buildagent/config/fppkg.cfg.304.template /home/locuser/templates
 

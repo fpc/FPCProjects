@@ -58,7 +58,7 @@ spec:
         - name: TestEnv_x86_64_linux_trunk__BuildPath
           value: /home/locuser/buildenv/build/
         - name: TestEnv_x86_64_linux_trunk__StartCompiler
-          value: ppcx64_3.0.2
+          value: ppcx64_3.0.4
         - name: TestEnv_x86_64_linux_trunk__FppkgCfgTemplate
           value: /home/locuser/templates/fppkg.cfg.template
         - name: TestEnv_x86_64_linux_trunk__RemoteMirrors
