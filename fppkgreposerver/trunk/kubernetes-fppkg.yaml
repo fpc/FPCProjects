@@ -12,6 +12,10 @@ spec:
     port: 443
     protocol: TCP
     targetPort: 4443
+  - name: port-rsync
+    port: 22
+    protocol: TCP
+    targetPort: 5022
   selector:
     app: fppkg
   type: LoadBalancer
@@ -285,6 +289,14 @@ spec:
         volumeMounts:
         - name: persistent-disk-packagedata
           mountPath: /home/locuser/data
+
+      # rsyncserver container
+      - name: rsyncserver
+        image: quay.io/loesje/rsyncserver
+        volumeMounts:
+        - name: persistent-disk-repo
+          mountPath: /home/fpc/repo
+          readOnly: true
   volumeClaimTemplates:
   - metadata:
       name: persistent-disk-repo

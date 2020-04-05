@@ -189,6 +189,17 @@ services:
       - TestEnv_x86_64_linux_3.2.0__AdditionalPackages=lazmkunit
       - TestEnv_x86_64_linux_3.2.0__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_2_0_rc1
 
+  rsyncserver:
+      image: 'quay.io/loesje/rsyncserver:latest'
+      build:
+        context: .
+        dockerfile: docker-rsyncserver.dockerfile
+      ports:
+        - "5022:22"
+      container_name: rsyncserver
+      volumes:
+        - repo:/home/fpc/repo
+
   fppkgrepository:
       image: 'quay.io/loesje/fppkgrepository:latest'
       build:
