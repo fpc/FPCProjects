@@ -402,9 +402,6 @@ begin
       ManifestXML.Free;
     end;
     end;
-
-  ReturnMessage := '';
-  Result := true;
 end;
 
 class function TbaManifestCommand.TextName: string;
