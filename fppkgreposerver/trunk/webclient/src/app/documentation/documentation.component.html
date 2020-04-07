@@ -1,0 +1,96 @@
+<div class="media">
+  <img class="d-flex mr-3"  style="width: 64px" src="assets/Lazarus-icons-lpr-proposal-bpsoftware.png" alt="Lazarus Logo (Leopard)">
+  <div class="media-body">
+    <markdown ngPreserveWhitespaces class="documentation_md">
+      # What is this website for?
+
+      This website maintains a collection of Free Pascal packges. The packages are in the FPMake
+      format.
+
+      ## How can I use these packages?
+
+      To easiest way to install a package is by using `fppkg`, a tool which is part of the Free Pascal
+      distribution. Type the following on a command-line to download and install a package:
+
+      `fppkg install &lt;package name&gt;`
+
+      Once installed all the units within the package are ready to be used in your code.
+
+      ## Why do I have to select the version of the Free Pascal compiler (FPC)?
+
+      Not all packages are available for every FPC-version, or the version of the package that
+      is available may differ.
+
+      ## I have never used `fppkg` before, but a lot of packages are already installed, how is this possible?
+
+      A lot of the packages within this repository are also bundled with Free pascal and are installed
+      by default. This repository is used to dictribute updates of those packages.
+
+      ## What are the 'fixes' and 'trunk' FPC-versions?
+
+      These are the development versions of Free Pascal, which can change any minute. At this moment
+      fixes correspond to the version-number 3.2.1 and trunk to 3.3.1. Normally you do not need those.
+
+      ## What are there much less packages available for the FPC-versions 'fixes' and 'trunk'?
+
+      The packages within this repository which are also part of Free Pascal itself are missing
+      for these development FPC-versions. This because these fpc-versions are moving targets
+      that can change any minute. So distributing updates makes no sense.
+
+      ## Where do these packages come from?
+
+      Anyone can add their own Pascal-packages to this repository.
+
+      ## What does 'support' stands for?
+
+      The packages marked with 'Free Pascal development team' are distributed and maintained
+      by the Free Pascal team. 'Community' packages are added by others.
+
+      # How can I add my own packages?
+
+      Adding packages is not difficult. It comes with a responsibility though, users will expect
+      you to maintain the packages, and provide updates when they are made available.
+
+      To add a package, follow these steps:
+
+      1. Create a FPMake-based package for your project by adding a fpmake.pp file.
+      2. Create an archive for your package. This can by done by running `fppkg archive`.
+      3. Login to this website, using your account for the Free Pascal bugtracker or
+         Forum.
+      4. Test-build your package. Go to the 'build' section of this website, choose one of
+         the buildagents, upload your package and choose 'Build package'. Please fix any
+         issued before adding the package.
+      5. Add the package using the 'add package' button at the bottom of the list with
+         packages. Enter the name of the package. Make sure that the name matches the name
+         in the fpmake.pp file exactly. (case-sensitive)
+      6. Search the new package in the list and click on it. Make sure to select the FPC-version
+         you want to upload the package for, and choose 'Upload source' and upload the
+         package-archive.
+      7. The just uploaded version is now available in the 'Upload history' list. You may have
+         to click on it so it expands. Now do another test-build.
+      8. Once you are satisfied with the uploaded source, 'tag' the package. By tagging the
+         upload, you mark the upload as a specific version. Once an upload has been tagged into
+         a version, it is only possible to upload archives with an higher version.
+      9. New packages have to be approved by an administrator, before they are added to
+         a repository. So you have to wait until your package gets approved.
+      10. Once approved, when you select the new version of the package, a 'publish to testing'
+         buttons appears. Press this button to add the package to the testing repository. Your
+         package is not available immediately. Rebuilding the repository is a manual steps
+         which has to be done by an administrator.
+
+      ## What is the difference between the testing and production repositories?
+
+      Only administators can add packages to the production repositories. The testing repositories
+      are there so that people can add their own packages and updates to those packages, without
+      the interferral of an administrator. This way it is possible to test your own or someone
+      else's packages.
+
+      ## How can I install the packages from the testing-repository?
+
+      You have to adapt your `fppkg` configuration. Locate the fppkg.cfg configuration file.
+      (one way to do this is to run `fppkg -v` and scan the output)  Then change the
+      'remotemirrors' to 'http://fppkg.cnoc.nl/repo/testing/mirrors.xml'
+    </markdown>
+  </div>
+</div>
+

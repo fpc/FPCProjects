@@ -7,6 +7,7 @@ import { LoginComponent } from './login/login.component';
 import { AdminComponent } from './admin/admin.component';
 import { CategoriesComponent } from './categories/categories.component';
 import { AboutComponent } from './about/about.component';
+import { DocumentationComponent } from './documentation/documentation.component';
 import { PackagePageComponent } from './package-page/package-page.component';
 import { PackagesPageComponent } from './packages-page/packages-page.component';
 import { BuildTaskPageComponent } from './build-task-page/build-task-page.component';
@@ -50,6 +51,11 @@ const routes: Routes = [
   {
     path: 'about',
     component: AboutComponent,
+    children: []
+  },
+  {
+    path: 'documentation',
+    component: DocumentationComponent,
     children: []
   },
   {

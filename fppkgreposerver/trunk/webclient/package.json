@@ -27,6 +27,7 @@
     "core-js": "^2.6.11",
     "font-awesome": "^4.7.0",
     "jsrsasign": "7.2.1",
+    "ngx-markdown": "^6.0.0",
     "node-sass": "^4.13.0",
     "rxjs": "^5.5.12",
     "tslib": "^1.10.0",

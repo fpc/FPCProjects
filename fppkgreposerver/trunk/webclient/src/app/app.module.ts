@@ -52,6 +52,8 @@ import { EditableOnEnterDirective } from './edit-in-place/editable-on-enter.dire
 import { EditableOnStartDirective } from './edit-in-place/editable-on-start.directive';
 import { AppConfigService } from './app-config.service';
 import { PackageCommitListComponent } from './package-commit-list/package-commit-list.component';
+import { MarkdownModule } from 'ngx-markdown';
+import { DocumentationComponent } from './documentation/documentation.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +87,8 @@ import { PackageCommitListComponent } from './package-commit-list/package-commit
     EditableComponent,
     EditableOnEnterDirective,
     EditableOnStartDirective,
-    PackageCommitListComponent
+    PackageCommitListComponent,
+    DocumentationComponent
   ],
   imports: [
     BrowserModule,
@@ -94,7 +97,8 @@ import { PackageCommitListComponent } from './package-commit-list/package-commit
     FormsModule,
     AuthModule.forRoot(),
     NgbModule.forRoot(),
-    AppRoutingModule
+    AppRoutingModule,
+    MarkdownModule.forRoot()
   ],
   providers: [
     OidcSecurityService,
