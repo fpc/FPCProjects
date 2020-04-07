@@ -70,6 +70,20 @@ services:
         - BuildFiles__Location=/home/locuser/buildfiles
         - BuildFiles__URL=http://localhost:4200/buildfiles/
 
+  buildagent_320:
+    network_mode: "host"
+    environment:
+      - OIDC__OpenIDProviderURL=http://localhost:5000
+      - HTTP__AllowCorsOrigin=http://localhost:4200
+      - HTTP__Port=9393
+      - Connections__BuildManagerURL=http://localhost:8181
+      - Agent__Name=Default
+      - Agent__URL=http://localhost:9393/
+      - Agent__FPCVersion=3.2.0
+      - BuildFiles__Location=/home/locuser/buildfiles
+      - BuildFiles__URL=http://localhost:4200/buildfiles/
+
+
   repository:
       network_mode: "host"
       environment:

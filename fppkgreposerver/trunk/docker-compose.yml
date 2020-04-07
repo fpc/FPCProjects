@@ -168,6 +168,8 @@ services:
         - TestEnv_x86_64_linux_3.0.4__AdditionalPackages=lazmkunit,fcl-js,fcl-passrc
         - TestEnv_x86_64_linux_3.0.4__AbsoluteFilenamesBug=true
         - TestEnv_x86_64_linux_3.0.4__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_0_4
+        - Log_file__Format=console
+        - Log_file__Level=Trace
 
   buildagent_320:
     image: 'quay.io/loesje/buildagent:latest'
@@ -188,6 +190,8 @@ services:
       - TestEnv_x86_64_linux_3.2.0__RemoteMirrors=http://webclient/repo/testing/mirrors.xml
       - TestEnv_x86_64_linux_3.2.0__AdditionalPackages=lazmkunit
       - TestEnv_x86_64_linux_3.2.0__FPCSVNUrl=https://svn.freepascal.org/svn/fpc/tags/release_3_2_0_rc1
+      - Log_file__Format=console
+      - Log_file__Level=Trace
 
   rsyncserver:
       image: 'quay.io/loesje/rsyncserver:latest'
