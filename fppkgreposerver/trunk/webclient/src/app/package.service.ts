@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  BehaviorSubject } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Package } from './package';
 import { FPCVersion } from './fpcversion';
 import { AppConfigService } from './app-config.service';

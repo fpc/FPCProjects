@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable ,  BehaviorSubject } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { Category } from './category';
 import { AppConfigService } from './app-config.service';

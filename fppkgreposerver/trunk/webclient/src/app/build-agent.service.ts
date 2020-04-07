@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpRequest, HttpEvent, HttpEventType, HttpErrorResponse } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { PackageService } from './package.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { BuildAgent } from './build-agent';
 import { FPCVersion } from './fpcversion';
 
@@ -49,12 +50,12 @@ export class BuildAgentService {
       headers = new HttpHeaders();
     }
 
-    return this._packageService.getFPCVersionList().flatMap(versionlist => {
+    return this._packageService.getFPCVersionList().pipe(mergeMap(versionlist => {
       const req = new HttpRequest('POST', buildagent.url+`build?cputarget=x86_64&ostarget=linux&fpcversion=${buildagent.fpcversion}&loglevel=error,warning,info,debug&chunked=false`, file, {
         headers: headers
       });
       return this._http.request(req);
-    })
+    }))
   }
 
   private handleError(error: any): Promise<any> {

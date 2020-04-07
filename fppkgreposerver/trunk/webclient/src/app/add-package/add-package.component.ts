@@ -1,7 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Package } from '../package';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
+import { Observable , of } from 'rxjs';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { PackageService } from '../package.service';
 import { Packageversion } from '../packageversion';

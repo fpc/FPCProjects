@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { OidcConfigService } from 'angular-auth-oidc-client';
-import { Observable } from 'rxjs/Rx';
+import { forkJoin } from 'rxjs';
 
 @Injectable()
 export class AppConfigService {
@@ -14,7 +14,7 @@ export class AppConfigService {
   ) { }
 
   loadAppConfig() {
-    return Observable.forkJoin(
+    return forkJoin(
       this.http.get('assets/config.json'),
       this.oidcConfigService.load('assets/auth.clientConfiguration.json')
     )
