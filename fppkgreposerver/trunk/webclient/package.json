@@ -29,7 +29,6 @@
     "ngx-markdown": "^6.0.0",
     "node-sass": "^4.13.0",
     "rxjs": "^6.5.5",
-    "rxjs-compat": "^6.0.0-rc.0",
     "rxjs-tslint": "^0.1.7",
     "tslib": "^1.10.0",
     "zone.js": "^0.8.29"
