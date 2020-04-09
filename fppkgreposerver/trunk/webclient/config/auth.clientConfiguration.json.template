@@ -4,7 +4,7 @@
     "client_id": "FPPKGWebClient",
     "response_type": "id_token token",
     "scope": "openid profile role buildagent",
-    "post_logout_redirect_uri": "${WebClientUrl}/unauthorized",
+    "post_logout_redirect_uri": "${WebClientUrl}",
     "start_checksession": true,
     "silent_renew": false,
     "_silent_renew_url": "https://localhost:44311/silent-renew.html",
