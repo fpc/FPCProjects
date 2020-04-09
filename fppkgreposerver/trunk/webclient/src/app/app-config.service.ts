@@ -14,9 +14,9 @@ export class AppConfigService {
   ) { }
 
   loadAppConfig() {
+    this.oidcConfigService.load('assets/auth.clientConfiguration.json')
     return forkJoin(
-      this.http.get('assets/config.json'),
-      this.oidcConfigService.load('assets/auth.clientConfiguration.json')
+      this.http.get('assets/config.json')
     )
     .toPromise()
     .then(data => {
