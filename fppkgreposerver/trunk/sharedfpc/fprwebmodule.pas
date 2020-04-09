@@ -399,7 +399,7 @@ var
   MemStream: TBytesStream;
   JSONParser: TJSONParser;
 begin
-  MemStream := ObtainJSONRestRequestStream(AnURL, Format('Received an 500-error code from [%s]', [AnURL]), AccessToken, Method, Content);
+  MemStream := ObtainJSONRestRequestStream(AnURL, Format('JSON Rest-request', [AnURL]), AccessToken, Method, Content);
   try
     JSONParser := TJSONParser.Create(MemStream, []);
     try
