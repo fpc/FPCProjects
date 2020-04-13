@@ -286,17 +286,17 @@ begin
       AmountMatchingKeys := 0;
       if (JSONJwk.Get('kid', '') = AJWT.JOSE.kid) and (JSONJwk.Get('kty', '') = 'RSA') and (JSONJwk.Get('use', '') = 'sig') then
         inc(AmountMatchingKeys);
+      end;
 
-      if AmountMatchingKeys = 0 then
-        begin
-        FLatestError := 'Failed to verify JWT, no matching key found.';
-        Exit
-        end;
-      if AmountMatchingKeys > 1 then
-        begin
-        FLatestError := 'Failed to verify JWT, multiple matching key found.';
-        Exit;
-        end;
+    if AmountMatchingKeys = 0 then
+      begin
+      FLatestError := 'Failed to verify JWT, no matching key found.';
+      Exit
+      end;
+    if AmountMatchingKeys > 1 then
+      begin
+      FLatestError := 'Failed to verify JWT, multiple matching key found.';
+      Exit;
       end;
     end;
 
