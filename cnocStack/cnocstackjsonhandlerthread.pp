@@ -47,11 +47,16 @@ type
     procedure RespondToJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; out Response: TJSONData; var Handled: Boolean);
   end;
 
+  IcnocStackJSONHandleMessage = interface(IcnocStackHandler) ['{80FDEFB8-432D-43E5-B467-8D99E72A0352}']
+    procedure HandleJSONMessage(const IncomingMessage: PcnocStackMessage; const JSONData: TJSONObject; var Handled: Boolean);
+  end;
+
   { TcnocStackJSONHandlerThread }
 
   TcnocStackJSONHandlerThread = class(TcnocStackHandlerThread)
   protected
     procedure DoRespondToMessage(const IncomingMessage: PcnocStackMessage; var Response: TBytes; var Handled: Boolean); override;
+    procedure DoHandleMessage(const IncomingMessage: PcnocStackMessage; var Handled: Boolean); override;
   end;
 
 
@@ -96,6 +101,36 @@ begin
         end;
       if supports(Handler, IcnocStackRespondToMessage, RespHandler) then
         RespHandler.RespondToMessage(IncomingMessage, Response, Handled);
+      if supports(Handler, IcnocStackHandleMessage, MessHandler) then
+        MessHandler.HandleMessage(FBinaryClient, IncomingMessage, Handled);
+      end;
+    end;
+end;
+
+procedure TcnocStackJSONHandlerThread.DoHandleMessage(const IncomingMessage: PcnocStackMessage; var Handled: Boolean);
+var
+  Handler: TObject;
+  MessHandler: IcnocStackHandleMessage;
+  JSONHandler: IcnocStackJSONHandleMessage;
+  JSONStr: TJSONStringType;
+  JSONData, JSONResponse: TJSONData;
+  JSONObject: TJSONObject;
+  MessageName: TJSONUnicodeStringType;
+begin
+  if Handled then
+    Exit;
+  JSONStr := IncomingMessage^.GetContentsAsAnsiString;
+  JSONData := GetJSON(JSONStr);
+  if Assigned(JSONData) and (JSONData.JSONType = jtObject) then
+    begin
+    JSONObject := TJSONObject(JSONData);
+    MessageName := JSONObject.Get('name', '');
+    if FHandlerMap.TryGetValue(MessageName, Handler) then
+      begin
+      if supports(Handler, IcnocStackJSONHandleMessage, JSONHandler) then
+        begin
+        JSONHandler.HandleJSONMessage(IncomingMessage, JSONObject, Handled);
+        end;
       if supports(Handler, IcnocStackHandleMessage, MessHandler) then
         MessHandler.HandleMessage(FBinaryClient, IncomingMessage, Handled);
       end;
