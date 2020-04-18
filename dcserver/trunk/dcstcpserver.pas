@@ -65,14 +65,15 @@ type
     FSensePorts: integer;
     FTCPConnection: TInetServer;
     FConnectionList: TConnectionList;
-    FDistributor: TDCSDistributor;
     FInitializationFinished: PRTLEvent;
     function CreateInetServer: TInetServer;
     procedure FTCPConnectionConnect(Sender: TObject; Data: TSocketStream);
     procedure FTCPConnectionAcceptError(Sender: TObject; ASocket: Longint; E: Exception; var ErrorAction: TAcceptErrorAction);
     procedure FTCPConnectionConnectQuery(Sender: TObject; ASocket: Longint; var Allow: Boolean);
   protected
+    FDistributor: TDCSDistributor;
     procedure Execute; override;
+    function CreateTCPConnectionThread(Data: TSocketStream): TDCSTcpConnectionThread; virtual;
   public
     procedure WaitForInitialization(out Port: integer);
     procedure StopListening;
@@ -85,21 +86,24 @@ type
 
   TDCSTcpConnectionThread = class(tthread, IDCSListener)
   private
+    FInOutputProcessor: TDCSCustomInOutputProcessor;
+  protected
     FData: TSocketStream;
     FDistributor: TDCSDistributor;
     FResponseQueue: TThreadedQueueString;
     FDebugTcpServer: TDCSTcpServer;
     FListenerId: integer;
-    FInOutputProcessor: TDCSCustomInOutputProcessor;
+    FInitialBuffer: string;
   protected
     procedure Execute; override;
     procedure SendCommand(ACommandStr: string);
     function GetListenerId: Integer;
     procedure InitListener(AListenerId: Integer);
+    function CreateInOutputProcessor: TDCSCustomInOutputProcessor; virtual;
   public
     procedure SendEvent(AnEvent: TDCSEvent);
     function GetOrigin: string;
-    constructor create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream);
+    constructor create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream; InitialBuffer: string);
     destructor Destroy; override;
   end;
 
@@ -174,7 +178,7 @@ var
   InputBuffer: array[0..InputBufferSize-1] of char;
   InputStr: string;
 begin
-  InputStr := '';
+  InputStr := FInitialBuffer;
   try
     WriteString('Welcome to FPDebug-server.');
     if not Terminated then
@@ -273,24 +277,21 @@ begin
   result := format('%d.%d.%d.%d:%d', [RemoteAddress.sin_addr.s_bytes[1], RemoteAddress.sin_addr.s_bytes[2],RemoteAddress.sin_addr.s_bytes[3], RemoteAddress.sin_addr.s_bytes[4], RemoteAddress.sin_port])
 end;
 
-constructor TDCSTcpConnectionThread.create(ADistributor: TDCSDistributor;
-  ADebugTcpServer: TDCSTcpServer; Data: TSocketStream);
-var
-  InOutputProcessorClass: TDCSInOutputProcessorClass;
+constructor TDCSTcpConnectionThread.create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream; InitialBuffer: string);
 begin
   FData := data;
+  FInitialBuffer := InitialBuffer;
 
   // Set non-blocking
+  {$IFDEF UNIX}
   fpfcntl(FData.Handle,F_SETFL,O_NONBLOCK);
+  {$ENDIF}
 
   FDistributor := ADistributor;
   FDebugTcpServer := ADebugTcpServer;
   FResponseQueue:=TThreadedQueueString.create(100, INFINITE, 100);
   FListenerId := FDistributor.AddListener(self);
-  InOutputProcessorClass :=  TDCSInOutputProcessorFactory.GetInOutputProcessorByName('json');
-  if not assigned(InOutputProcessorClass) then
-    InOutputProcessorClass := TDCSJSonInOutputProcessor;
-  FInOutputProcessor := InOutputProcessorClass.create(FListenerId, FDistributor);
+  FInOutputProcessor := CreateInOutputProcessor;
   inherited create(false);
 end;
 
@@ -301,6 +302,16 @@ begin
   FResponseQueue.Free;
   FData.Free;
   inherited Destroy;
+end;
+
+function TDCSTcpConnectionThread.CreateInOutputProcessor: TDCSCustomInOutputProcessor;
+var
+  InOutputProcessorClass: TDCSInOutputProcessorClass;
+begin
+  InOutputProcessorClass :=  TDCSInOutputProcessorFactory.GetInOutputProcessorByName('json');
+  if not assigned(InOutputProcessorClass) then
+    InOutputProcessorClass := TDCSJSonInOutputProcessor;
+  Result := InOutputProcessorClass.create(FListenerId, FDistributor);
 end;
 
 { TDCSTcpServer }
@@ -337,6 +348,7 @@ begin
     conn := false;
     InetServer := TInetServer.Create(FPort+i);
     try
+      InetServer.ReuseAddress := True;
       InetServer.Listen;
       Conn:=true;
       Break;
@@ -376,7 +388,7 @@ begin
   // when the other side disconnects unexpectedly. We do not want this and use the
   // return value to detect the lost connection.
   Data.WriteFlags := $4000; // MSG_NOSIGNAL: do not generate SIGPIPE on connection end
-  AConnectionThread:=TDCSTcpConnectionThread.create(FDistributor, Self, data);
+  AConnectionThread:=CreateTCPConnectionThread(Data);
   AConnectionThread.FreeOnTerminate:=true;
   FConnectionList.Add(AConnectionThread);
 end;
@@ -452,6 +464,11 @@ begin
     raise exception.create('Not all connections are cleared.');
   FConnectionList.Free;
   inherited Destroy;
+end;
+
+function TDCSTcpServer.CreateTCPConnectionThread(Data: TSocketStream): TDCSTcpConnectionThread;
+begin
+  Result := TDCSTcpConnectionThread.create(FDistributor, Self, data, '');
 end;
 
 end.
