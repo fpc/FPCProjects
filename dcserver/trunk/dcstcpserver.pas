@@ -308,7 +308,7 @@ end;
 procedure TDCSTcpServer.FTCPConnectionAcceptError(Sender: TObject;
   ASocket: Longint; E: Exception; var ErrorAction: TAcceptErrorAction);
 begin
-  if E is ESocketError and (ESocketError(E).Code=seAcceptFailed) and (socketerror=53) {ECONNABORTED} then
+  if (E is ESocketError) and (ESocketError(E).Code=seAcceptFailed) and (socketerror=53) {ECONNABORTED} then
     begin
     // The socket has stopped listening. The TCP-server is shutting down...
     ErrorAction:=aeaStop;
