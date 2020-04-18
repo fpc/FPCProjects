@@ -765,7 +765,15 @@ begin
     AnEvent.Message :=  AString;
     AnEvent.UID := AnUID;
     AnEvent.LisId := ALisId;
-    SendEvent(AnEvent);
+    try
+      SendEvent(AnEvent);
+    Except
+      // Exceptions while logging should not lead to any problems
+      // for the calling code. So the exceptions are eaten...
+      // Where is no decent log-mechanism, so fallback to writeln
+      on E: Exception do
+        writeln(Format('Exception while sending a log-message from [%d]: [%s]', [ALisId, AString]))
+    end;
   finally
     AnEvent.Release;
   end;
@@ -793,7 +801,15 @@ begin
     AnEvent.Command := ACommand;
     AnEvent.UID := AnUID;
     AnEvent.NotificationType := ANotificationType;
-    SendEvent(AnEvent);
+    try
+      SendEvent(AnEvent);
+    Except
+      // Exceptions while sending notifications should not lead to any problems
+      // for the calling code. So the exceptions are eaten...
+      // Where is no decent log-mechanism, so fallback to writeln
+      on E: Exception do
+        writeln(Format('Exception while sending a notification from command [%s]:[%d]: [%s]', [ACommand, ALisId, AMessage]))
+    end;
   finally
     AnEvent.Release;
   end;
