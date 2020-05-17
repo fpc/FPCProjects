@@ -45,7 +45,7 @@ uses
   math,
   sockets,
   syncobjs,
-  lazCollections,
+  cnocQueue,
   fpjson,
   fgl,
   dcsInOutputProcessor,
@@ -56,7 +56,7 @@ type
   { TDCSTcpServer }
 
   TDCSTcpConnectionThread = class;
-  TThreadedQueueString = specialize TLazThreadedQueue<string>;
+  TThreadedQueueString = specialize TcnocThreadedQueue<string>;
   TConnectionList = specialize TFPGObjectList<TDCSTcpConnectionThread>;
 
   TDCSTcpServer = class(TThread)

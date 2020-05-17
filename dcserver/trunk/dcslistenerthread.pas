@@ -44,11 +44,11 @@ uses
   syncobjs,
   dcsHandler,
   DCSInOutputProcessor,
-  lazCollections;
+  cnocQueue;
 
 type
 
-  TDCSEventQueue = specialize TLazThreadedQueue<TDCSEvent>;
+  TDCSEventQueue = specialize TcnocThreadedQueue<TDCSEvent>;
   TDCSIdleEvent = procedure of object;
   TDCSEventEvent = procedure (Event: TDCSEvent) of object;
 

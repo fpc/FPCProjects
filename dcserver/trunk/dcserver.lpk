@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <Name Value="DCServer"/>
-    <Type Value="RunAndDesignTime"/>
+    <Type Value="RunTimeOnly"/>
+    <BuildMethod Value="Both"/>
+    <Author Value="Joost van der Sluis / CNOC"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
+    <Description Value="Framework for building applications which have to process different commands one-by-one. Commands can be initiated and monitored in several ways, like from the comment-line or by tcp/ip-connected clients."/>
+    <License Value="LGPL with modification"/>
+    <Version Minor="9"/>
     <Files Count="9">
       <Item1>
         <Filename Value="dcshandler.pas"/>
@@ -44,16 +49,34 @@
       </Item8>
       <Item9>
         <Filename Value="dcsglobalsettings.pas"/>
-        <UnitName Value="dcsglobalsettings"/>
+        <UnitName Value="dcsGlobalSettings"/>
       </Item9>
     </Files>
-    <RequiredPkgs Count="2">
+    <RequiredPkgs Count="6">
       <Item1>
-        <PackageName Value="LazUtils"/>
+        <PackageName Value="fcl-web"/>
+        <DependencyType Value="FPMake"/>
       </Item1>
       <Item2>
-        <PackageName Value="FCL"/>
+        <PackageName Value="fcl-net"/>
+        <DependencyType Value="FPMake"/>
       </Item2>
+      <Item3>
+        <PackageName Value="fcl-process"/>
+        <DependencyType Value="FPMake"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="fcl-json"/>
+        <DependencyType Value="FPMake"/>
+      </Item4>
+      <Item5>
+        <PackageName Value="cnocThreadingTools"/>
+        <DependencyType Value="FPMake"/>
+      </Item5>
+      <Item6>
+        <PackageName Value="fcl-base"/>
+        <DependencyType Value="FPMake"/>
+      </Item6>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>

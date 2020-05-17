@@ -8,7 +8,7 @@ uses
   Classes,
   SysUtils,
   IniFiles,
-  lazCollections,
+  cnocQueue,
   fgl,
   CustApp;
 
@@ -80,7 +80,7 @@ type
   private
     class var FInstance: TDCSGlobalSettings;
   private
-    FMonitor: TLazMonitor;
+    FMonitor: TcnocMonitor;
     FSettingList: TDCSSettingList;
     FDefinedSettingTemplateList: TDCSSettingList;
     FSettingTemplateList: TDCSSettingTemplateList;
@@ -293,7 +293,7 @@ end;
 
 constructor TDCSGlobalSettings.Create();
 begin
-  FMonitor := TLazMonitor.create;
+  FMonitor := TcnocMonitor.create;
   FSettingList := TDCSSettingList.Create(True);
   FSettingTemplateList := TDCSSettingTemplateList.Create(True);
   FDefinedSettingTemplateList := TDCSSettingList.Create(True);

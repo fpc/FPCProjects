@@ -51,7 +51,7 @@ uses
   httpprotocol,
   fphttpserver,
   fphttpstatus,
-  lazCollections,
+  cnocQueue,
   dcsHandler,
   dcsThreadCommandFactory,
   dcsInOutputProcessor,

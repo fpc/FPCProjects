@@ -12,12 +12,12 @@ uses
   ssockets,
   BaseUnix,
   strutils,
-  lazCollections;
+  cnocQueue;
 
 type
   TDCSOnReceiveDataProc = procedure(Data: TJSONData) of object;
   TDCSOnLostConnectionProc = procedure(ErrMessage: string) of object;
-  TDCSThreadedQueueJSONData = specialize TLazThreadedQueue<TJSONData>;
+  TDCSThreadedQueueJSONData = specialize TcnocThreadedQueue<TJSONData>;
 
   { TDCSClientThread }
 

@@ -11,7 +11,7 @@ uses
   syncobjs,
   variants,
   fgl,
-  lazCollections;
+  cnocQueue;
 
 type
   // The debug-thread sends three different kind of messages to it's listeners
@@ -154,7 +154,7 @@ type
     property UID: variant read FUID;
   end;
   TDCSThreadCommandClass = class of TDCSThreadCommand;
-  TDCSThreadCommandQueue = specialize TLazThreadedQueue<TDCSThreadCommand>;
+  TDCSThreadCommandQueue = specialize TcnocThreadedQueue<TDCSThreadCommand>;
 
   { TDCSCustomHandlerThread }
 
@@ -282,7 +282,7 @@ type
     FDistributor: TDCSDistributor;
     FCommandList: TFPTimedCommandList;
     FInterruptEvent: PRTLEvent;
-    FMonitor: TLazMonitor;
+    FMonitor: TcnocMonitor;
   public
     constructor Create(ADistributor: TDCSDistributor);
     destructor Destroy; override;
@@ -329,7 +329,7 @@ constructor TTimedCommandListThread.Create(ADistributor: TDCSDistributor);
 begin
   FDistributor := ADistributor;
   FInterruptEvent := RTLEventCreate;
-  FMonitor := TLazMonitor.create;
+  FMonitor := TcnocMonitor.create;
   FCommandList := TFPTimedCommandList.Create(True);
   inherited Create(False);
 end;
@@ -570,15 +570,16 @@ function TDCSThreadCommand.CreateExecutedCommandEvent(Success: Boolean; ReturnMe
 begin
   Result := NotificationClass.Create;
   Result.UID := FUID;
+  Result.Command := TextName;
   if Success then
     begin
     Result.NotificationType:=ntExecutedCommand;
-    Result.Message:=Format('%s-command executed succesfully.',[TextName])
+    Result.Message:=Format('%s-command executed succesfully.',[Result.Command])
     end
   else
     begin
     Result.NotificationType:=ntFailedCommand;
-    Result.Message:=Format('%s-command failed.',[TextName])
+    Result.Message:=Format('%s-command failed.',[Result.Command])
     end;
   Result.LisId:=SendByLisId;
   if ReturnMessage<>'' then

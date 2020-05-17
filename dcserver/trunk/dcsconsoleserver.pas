@@ -10,13 +10,13 @@ uses
   SysUtils,
   DCSHandler,
   DCSInOutputProcessor,
-  lazCollections,
+  cnocQueue,
   syncobjs,
   pipes;
 
 type
 
-  TDCSEventQueue = specialize TLazThreadedQueue<string>;
+  TDCSEventQueue = specialize TcnocThreadedQueue<string>;
 
   { TDCSConsoleServer }
 
