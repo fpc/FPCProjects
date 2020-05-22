@@ -2,9 +2,9 @@
    File generated automatically by Lazarus Package Manager
    Created with the Fppkgpackagemanager package installed
 
-   fpmake.pp for DCServer 0.9
+   fpmake.pp for DCServer 0.9.0.1
 
-   This file was generated on 17-05-20
+   This file was generated on 22-05-20
 }
 
 {$ifndef ALLPACKAGES} 
@@ -25,7 +25,7 @@ begin
   with Installer do
     begin
     P:=AddPackage('dcserver');
-    P.Version:='0.9.0-0';
+    P.Version:='0.9.0-1';
 
     P.Directory:=ADirectory;
 
@@ -68,6 +68,7 @@ begin
     T := P.Targets.AddImplicitUnit('dcsglobalsettings.pas');
 
     // copy the compiled file, so the IDE knows how the package was compiled
+    P.Sources.AddSrc('DCServer.compiled');
     P.InstallFiles.Add('DCServer.compiled',AllOSes,'$(unitinstalldir)');
 
     end;
