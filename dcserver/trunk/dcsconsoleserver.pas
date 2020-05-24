@@ -21,17 +21,18 @@ type
   { TDCSConsoleServer }
 
   TDCSConsoleServer = class(TThread, IDCSListener)
-  private
+  protected
     FListenerId: integer;
     FInOutputProcessor: TDCSCustomInOutputProcessor;
     FDistributor: TDCSDistributor;
     FEventStrQueue: TDCSEventQueue;
-  protected
+    FInitialBuffer: string;
     procedure Execute; override;
     procedure InitListener(AListenerId: Integer);
     function GetListenerId: Integer;
+    function CreateInOutputProcessor: TDCSCustomInOutputProcessor; virtual;
   public
-    constructor create(ADistributor: TDCSDistributor);
+    constructor create(ADistributor: TDCSDistributor; InitialBuffer: string);
     function GetOrigin: string;
     procedure SendEvent(AnEvent: TDCSEvent);
     destructor Destroy; override;
@@ -81,10 +82,11 @@ begin
     writeln(EventStr);
 end;
 
-constructor TDCSConsoleServer.create(ADistributor: TDCSDistributor);
+constructor TDCSConsoleServer.create(ADistributor: TDCSDistributor; InitialBuffer: string);
 begin
+  FInitialBuffer := InitialBuffer;
   FDistributor:=ADistributor;
-  FInOutputProcessor := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
+  FInOutputProcessor := CreateInOutputProcessor;
   FEventStrQueue:=TDCSEventQueue.Create(100, INFINITE, 100);
   inherited Create(false);
   // We add ourself to the listener here already, so that all messages that are
@@ -124,6 +126,11 @@ begin
 
   FEventStrQueue.Free;
   inherited Destroy;
+end;
+
+function TDCSConsoleServer.CreateInOutputProcessor: TDCSCustomInOutputProcessor;
+begin
+  Result := TDCSJSonInOutputProcessor.create(FListenerId, FDistributor);
 end;
 
 end.
