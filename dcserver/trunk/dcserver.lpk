@@ -13,7 +13,7 @@
     </CompilerOptions>
     <Description Value="Framework for building applications which have to process different commands one-by-one. Commands can be initiated and monitored in several ways, like from the comment-line or by tcp/ip-connected clients."/>
     <License Value="LGPL with modification"/>
-    <Version Minor="9" Build="1"/>
+    <Version Minor="9" Release="1" Build="1"/>
     <Files Count="9">
       <Item1>
         <Filename Value="dcshandler.pas"/>
