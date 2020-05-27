@@ -10,7 +10,12 @@ uses
   syncobjs,
   fpjson,
   ssockets,
+  {$IFDEF Unix}
   BaseUnix,
+  {$Endif}
+  {$IFDEF Windows}
+  WinSock2,
+  {$ENDIF Windows}
   strutils,
   cnocQueue;
 
@@ -121,7 +126,7 @@ var
       end
     else if i<0 then
       begin
-      if ASocket.LastError<>ESysEAGAIN then
+      if ASocket.LastError<>{$IFDEF Windows}WSAEWOULDBLOCK{$ELSE}ESysEAGAIN{$ENDIF} then
         begin
         FErrMessage := 'Error during write to server. Socket-error: '+inttostr(ASocket.LastError);
         Terminate;
@@ -167,6 +172,9 @@ var
   IsConnected: boolean;
   PopResult: TWaitResult;
   DataWaiting: boolean;
+{$IFDEF Windows}
+  Arg: u_long;
+{$ENDIF Windows}
 begin
   IsConnected:=false;
   CanHaveMoreData:=false;
@@ -184,7 +192,13 @@ begin
       else
         begin
         // Set non-blocking
+        {$IFDEF Unix}
         fpfcntl(ASocket.Handle,F_SETFL,O_NONBLOCK);
+        {$ENDIF}
+        {$IFDEF Windows}
+        Arg := 1;
+        ioctlsocket(ASocket.Handle, FIONBIO, Arg);
+        {$ENDIF Windows}
 
         // Read and check FPDebug Server greeting
         s := ReadStringTimeout(100);

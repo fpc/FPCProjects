@@ -41,7 +41,12 @@ uses
   Classes,
   SysUtils,
   ssockets,
+  {$IFDEF UNIX}
   BaseUnix,
+  {$ENDIF UNIX}
+  {$IFDEF Windows}
+  WinSock2,
+  {$ENDIF}
   math,
   sockets,
   syncobjs,
@@ -141,7 +146,7 @@ procedure TDCSTcpConnectionThread.Execute;
 
       if i < 0 then
         begin
-        if FData.LastError=ESysEAGAIN then
+        if FData.LastError={$IFDEF Windows}WSAEWOULDBLOCK{$ELSE}ESysEAGAIN{$ENDIF} then
           begin
           if timeout>100 then
             begin
@@ -153,7 +158,9 @@ procedure TDCSTcpConnectionThread.Execute;
           end
         else
           begin
-          if FData.LastError=ESysEPIPE then
+          // JvdS, 20200526: Actually I am not sure that WSAECONNRESET is the correct
+          // error-number to check for on Windows. And I have no means to test it.
+          if FData.LastError={$IFDEF Windows}WSAECONNRESET{$ELSE}ESysEPIPE{$ENDIF} then
             begin
             // Lost connection
             end
@@ -212,7 +219,7 @@ begin
         end
       else if i < 0 then
         begin
-        if FData.LastError<> ESysEAGAIN then
+        if FData.LastError<> {$IFDEF Windows}WSAEWOULDBLOCK{$ELSE}ESysEAGAIN{$ENDIF} then
           begin
           FDistributor.Log(Format('Error during read. Socket-error: %d', [FData.LastError]), etWarning, Null);
           Terminate;
@@ -278,6 +285,10 @@ begin
 end;
 
 constructor TDCSTcpConnectionThread.create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream; InitialBuffer: string);
+{$IFDEF Windows}
+var
+  Arg: u_long;
+{$ENDIF Windows}
 begin
   FData := data;
   FInitialBuffer := InitialBuffer;
@@ -285,7 +296,11 @@ begin
   // Set non-blocking
   {$IFDEF UNIX}
   fpfcntl(FData.Handle,F_SETFL,O_NONBLOCK);
-  {$ENDIF}
+  {$ENDIF UNIX}
+  {$IFDEF Windows}
+  Arg := 1;
+  ioctlsocket(FData.Handle, FIONBIO, Arg);
+  {$ENDIF Windows}
 
   FDistributor := ADistributor;
   FDebugTcpServer := ADebugTcpServer;
@@ -384,10 +399,12 @@ procedure TDCSTcpServer.FTCPConnectionConnect(Sender: TObject; Data: TSocketStre
 var
   AConnectionThread: TDCSTcpConnectionThread;
 begin
+  {$IFDEF Unix}
   // Without this, on Linux at least, Data.Write can generate a SIGPIPE exception
   // when the other side disconnects unexpectedly. We do not want this and use the
   // return value to detect the lost connection.
   Data.WriteFlags := $4000; // MSG_NOSIGNAL: do not generate SIGPIPE on connection end
+  {$ENDIF Unix}
   AConnectionThread:=CreateTCPConnectionThread(Data);
   AConnectionThread.FreeOnTerminate:=true;
   FConnectionList.Add(AConnectionThread);
