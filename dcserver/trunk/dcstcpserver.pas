@@ -81,7 +81,7 @@ type
     function CreateTCPConnectionThread(Data: TSocketStream): TDCSTcpConnectionThread; virtual;
   public
     procedure WaitForInitialization(out Port: integer);
-    procedure StopListening;
+    procedure Stop;
     constructor create(ADistributor: TDCSDistributor; APort, ASensePorts: integer);
     procedure RemoveConnection(ADebugTcpConnectionThread: TDCSTcpConnectionThread);
     destructor Destroy; override;
@@ -92,6 +92,7 @@ type
   TDCSTcpConnectionThread = class(tthread, IDCSListener)
   private
     FInOutputProcessor: TDCSCustomInOutputProcessor;
+    procedure SendThreadProc();
   protected
     FData: TSocketStream;
     FDistributor: TDCSDistributor;
@@ -99,17 +100,21 @@ type
     FDebugTcpServer: TDCSTcpServer;
     FListenerId: integer;
     FInitialBuffer: string;
+    FSendThread: TThread;
   protected
+    function SendData(AString: string): Boolean; virtual;
     procedure Execute; override;
     procedure SendCommand(ACommandStr: string);
     function GetListenerId: Integer;
     procedure InitListener(AListenerId: Integer);
     function CreateInOutputProcessor: TDCSCustomInOutputProcessor; virtual;
+    function StartSendThread(): TThread; virtual;
   public
-    procedure SendEvent(AnEvent: TDCSEvent);
+    procedure SendEvent(AnEvent: TDCSEvent); virtual;
     function GetOrigin: string;
     constructor create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream; InitialBuffer: string);
     destructor Destroy; override;
+    procedure Stop;
   end;
 
 implementation
@@ -127,55 +132,19 @@ begin
       result := result + Astr[i];
 end;
 
+procedure TDCSTcpConnectionThread.SendThreadProc();
+var
+  Res: Boolean;
+  AStr: string;
+begin
+  Res := True;
+  while Res and (FResponseQueue.PopItem(AStr) = wrSignaled) do
+    begin
+    Res := SendData(AStr + #10);
+    end;
+end;
+
 procedure TDCSTcpConnectionThread.Execute;
-
-  procedure WriteString(AStr: string);
-  var
-    timeout: integer;
-    i: integer;
-    written: integer;
-    total: integer;
-  begin
-    AStr := AStr + #10;
-    total := length(AStr);
-    written := 0;
-    timeout := 0;
-
-    repeat
-      i := FData.Write(AStr[written+1], min(total-written, 65536));
-
-      if i < 0 then
-        begin
-        if FData.LastError={$IFDEF Windows}WSAEWOULDBLOCK{$ELSE}ESysEAGAIN{$ENDIF} then
-          begin
-          if timeout>100 then
-            begin
-            FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Timeout.', '');
-            Terminate;
-            end;
-          sleep(10);
-          inc(timeout);
-          end
-        else
-          begin
-          // JvdS, 20200526: Actually I am not sure that WSAECONNRESET is the correct
-          // error-number to check for on Windows. And I have no means to test it.
-          if FData.LastError={$IFDEF Windows}WSAECONNRESET{$ELSE}ESysEPIPE{$ENDIF} then
-            begin
-            // Lost connection
-            end
-          else
-            FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
-          Terminate;
-          end;
-        end
-      else
-        begin
-        inc(written, i);
-        timeout := 0;
-        end;
-    until terminated or (written >= total);
-  end;
 
 const
   InputBufferSize = 1024;
@@ -187,11 +156,11 @@ var
 begin
   InputStr := FInitialBuffer;
   try
-    WriteString('Welcome to FPDebug-server.');
+    FResponseQueue.PushItem('Welcome to FPDebug-server.' + LineEnding);
     if not Terminated then
-      WriteString('Your connection-idenfifier is '+IntToStr(FListenerId)+'.');
+      FResponseQueue.PushItem('Your connection-idenfifier is ' + IntToStr(FListenerId) + '.' + LineEnding);
     if not Terminated then
-      WriteString('Send "help<enter>" for more information.');
+      FResponseQueue.PushItem('Send "help<enter>" for more information.' + LineEnding);
     while not terminated do
       begin
       i := FData.Read(InputBuffer[0], InputBufferSize);
@@ -219,11 +188,8 @@ begin
         end
       else if i < 0 then
         begin
-        if FData.LastError<> {$IFDEF Windows}WSAEWOULDBLOCK{$ELSE}ESysEAGAIN{$ENDIF} then
-          begin
-          FDistributor.Log(Format('Error during read. Socket-error: %d', [FData.LastError]), etWarning, Null);
-          Terminate;
-          end;
+        FDistributor.Log(Format('Error during read. Socket-error: %d', [FData.LastError]), etWarning, Null);
+        Terminate;
         end
       else if i = 0 then
         begin
@@ -231,10 +197,6 @@ begin
         Terminate;
         end;
 
-      if not terminated and (FResponseQueue.PopItem(s) = wrSignaled) then
-        begin
-        WriteString(s);
-        end;
       end;
   except
     on E: Exception do
@@ -243,6 +205,8 @@ begin
       end;
   end;
   FDebugTcpServer.RemoveConnection(self);
+  FResponseQueue.DoShutDown;
+  FSendThread.WaitFor;
 end;
 
 procedure TDCSTcpConnectionThread.SendCommand(ACommandStr: string);
@@ -285,35 +249,24 @@ begin
 end;
 
 constructor TDCSTcpConnectionThread.create(ADistributor: TDCSDistributor; ADebugTcpServer: TDCSTcpServer; Data: TSocketStream; InitialBuffer: string);
-{$IFDEF Windows}
-var
-  Arg: u_long;
-{$ENDIF Windows}
 begin
   FData := data;
   FInitialBuffer := InitialBuffer;
 
-  // Set non-blocking
-  {$IFDEF UNIX}
-  fpfcntl(FData.Handle,F_SETFL,O_NONBLOCK);
-  {$ENDIF UNIX}
-  {$IFDEF Windows}
-  Arg := 1;
-  ioctlsocket(FData.Handle, FIONBIO, Arg);
-  {$ENDIF Windows}
-
   FDistributor := ADistributor;
   FDebugTcpServer := ADebugTcpServer;
-  FResponseQueue:=TThreadedQueueString.create(100, INFINITE, 100);
+  FResponseQueue:=TThreadedQueueString.create(100);
   FListenerId := FDistributor.AddListener(self);
   FInOutputProcessor := CreateInOutputProcessor;
+
+  FSendThread := StartSendThread;
   inherited create(false);
 end;
 
 destructor TDCSTcpConnectionThread.Destroy;
 begin
-  FInOutputProcessor.Free;
   FDistributor.RemoveListener(self);
+  FInOutputProcessor.Free;
   FResponseQueue.Free;
   FData.Free;
   inherited Destroy;
@@ -329,12 +282,56 @@ begin
   Result := InOutputProcessorClass.create(FListenerId, FDistributor);
 end;
 
+function TDCSTcpConnectionThread.StartSendThread(): TThread;
+begin
+  Result := TThread.ExecuteInThread(@SendThreadProc);
+end;
+
+function TDCSTcpConnectionThread.SendData(AString: string): Boolean;
+var
+  i: Integer;
+  Written: Integer;
+  Total: Integer;
+begin
+  Result := True;
+  Total := length(AString);
+  Written := 0;
+  repeat
+    i := FData.Write(AString[Written+1], min(Total-Written, 65536));
+
+    if i < 0 then
+      begin
+      // JvdS, 20200526: Actually I am not sure that WSAECONNRESET is the correct
+      // error-number to check for on Windows. And I have no means to test it.
+      if FData.LastError={$IFDEF Windows}WSAECONNRESET{$ELSE}ESysEPIPE{$ENDIF} then
+        begin
+        // Lost connection
+        end
+      else
+        FDistributor.SendNotification(FListenerId, ntConnectionProblem, null, 'Error during write. Socket-error: %d', '', [FData.LastError]);
+      Result := False;
+      end
+    else
+      begin
+      Inc(Written, i);
+      end;
+  until not Result or (Written >= Total);
+end;
+
+procedure TDCSTcpConnectionThread.Stop;
+begin
+  Terminate;
+  FileClose(FData.Handle);
+end;
+
 { TDCSTcpServer }
 
 procedure TDCSTcpServer.FTCPConnectionAcceptError(Sender: TObject;
   ASocket: Longint; E: Exception; var ErrorAction: TAcceptErrorAction);
+const
+  StopListeningErrCode = {$IFDEF Linux}22{EINVAL}{$ELSE}53{ECONNABORTED}{$ENDIF};
 begin
-  if (E is ESocketError) and (ESocketError(E).Code=seAcceptFailed) and (socketerror=53) {ECONNABORTED} then
+  if (E is ESocketError) and (ESocketError(E).Code=seAcceptFailed) and (socketerror=StopListeningErrCode) then
     begin
     // The socket has stopped listening. The TCP-server is shutting down...
     ErrorAction:=aeaStop;
@@ -444,7 +441,7 @@ begin
   Port := FPort;
 end;
 
-procedure TDCSTcpServer.StopListening;
+procedure TDCSTcpServer.Stop;
 begin
   Terminate;
   if assigned(FTCPConnection) then
@@ -474,7 +471,7 @@ var
 begin
   RTLeventdestroy(FInitializationFinished);
   for i := 0 to FConnectionList.Count-1 do
-    FConnectionList[i].Terminate;
+    FConnectionList[i].Stop;
   for i := 0 to FConnectionList.Count-1 do
     FConnectionList[i].WaitFor;
   if FConnectionList.Count<>0 then
