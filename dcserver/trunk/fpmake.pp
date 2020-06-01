@@ -2,9 +2,9 @@
    File generated automatically by Lazarus Package Manager
    Created with the Fppkgpackagemanager package installed
 
-   fpmake.pp for DCServer 0.9.0.1
+   fpmake.pp for DCServer 0.9.1.1
 
-   This file was generated on 22-05-20
+   This file was generated on 01-06-20
 }
 
 {$ifndef ALLPACKAGES} 
@@ -33,6 +33,7 @@ begin
     P.License:='LGPL with modification';
     P.Description:='Framework for building applications which have to process different commands one-by-one. Commands can be initiated and monitored in several ways, like from the comment-line or by tcp/ip-connected clients.';
 
+    D := P.Dependencies.Add('pthreads');
     D := P.Dependencies.Add('fcl-web');
     D := P.Dependencies.Add('fcl-net');
     D := P.Dependencies.Add('fcl-process');

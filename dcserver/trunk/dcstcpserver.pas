@@ -43,7 +43,11 @@ uses
   ssockets,
   {$IFDEF UNIX}
   BaseUnix,
+  pthreads,
   {$ENDIF UNIX}
+  {$IFDEF Linux}
+  syscall,
+  {$ENDIF}
   {$IFDEF Windows}
   WinSock2,
   {$ENDIF}
@@ -132,6 +136,13 @@ begin
       result := result + Astr[i];
 end;
 
+{$IFDEF Unix}
+procedure HandleSignal(signal: longint; info: psiginfo; context: psigcontext); cdecl;
+begin
+  // Do nothing
+end;
+{$ENDIF}
+
 procedure TDCSTcpConnectionThread.SendThreadProc();
 var
   Res: Boolean;
@@ -144,6 +155,41 @@ begin
     end;
 end;
 
+{$IFDEF Unix}
+{$IFDEF Linux}
+Function fpPSelect(N:cint;readfds,writefds,exceptfds:pfdSet;TimeOut:PTimeSpec; sigmask: BaseUnix.PSigSet):cint;
+type
+  TTwoSyscallParams = record
+    Para6: TSysParam;
+    Para7: TSysParam;
+  end;
+var
+  Param6and7: TTwoSyscallParams;
+begin
+  Param6and7.Para6 := TSysParam(sigmask);
+  {$ifdef CPUMIPS}
+  Param6and7.Para7 := 16;
+  {$else not CPUMIPS}
+  Param6and7.Para7 := 8;
+  {$endif not CPUMIPS}
+  Result:=do_syscall(syscall_nr_pselect6,n,
+                       tsysparam(readfds),tsysparam(writefds),
+                       tsysparam(exceptfds),tsysparam(TimeOut),TSysParam(@Param6and7));
+end;
+{$ELSEIF}
+Function fpPSelect(N:cint;readfds,writefds,exceptfds:pfdSet;TimeOut:PTimeSpec; sigmask: BaseUnix.PSigSet):cint;
+var
+  OldSigMask: BaseUnix.PSigSet;
+begin
+  Assert(TimeOut=nil, 'Timeout not supported by this implementation of fpPSelect');
+  // This is not completely safe.
+  FpSigProcMask(SIG_SETMASK, sigmask, @OldSigMask);
+  i := fpSelect(N, readfds, writefds, exceptfds, nil);
+  FpSigProcMask(SIG_SETMASK, @OldSigMask, Nil);
+end;
+{$ENDIF}
+{$ENDIF UNIX}
+
 procedure TDCSTcpConnectionThread.Execute;
 
 const
@@ -153,6 +199,13 @@ var
   i: integer;
   InputBuffer: array[0..InputBufferSize-1] of char;
   InputStr: string;
+{$IFDEF Unix}
+  NewMaskSigterm: BaseUnix.TSigSet;
+  OldMaskSigterm: BaseUnix.TSigSet;
+  SocketFds: TFDSet;
+  NewSignalHandler,
+  OldSignalHandler: SigActionRec;
+{$ENDIF}
 begin
   InputStr := FInitialBuffer;
   try
@@ -161,8 +214,54 @@ begin
       FResponseQueue.PushItem('Your connection-idenfifier is ' + IntToStr(FListenerId) + '.' + LineEnding);
     if not Terminated then
       FResponseQueue.PushItem('Send "help<enter>" for more information.' + LineEnding);
+
+    {$IFDEF Unix}
+    // This blocking thead is terminated by sending a SIGTERM signal, which will
+    // break the blocking fpSelect call.
+
+    // First we have to make sure that there is no handler active that reacts
+    // on the SIGTERM and does something that we do not want. (Like quitting the
+    // application) We do so by setting our own handler.
+    NewSignalHandler := Default(SigActionRec);
+    OldSignalHandler := Default(SigActionRec);
+    NewSignalHandler.sa_handler := @HandleSignal;
+    FPSigaction(SIGTERM, @NewSignalHandler, @OldSignalHandler);
+
+    // Then we have to block SIGTERM signals by default. We only want to receive
+    // the SIGTERM during the blocking fpPSelect call. Or else the signal may be
+    // reveived outside the blocking fpSelect and enter fpSelect thereafter waiting
+    // indefinitely
+    FpsigEmptySet(NewMaskSigterm);
+    FpSigAddSet(NewMaskSigterm, SIGTERM);
+    FpSigProcMask(SIG_BLOCK, @NewMaskSigterm, @OldMaskSigterm);
+    {$ENDIF Unix}
     while not terminated do
       begin
+      {$IFDEF Unix}
+      // Use fpSelect before the read, so that the read-operation will not block.
+      // fpSelect has as advantage that it can be stopped in a controlled way
+      // by sending it a signal. So it is possible to terminate the thread.
+      fpFD_ZERO(SocketFds);
+      fpFD_SET(FData.Handle, SocketFds);
+      FpsigEmptySet(OldMaskSigterm);
+      i := fpPSelect(FData.Handle+1, @SocketFds, nil, nil, nil, @OldMaskSigterm);
+
+      if i < 0 then
+        begin
+        if GetLastOSError=ESysEINTR then
+          begin
+          // We received an interrupt. Skip the read to check if the thread is
+          // requested to terminate.
+          Continue;
+          end
+        else
+          begin
+          FDistributor.Log(Format('Error during select. Error: %d', [GetLastOSError]), etWarning, Null);
+          Terminate;
+          Continue;
+          end;
+        end;
+      {$ENDIF Unix}
       i := FData.Read(InputBuffer[0], InputBufferSize);
       if i > 0 then
         begin
@@ -321,7 +420,11 @@ end;
 procedure TDCSTcpConnectionThread.Stop;
 begin
   Terminate;
+  {$IFDEF Unix}
+  pthread_kill(self.Handle, SIGTERM);
+  {$ELSE}
   FileClose(FData.Handle);
+  {$ENDIF}
 end;
 
 { TDCSTcpServer }

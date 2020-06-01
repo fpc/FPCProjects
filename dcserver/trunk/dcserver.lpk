@@ -52,31 +52,35 @@
         <UnitName Value="dcsGlobalSettings"/>
       </Item9>
     </Files>
-    <RequiredPkgs Count="6">
+    <RequiredPkgs Count="7">
       <Item1>
-        <PackageName Value="fcl-web"/>
+        <PackageName Value="pthreads"/>
         <DependencyType Value="FPMake"/>
       </Item1>
       <Item2>
-        <PackageName Value="fcl-net"/>
+        <PackageName Value="fcl-web"/>
         <DependencyType Value="FPMake"/>
       </Item2>
       <Item3>
-        <PackageName Value="fcl-process"/>
+        <PackageName Value="fcl-net"/>
         <DependencyType Value="FPMake"/>
       </Item3>
       <Item4>
-        <PackageName Value="fcl-json"/>
+        <PackageName Value="fcl-process"/>
         <DependencyType Value="FPMake"/>
       </Item4>
       <Item5>
-        <PackageName Value="cnocThreadingTools"/>
+        <PackageName Value="fcl-json"/>
         <DependencyType Value="FPMake"/>
       </Item5>
       <Item6>
-        <PackageName Value="fcl-base"/>
+        <PackageName Value="cnocThreadingTools"/>
         <DependencyType Value="FPMake"/>
       </Item6>
+      <Item7>
+        <PackageName Value="fcl-base"/>
+        <DependencyType Value="FPMake"/>
+      </Item7>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
