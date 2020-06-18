@@ -176,7 +176,7 @@ begin
                        tsysparam(readfds),tsysparam(writefds),
                        tsysparam(exceptfds),tsysparam(TimeOut),TSysParam(@Param6and7));
 end;
-{$ELSEIF}
+{$ELSE}
 Function fpPSelect(N:cint;readfds,writefds,exceptfds:pfdSet;TimeOut:PTimeSpec; sigmask: BaseUnix.PSigSet):cint;
 var
   OldSigMask: BaseUnix.PSigSet;

@@ -25,7 +25,7 @@ begin
   with Installer do
     begin
     P:=AddPackage('dcserver');
-    P.Version:='0.9.1-1';
+    P.Version:='0.9.2-2';
 
     P.Directory:=ADirectory;
 
