@@ -135,6 +135,7 @@ type
     FDistributor: TDCSDistributor;
     FSendByLisId: integer;
     FUID: variant;
+    FCallOnIdle: Boolean;
     function GetNotificationCommandEventClass: TDCSNotificationEventClass; virtual;
     function CreateReceivedCommandEvent: TDCSNotificationEvent; virtual;
     function CreateExecutedCommandEvent(Success: Boolean; ReturnMessage: string; NotificationClass: TDCSNotificationEventClass): TDCSNotificationEvent; virtual;
@@ -152,6 +153,12 @@ type
     // The identifier of the Listener that has send this command
     property SendByLisId: integer read FSendByLisId;
     property UID: variant read FUID;
+    // Some implementations perform better when OnIdle is called after each
+    // command, others perform better when OnIdle is only called when there
+    // are no commands received for a while.
+    // When CallOnIdle is set, OnIdle will be called after the command is
+    // freed.
+    property CallOnIdle: Boolean read FCallOnIdle;
   end;
   TDCSThreadCommandClass = class of TDCSThreadCommand;
   TDCSThreadCommandQueue = specialize TcnocThreadedQueue<TDCSThreadCommand>;
@@ -925,6 +932,7 @@ end;
 procedure TDCSCustomHandlerThread.Execute;
 var
   ACommand: TDCSThreadCommand;
+  CallOnIdle: Boolean;
 begin
   try
     if assigned(FDistributor) then
@@ -946,10 +954,12 @@ begin
           if FCommandQueue.PopItem(ACommand)<>wrSignaled then
             ACommand:=nil;
 
+          CallOnIdle := True;
           if assigned(ACommand) then
             begin
             try
               ACommand.Execute(FController);
+              CallOnIdle := ACommand.CallOnIdle;
             except
               on E: Exception do
                 begin
@@ -958,8 +968,8 @@ begin
                 end;
             end;
             ACommand.Free;
-            end
-          else
+            end;
+          if CallOnIdle then
             begin
             try
               FController.OnIdle;
