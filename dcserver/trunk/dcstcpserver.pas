@@ -312,7 +312,12 @@ procedure TDCSTcpConnectionThread.SendCommand(ACommandStr: string);
 var
   ACommand: TDCSThreadCommand;
 begin
-  ACommand := FInOutputProcessor.TextToCommand(ACommandStr);
+  try
+    ACommand := FInOutputProcessor.TextToCommand(ACommandStr);
+  except
+    FDistributor.SendNotification(FListenerId, ntInvalidCommand, null, 'Could not extract command from incoming data: [%s]', '', [ACommandStr]);
+    ACommand := nil;
+  end;
   if assigned(ACommand) then
     FDistributor.QueueCommand(ACommand);
 end;
