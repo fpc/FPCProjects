@@ -2,9 +2,9 @@
    File generated automatically by Lazarus Package Manager
    Created with the Fppkgpackagemanager package installed
 
-   fpmake.pp for DCServer 0.9.1.1
+   fpmake.pp for DCServer 0.9.3.1
 
-   This file was generated on 01-06-20
+   This file was generated on 28-12-20
 }
 
 {$ifndef ALLPACKAGES} 
@@ -25,7 +25,7 @@ begin
   with Installer do
     begin
     P:=AddPackage('dcserver');
-    P.Version:='0.9.2-2';
+    P.Version:='0.9.3-1';
 
     P.Directory:=ADirectory;
 

@@ -13,74 +13,74 @@
     </CompilerOptions>
     <Description Value="Framework for building applications which have to process different commands one-by-one. Commands can be initiated and monitored in several ways, like from the comment-line or by tcp/ip-connected clients."/>
     <License Value="LGPL with modification"/>
-    <Version Minor="9" Release="1" Build="1"/>
-    <Files Count="9">
-      <Item1>
+    <Version Minor="9" Release="3" Build="1"/>
+    <Files>
+      <Item>
         <Filename Value="dcshandler.pas"/>
         <UnitName Value="dcsHandler"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <Filename Value="dcsconsoleserver.pas"/>
         <UnitName Value="dcsConsoleServer"/>
-      </Item2>
-      <Item3>
+      </Item>
+      <Item>
         <Filename Value="dcsinoutputprocessor.pas"/>
         <UnitName Value="dcsInOutputProcessor"/>
-      </Item3>
-      <Item4>
+      </Item>
+      <Item>
         <Filename Value="dcsthreadcommandfactory.pas"/>
         <UnitName Value="dcsThreadCommandFactory"/>
-      </Item4>
-      <Item5>
+      </Item>
+      <Item>
         <Filename Value="dcstcpserver.pas"/>
         <UnitName Value="DCSTCPServer"/>
-      </Item5>
-      <Item6>
+      </Item>
+      <Item>
         <Filename Value="dcsclientthread.pas"/>
         <UnitName Value="DCSClientThread"/>
-      </Item6>
-      <Item7>
+      </Item>
+      <Item>
         <Filename Value="dcslistenerthread.pas"/>
         <UnitName Value="dcsListenerThread"/>
-      </Item7>
-      <Item8>
+      </Item>
+      <Item>
         <Filename Value="dcshttprestserver.pas"/>
         <UnitName Value="DCSHTTPRestServer"/>
-      </Item8>
-      <Item9>
+      </Item>
+      <Item>
         <Filename Value="dcsglobalsettings.pas"/>
         <UnitName Value="dcsGlobalSettings"/>
-      </Item9>
+      </Item>
     </Files>
-    <RequiredPkgs Count="7">
-      <Item1>
+    <RequiredPkgs>
+      <Item>
         <PackageName Value="pthreads"/>
         <DependencyType Value="FPMake"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <PackageName Value="fcl-web"/>
         <DependencyType Value="FPMake"/>
-      </Item2>
-      <Item3>
+      </Item>
+      <Item>
         <PackageName Value="fcl-net"/>
         <DependencyType Value="FPMake"/>
-      </Item3>
-      <Item4>
+      </Item>
+      <Item>
         <PackageName Value="fcl-process"/>
         <DependencyType Value="FPMake"/>
-      </Item4>
-      <Item5>
+      </Item>
+      <Item>
         <PackageName Value="fcl-json"/>
         <DependencyType Value="FPMake"/>
-      </Item5>
-      <Item6>
+      </Item>
+      <Item>
         <PackageName Value="cnocThreadingTools"/>
         <DependencyType Value="FPMake"/>
-      </Item6>
-      <Item7>
+      </Item>
+      <Item>
         <PackageName Value="fcl-base"/>
         <DependencyType Value="FPMake"/>
-      </Item7>
+      </Item>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
