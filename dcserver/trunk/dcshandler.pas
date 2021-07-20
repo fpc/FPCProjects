@@ -261,6 +261,8 @@ const
 
   cAllNotificationTypes: TDCSNotificationTypes = [ntNewConnection, ntLostConnection, ntInvalidCommand, ntConnectionProblem, ntListenerMessage, ntReceivedCommand, ntExecutedCommand, ntFailedCommand];
 
+  GeneralEventListenerId = -1;
+
 implementation
 
 uses
@@ -661,7 +663,7 @@ begin
           ASendEvent := True;
         reOwnAndGeneral:
           begin
-          if (AnEvent.LisId=-1) or (AnEvent.LisId=ListenerContainer.Listener.ListenerId) then
+          if (AnEvent.LisId=GeneralEventListenerId) or (AnEvent.LisId=ListenerContainer.Listener.ListenerId) then
             ASendEvent := True;
           end;
         reOwnOnly:
